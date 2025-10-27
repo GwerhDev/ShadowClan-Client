@@ -1,0 +1,69 @@
+.container {
+  background-color: var(--color-primary-bg);
+  margin-top: .3rem;
+  border-radius: 7px;
+  min-width: 280px;
+  flex-direction: column;
+  overflow: hidden;
+  
+  .inner-container {
+    padding: .6.3rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    gap: 5px;
+
+    a {
+      font-size: 18px;
+    }
+
+    p {
+      padding: 0;
+      margin: 0;
+      padding-left: .6rem;
+      padding-right: .6rem;
+      display: flex;
+      color: #99938a;
+      span {
+        color: var(--color-primary-light);
+      }
+    }
+
+    .battletag {
+      font-size: 19px;
+    }
+
+    .role {
+      color: rgb(153, 147, 138);
+    }
+  }
+
+  ul {
+    padding: 0;
+    list-style: none;
+
+    li {
+      text-align: left;
+      padding: .6rem;
+      border-radius: 7px;
+      font-weight: bolder;
+      font-size: 17px;
+      display: flex;
+      gap: 1rem;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.13);
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.darker-menu {
+  background-color: rgb(0, 0, 0);
+}

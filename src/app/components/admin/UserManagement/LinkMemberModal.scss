@@ -1,0 +1,40 @@
+.modal-body {
+  padding: 1rem;
+  overflow-y: auto;
+  color: #c8c8c8;
+
+  .loader {
+    text-align: center;
+  }
+
+  .members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .member-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    input[type=checkbox] {
+      width: 20px;
+      height: 20px;
+    }
+
+    label {
+      font-size: 1rem;
+    }
+  }
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #444;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+

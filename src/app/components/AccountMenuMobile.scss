@@ -1,0 +1,107 @@
+.account-menu {
+  top: 0;
+  right: 0;
+  z-index: 9;
+  height: 100vh;
+  max-width: 480px;
+  width: calc(100% - 60px);
+  display: none;
+  position: fixed;
+  overflow-y: auto;
+  flex-direction: column;
+  background-color: var(--color-primary-bg);
+
+  .top-menu {
+    height: 78px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: .8rem;
+    padding-right: .8rem;
+
+    span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      background-color: rgba(255, 255, 255, 0.055);
+      border-radius: 5px;
+
+      &:hover {
+        cursor: pointer;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+}
+
+.inner-container {
+  padding: .6.3rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  gap: 1rem;
+
+  ul {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+span {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 5px;
+
+  a {
+    font-size: 18px;
+  }
+
+  p {
+    padding: 0;
+    margin: 0;
+    padding-left: .6rem;
+    padding-right: .6rem;
+    display: flex;
+    color: #99938a;
+
+    span {
+      color: var(--color-primary-light);
+    }
+  }
+
+  .battletag {
+    font-size: 19px;
+  }
+
+  .role {
+    color: rgb(153, 147, 138);
+  }
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+
+  li {
+    text-align: left;
+    padding: .6rem;
+    border-radius: 7px;
+    font-weight: bolder;
+    font-size: 17px;
+    display: flex;
+    gap: 1rem;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.13);
+      cursor: pointer;
+    }
+  }
+}
+
+.darker-menu {
+  background-color: rgb(0, 0, 0);
+  height: 100%;
+}

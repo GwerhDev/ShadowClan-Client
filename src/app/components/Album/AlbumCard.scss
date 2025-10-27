@@ -1,0 +1,19 @@
+.card-container {
+  background-color: var(--color-primary-bg);
+  width: 100%;
+  max-width: 2500px;
+  height: 130px;
+  border: none;
+  border-radius: 5px;
+
+  p {
+    color: white;
+  }
+
+  &:hover {
+    outline: solid;
+    outline-width: 2px;
+    outline-color: var(--color-primary);
+    cursor: pointer;
+  }
+}
