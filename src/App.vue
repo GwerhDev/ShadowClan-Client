@@ -13,7 +13,6 @@ onMounted(async () => {
   try {
     loading.value = true;
     const response = await store.handleUserData(token);
-    console.log(response);
     if (response) {
       loading.value = false;
     } else {
