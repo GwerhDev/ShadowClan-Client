@@ -15,9 +15,7 @@ let urlSignup: string = API_URL + "/signup-bnet" || "";
 let urlLogin: string = API_URL + "/login-bnet" || "";
 
 onMounted(() => {
-  if (!currentUser?.value.error && token) {
-    router.push('/');
-  }
+  if (currentUser?.logged && token) router.push('/');
 });
 
 </script>
@@ -42,4 +40,4 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped lang="scss" src="./SignupForm.scss"/>
+<style scoped lang="scss" src="./SignupForm.scss" />

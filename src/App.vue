@@ -12,13 +12,12 @@ const router = useRouter();
 onMounted(async () => {
   try {
     loading.value = true;
-    const response = await store.handleUserData(token);
-    if (response) {
-      loading.value = false;
-    } else {
-      loading.value = false;
+    await store.handleUserData(token);
+    if (!store.currentUser.logged) {
       router.push('/signup');
     }
+    loading.value = false;
+
   } catch (error) {
     loading.value = false;
     router.push('/signup');
