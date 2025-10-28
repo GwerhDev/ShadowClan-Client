@@ -12,16 +12,13 @@ function apply() {
 
 <template>
   <main>
-    <section class="first-section">
-      <div class="left-section mw-1250">
-        <span class="logo-styles f-size-large">ShadowClan</span>
-        <div class="warband pb-2">
-          <h3 class="subtitle">Las Sombras reinarán</h3>
-        </div>
-        <ActionButton message="Ir a Guerra Sombría" :action="apply"/>
+    <div class="left-section mw-1250">
+      <span class="logo-styles f-size-large">ShadowClan</span>
+      <div class="warband pb-2">
+        <h3 class="subtitle">Las Sombras reinarán</h3>
       </div>
-      <div class="right-section mw-1250"></div>
-    </section>
+      <ActionButton message="Ir a Guerra Sombría" :action="apply" />
+    </div>
   </main>
 </template>
 
@@ -31,46 +28,16 @@ main {
   left: 0;
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100vh;
+  width: 100vw;
+  min-height: 100vh;
   overflow-x: hidden;
   background-size: cover;
   background-position: top;
   background-repeat: no-repeat;
   background-image: url(../../assets/avif/background.avif);
-}
-
-.first-section {
-  height: 100vh;
-  min-height: 800px;
-  padding-left: 1.1rem;
-  padding-right: 1.1rem;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(to bottom, transparent 1%, black 90%);
-}
-
-.second-section {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding-left: 1.1rem;
-  padding-right: 1.1rem;
-  background: linear-gradient(to bottom, black 20%, var(--color-secondary-bg) 100%);
-}
-
-.third-section {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding-left: 1.1rem;
-  padding-right: 1.1rem;
-  background: linear-gradient(to bottom, var(--color-secondary-bg) 30%, var(--color-red-action) 300%);
 }
 
 .left-section {
