@@ -14,10 +14,4 @@ defineProps(["loading"])
     <NavWebComponent :loading="loading"/>
     <NavMobileComponent :loading="loading"/>
   </div>
-  <div class="account-mobile">
-    <AccountMenuMobile />
-  </div>
-  <div class="menu-mobile">
-    <NavMenuMobile />
-  </div>
 </template>

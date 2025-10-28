@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import ActionButton from '../components/Buttons/ActionButton.vue';
-import ManifestoComponent from '../components/ManifestoComponent.vue';
 
 const router = useRouter();
 
@@ -35,7 +34,6 @@ main {
   width: 100%;
   height: 100vh;
   overflow-x: hidden;
-  position: absolute;
   background-size: cover;
   background-position: top;
   background-repeat: no-repeat;

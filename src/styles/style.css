@@ -193,8 +193,9 @@
   display: none;
 }
 
-.register-message-container {
-  width: 350px;
+.page-message-container {
+  max-width: 350px;
+  padding-inline: .5rem;
   min-height: 100vh;
   display: flex;
   align-items: center;

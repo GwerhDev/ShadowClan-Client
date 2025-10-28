@@ -6,6 +6,8 @@ import diabloIcon from "../../assets/svg/diablo-icon.svg";
 import TabBar from './TabBar.vue';
 import { useRoute } from 'vue-router';
 import { computed } from 'vue';
+import NavWebComponent from '../components/NavWebComponent.vue';
+import NavMobileComponent from '../components/NavMobileComponent.vue';
 
 const store: any = useStore();
 const route = useRoute();
@@ -36,6 +38,9 @@ const dynamicTitle = computed(() => {
 <template>
   <div class="container-lo-page">
     <div class="lo-container">
+      <section>
+        <NavWebComponent :loading="loading" />
+      </section>
       <div class="section-container">
         <section class="menu-section desktop">
           <img :src="diabloIcon" alt="icon" />
@@ -55,6 +60,9 @@ const dynamicTitle = computed(() => {
           </div>
         </section>
       </div>
+      <section>
+        <NavMobileComponent :loading="loading" />
+      </section>
     </div>
   </div>
 </template>

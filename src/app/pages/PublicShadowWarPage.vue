@@ -57,31 +57,20 @@ watch(() => store.currentUser.shadowWarData, (newVal) => {
 
 <template>
   <main class="red-shadow-fx">
-    <div class="div-container">
-      <AppLayout :loading="loading" :sidebar-tabs="sidebarTabs" :active-layout-tab="route.path"
-        title="Guerra Sombría">
+      <AppLayout :loading="loading" :sidebar-tabs="sidebarTabs" :active-layout-tab="route.path" title="Guerra Sombría">
         <span class="info-text">
           <p v-if="!loading">La próxima <b>Guerra Sombría</b> es el <i>{{ nextWarDate }} a las 19:30h (hora del
               servidor)</i>.
             Enfrentaremos al Clan:
-            <h4 class="clan-name">{{ enemyClanName }}</h4>
+          <h4 class="clan-name">{{ enemyClanName }}</h4>
           </p>
         </span>
         <router-view :loading="loading" />
       </AppLayout>
-    </div>
   </main>
 </template>
 
 <style scoped>
-.div-container {
-  padding: 1rem;
-  padding-top: 6.3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .info-text {
   display: flex;
   justify-content: center;

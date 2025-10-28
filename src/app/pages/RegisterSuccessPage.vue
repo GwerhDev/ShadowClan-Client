@@ -7,7 +7,7 @@ let urlLogin: string = API_URL + "/login-bnet" || "";
 </script>
 
 <template>
-  <div class="register-message-container">
+  <div class="page-message-container">
     <img src="../../assets/diabloimmortal-logo.png" alt="">
     <h1>Usuario registrado con éxito</h1>
     <p class="read-the-docs">

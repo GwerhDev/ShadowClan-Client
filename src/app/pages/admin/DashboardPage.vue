@@ -142,10 +142,8 @@ watch(() => store.currentUser.shadowWarData, (newVal) => {
 
 <style scoped>
 .div-container-denied {
-  width: 100vw;
+  width: 100%;
   height: 100%;
-  padding: 1rem;
-  padding-top: 6.3rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,8 +151,6 @@ watch(() => store.currentUser.shadowWarData, (newVal) => {
 
 .div-container {
   height: 100%;
-  padding: 1rem;
-  padding-top: 6.3rem;
   display: flex;
   align-items: center;
   justify-content: center;

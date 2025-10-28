@@ -10,7 +10,6 @@ import RegisterErrorPage from '../pages/RegisterErrorPage.vue';
 import RegisterSuccessPage from '../pages/RegisterSuccessPage.vue';
 import AlreadyRegisteredPage from '../pages/AlreadyRegisteredPage.vue';
 import TasksPage from '../pages/TasksPage.vue';
-import GalleryPage from '../pages/GalleryPage.vue';
 import SettingsPage from '../pages/user/SettingsPage.vue';
 import DashboardPage from '../pages/admin/DashboardPage.vue';
 import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
@@ -179,11 +178,6 @@ const routes: RouteRecordRaw[] = [
         meta: { taskType: 'clantasks', title: 'Tareas del Clan' }
       }
     ]
-  },
-  {
-    path: '/gallery',
-    name: 'GalleryPage',
-    component: GalleryPage
   },
 ]
 

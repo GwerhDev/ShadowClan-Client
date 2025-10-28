@@ -26,8 +26,6 @@ const sidebarTabs = [
 
 <style scoped>
 .div-container {
-  padding: 1rem;
-  padding-top: 6.3rem;
   display: flex;
   align-items: center;
   justify-content: center;

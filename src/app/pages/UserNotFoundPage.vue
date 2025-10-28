@@ -7,7 +7,7 @@ let urlSignup: string = API_URL + "/signup-bnet" || "";
 </script>
 
 <template>
-  <div class="register-message-container">
+  <div class="page-message-container">
     <img src="../../assets/diabloimmortal-logo.png" alt="">
     <h1>Usuario no registrado</h1>
     <p class="read-the-docs">

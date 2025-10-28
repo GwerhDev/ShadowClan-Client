@@ -7,11 +7,11 @@ let urlLogin: string = API_URL + "/login-bnet" || "";
 </script>
 
 <template>
-  <div class="register-message-container">
+  <div class="page-message-container">
     <img src="../../assets/diabloimmortal-logo.png" alt="">
     <h1>Ya registrado</h1>
     <p class="read-the-docs">
-      El usuario ya se encuentra registrado en nuestra plataforma. 
+      El usuario ya se encuentra registrado en nuestra plataforma.
     </p>
 
     <a class="button justify-content-center align-items-center d-flex g-1 w-100" :href="urlLogin">
@@ -34,5 +34,4 @@ let urlLogin: string = API_URL + "/login-bnet" || "";
 .button {
   margin-bottom: .5rem;
 }
-
 </style>

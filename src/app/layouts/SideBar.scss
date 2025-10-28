@@ -25,10 +25,11 @@
         gap: 1rem;
         width: 200px;
         height: 40px;
-        background-color: var(--color-primary-bg);
+        padding-inline: 1rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        background-color: var(--color-primary-bg);
 
         &:disabled {
           background-color: #7e7972;
