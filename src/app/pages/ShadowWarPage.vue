@@ -11,7 +11,7 @@ const enemyClanName = ref('');
 const loading = ref(true);
 const route = useRoute();
 
-const sidebarTabs = [
+const tabs = [
   { id: 'exalted', name: 'Sublime', icon: 'fas fa-crown', path: '/shadow-war/exalted' },
   { id: 'eminent', name: 'Eminente', icon: 'fas fa-trophy', path: '/shadow-war/eminent' },
   { id: 'famed', name: 'Célebre', icon: 'fas fa-medal', path: '/shadow-war/famed' },
@@ -57,7 +57,7 @@ watch(() => store.currentUser.shadowWarData, (newVal) => {
 
 <template>
   <main class="red-shadow-fx">
-      <AppLayout :loading="loading" :sidebar-tabs="sidebarTabs" :active-layout-tab="route.path" title="Guerra Sombría">
+      <AppLayout :loading="loading" :tabs="tabs" :active-layout-tab="route.path" title="Guerra Sombría">
         <span class="info-text">
           <p v-if="!loading">La próxima <b>Guerra Sombría</b> es el <i>{{ nextWarDate }} a las 19:30h (hora del
               servidor)</i>.

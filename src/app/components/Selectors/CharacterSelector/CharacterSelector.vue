@@ -1,14 +1,17 @@
 <style scoped lang="scss" src="./CharacterSelector.scss" />
 <script setup lang="ts">
+import { ref, Ref } from 'vue';
 import { useStore } from '../../../../middlewares/store';
-import { $d } from '../../../../functions';
+import AddCharacterModal from '../../Account/AddCharacterModal.vue';
 
 const store = useStore();
+const showModal: Ref = ref(false);
 
 function handleChange(e: Event) {
   const target = e.target as HTMLOptionElement;
   if (target.value === "create-character") {
-    $d(".container-modal-component").style.display = "flex";
+    showModal.value = true;
+    return;
 
   } else if (target.value === 'Por defecto') {
     return store.setCurrentCharacter(null);
@@ -19,11 +22,14 @@ function handleChange(e: Event) {
 </script>
 
 <template>
-  <span class="mb-1">
-    <select :value="store.currentCharacter || 'Por defecto'" :onchange="handleChange" class="" name="character-selector" id="character-selector">
-      <option v-for="character in store.currentUser?.userData?.character" :value="character._id">{{ character.name }}</option>
+  <span class="character-selector-container">
+    <select :value="store.currentCharacter || 'Por defecto'" :onchange="handleChange" class="" name="character-selector"
+      id="character-selector">
+      <option v-for="character in store.currentUser?.userData?.character" :value="character._id">{{ character.name }}
+      </option>
       <option v-if="!store.currentUser?.userData?.character.length">Por defecto</option>
-      <option value="create-character">Crear</option>
+      <option value="create-character">Vincular personaje</option>
     </select>
+    <add-character-modal v-if="showModal" @close="showModal = false" />
   </span>
 </template>

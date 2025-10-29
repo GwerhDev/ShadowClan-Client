@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '../layouts/AppLayout.vue';
-import AddCharacterModal from '../components/Settings/AddCharacterModal.vue';
 import { ref } from 'vue';
 
 const loading = ref(false); // This can be connected to a real loading state later
 
-const sidebarTabs = [
+const tabs = [
   { id: 'mytasks', name: 'Mis Tareas', icon: 'fas fa-user', path: '/tasks/my-tasks' },
   { id: 'clantasks', name: 'Clan', icon: 'fas fa-shield-alt', path: '/tasks/clan-tasks' },
   { id: 'warband', name: 'Cofradía', icon: 'fas fa-users', path: '/tasks/warband', disabled: true },
@@ -16,8 +15,7 @@ const sidebarTabs = [
 <template>
   <main class="red-shadow-fx">
     <div class="div-container">
-      <AppLayout :loading="loading" :sidebar-tabs="sidebarTabs">
-        <AddCharacterModal />
+      <AppLayout :loading="loading" :tabs="tabs">
         <router-view />
       </AppLayout>
     </div>

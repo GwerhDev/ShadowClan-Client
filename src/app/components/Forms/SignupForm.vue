@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { useStore } from '../../middlewares/store/index';
+import { useStore } from '../../../middlewares/store/index';
 import { useRouter } from 'vue-router';
 import { onMounted, computed } from 'vue';
-import { getUserToken } from '../../helpers';
-import { API_URL } from '../../middlewares/misc/const';
-import BackButton from '../utils/BackButton.vue';
+import { getUserToken } from '../../../helpers';
+import { API_URL } from '../../../middlewares/misc/const';
+import blizzIcon from '../../../assets/svg/blizz-icon.svg';
+import BackButton from '../Buttons/BackButton.vue';
 
 const store: any = useStore();
 const router: any = useRouter();
 const currentUser: any = computed(() => store.currentUser);
 
 let token: string = getUserToken() || "";
-let urlSignup: string = API_URL + "/signup-bnet" || "";
-let urlLogin: string = API_URL + "/login-bnet" || "";
+let urlSignup: string = API_URL + "/signup-bnet";
+let urlLogin: string = "/login";
 
 onMounted(() => {
   if (currentUser?.logged && token) router.push('/');
@@ -23,7 +24,7 @@ onMounted(() => {
 <template>
   <form class="signup-form">
     <a class="button" :href="urlSignup">
-      <img src="../../assets/svg/blizz-icon.svg" alt="" height="25px">
+      <img :src="blizzIcon" alt="" height="25px">
       Registrarse con Battle.net
     </a>
     <BackButton></BackButton>
@@ -34,7 +35,8 @@ onMounted(() => {
   <div class="login-form">
     <p>¿Ya estás registrado?</p>
     <a class="no-button" :href="urlLogin">
-      <img src="../../assets/svg/blizz-icon.svg" alt="" height="25px">
+      <img :src="blizzIcon"
+       alt="" height="25px">
       Iniciar sesión
     </a>
   </div>

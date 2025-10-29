@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import SignupForm from '../components/SignupForm.vue';
+import logo from "../../assets/diabloimmortal-logo.png"
+import SignupForm from "../components/Forms/SignupForm.vue";
 
 </script>
 
 <template>
   <div class="page-message-container">
-    <img src="../../assets/diabloimmortal-logo.png" alt="">
+    <img :src="logo" alt="">
     <h1 class="title">ShadowClan</h1>
     <p class="read-the-docs">
       Habla alfombra y entra.
@@ -26,5 +27,4 @@ import SignupForm from '../components/SignupForm.vue';
 .title {
   font-size: 38px;
 }
-
 </style>

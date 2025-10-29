@@ -201,9 +201,7 @@ h2 {
 
 button,
 .button {
-  width: 100%;
-  padding-top: .4rem;
-  padding-bottom: .4rem;
+  padding: .5rem;
   border-radius: 5px;
   border: 1px solid transparent;
   font-size: 1em;

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import AccursedTower from './ShadowWar.vue';
+import AccursedTower from './AccursedTower.vue';
 
 defineProps({
   loading: {

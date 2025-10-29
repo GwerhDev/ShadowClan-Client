@@ -1,9 +1,9 @@
 <template>
-  <PublicShadowWar :activeTab="{ value: 'proud', label: 'Imponente' }" :loading="loading" />
+  <ShadowWar :activeTab="{ value: 'proud', label: 'Imponente' }" :loading="loading" />
 </template>
 
 <script setup lang="ts">
-import PublicShadowWar from './PublicShadowWar.vue';
+import ShadowWar from './ShadowWar.vue';
 
 defineProps({
   loading: {

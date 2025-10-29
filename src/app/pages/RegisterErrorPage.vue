@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BackButton from '../utils/BackButton.vue';
+import BackButton from '../components/Buttons/BackButton.vue';
 
 </script>
 

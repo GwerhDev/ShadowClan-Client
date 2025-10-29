@@ -1,6 +1,6 @@
 import { environment } from "../../environment";
 
-export const API_URL: string = environment === "development" ? 'http://localhost:8080' : 'https://shadowflame-api.fly.dev';
+export const API_URL: string = environment === "development" ? 'http://localhost:8080' : 'https://shadowclan-api.fly.dev';
 
 export const classes = [
   { name: "Druida", value: "druid", image: "https://blz-contentstack-images.akamaized.net/v3/assets/blt77f4425de611b362/blt75eca7075dbe5195/6851ec39300f1cc6e7953c4b/druid_svg_1.svg" },

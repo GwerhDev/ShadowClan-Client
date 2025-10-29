@@ -35,4 +35,4 @@ const getClassImage = (className: string | undefined) => {
   </div>
 </template>
 
-<style scoped lang="scss" src="./PublicShadowWarMemberCard.scss" />
+<style scoped lang="scss" src="./AccursedTowerMemberCard.scss" />

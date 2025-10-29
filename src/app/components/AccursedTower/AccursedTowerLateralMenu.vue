@@ -1,4 +1,4 @@
-<style scoped lang="scss" src="./PublicShadowWarLateralMenu.scss" />
+<style scoped lang="scss" src="./AccursedTowerLateralMenu.scss" />
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { useStore } from '../../../middlewares/store';

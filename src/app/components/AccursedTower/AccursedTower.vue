@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watchEffect } from 'vue';
 import * as ShadowWarInterfaces from '../../../interfaces/shadowWar';
-import PublicShadowWarMemberCard from './PublicShadowWarMemberCard.vue';
+import AccursedTowerMemberCard from './AccursedTowerMemberCard.vue';
 import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';
 
@@ -94,7 +94,7 @@ const isMemberLinked = (member: ShadowWarInterfaces.Member | undefined) => {
                           <MemberCardSkeleton />
                         </template>
                         <template v-else>
-                          <PublicShadowWarMemberCard v-for="(member, index) in getPaddedMembers(match.group1.member)"
+                          <AccursedTowerMemberCard v-for="(member, index) in getPaddedMembers(match.group1.member)"
                             :key="index" :member="member" :is-linked="isMemberLinked(member)" />
                         </template>
                       </div>
@@ -106,7 +106,7 @@ const isMemberLinked = (member: ShadowWarInterfaces.Member | undefined) => {
                           <MemberCardSkeleton />
                         </template>
                         <template v-else>
-                          <PublicShadowWarMemberCard v-for="(member, index) in getPaddedMembers(match.group2.member)"
+                          <AccursedTowerMemberCard v-for="(member, index) in getPaddedMembers(match.group2.member)"
                             :key="index" :member="member" :is-linked="isMemberLinked(member)" />
                         </template>
                       </div>
@@ -122,4 +122,4 @@ const isMemberLinked = (member: ShadowWarInterfaces.Member | undefined) => {
   </div>
 </template>
 
-<style scoped lang="scss" src="./PublicShadowWar.scss" />
+<style scoped lang="scss" src="./AccursedTower.scss" />

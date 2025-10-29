@@ -36,10 +36,10 @@ function handleSettings() {
 };
 
 function handleLogout() {
-  $d('#account-menu-mobile').style.display = 'none'
   store.logout();
   router.push('/');
 };
+
 </script>
 
 <template>

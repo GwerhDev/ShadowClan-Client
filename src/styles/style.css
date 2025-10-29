@@ -194,8 +194,8 @@
 }
 
 .page-message-container {
-  max-width: 350px;
-  padding-inline: .5rem;
+  width: 100%;
+  max-width: 500px;
   min-height: 100vh;
   display: flex;
   align-items: center;

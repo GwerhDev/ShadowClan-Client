@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import AddCharacterModal from '../../components/Settings/AddCharacterModal.vue';
-import SettingsComponent from '../../components/Settings/SettingsComponent.vue';
-import AppLayout from '../../layouts/AppLayout.vue';
+import AppLayout from '../layouts/AppLayout.vue';
 
-const sidebarTabs = [
+const tabs = [
   { id: 'profile', name: 'Perfil', icon: 'fas fa-user', path: '/u/profile' },
   { id: 'clan', name: 'Clan', icon: 'fas fa-shield', path: '/u/clan' },
   { id: 'history', name: 'Historial', icon: 'fas fa-history', path: '/u/history' },
@@ -19,11 +17,10 @@ const loading = ref(true);
 <template>
   <main class="red-shadow-fx">
     <div class="div-container">
-      <AppLayout :loading="loading" :sidebar-tabs="sidebarTabs">
-        <SettingsComponent />
+      <AppLayout :loading="loading" :tabs="tabs">
+        <router-view />
       </AppLayout>
     </div>
-    <AddCharacterModal />
   </main>
 </template>
 

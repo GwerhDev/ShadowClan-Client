@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import BackButton from '../components/Buttons/BackButton.vue';
+import logo from "../../assets/diabloimmortal-logo.png";
+import LoginForm from '../components/Forms/LoginForm.vue';
 
 </script>
 
 <template>
   <div class="page-message-container">
-    <img src="../../assets/diabloimmortal-logo.png" alt="">
-    <h1>Cuenta inactiva</h1>
+    <img :src="logo" alt="">
+    <h1 class="title">ShadowClan</h1>
     <p class="read-the-docs">
-      El usuario ha sido banneado por basura. 
+      Habla alfombra y entra.
     </p>
 
-    <BackButton />
+    <LoginForm />
 
     <p class="read-the-docs">Plataforma para alfombras desarrollada por <a href="https://gwerh.nhexa.cl"
         target="_blank">Gwerh</a>.</p>
@@ -23,8 +24,7 @@ import BackButton from '../components/Buttons/BackButton.vue';
   color: #888;
 }
 
-.button {
-  margin-bottom: .5rem;
+.title {
+  font-size: 38px;
 }
-
 </style>

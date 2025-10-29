@@ -38,6 +38,14 @@
         border-right: solid 1px rgba(255, 255, 255, .15);
       }
 
+      .header-section {
+        padding-bottom: 1rem;
+
+        button {
+          padding-inline: 2rem;
+        }
+      }
+
       .content-section {
         width: 100%;
         height: 100%;

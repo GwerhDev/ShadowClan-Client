@@ -1,17 +1,24 @@
 export interface Member {
   _id: string;
-  character: string; // Added character property
-  class?: string; // Assuming class is a string
-  resonance?: number; // Assuming resonance is a number
-  whatsapp?: string; // Assuming whatsapp is a string
+  character: string;
+  class?: string;
+  whatsapp?: string;
+  resonance?: number;
+}
+
+export interface Character {
+  _id: string;
+  name: string;
+  clan?: string;
+  resonance?: number | undefined | null;
+  currentClass?: string;
 }
 
 export interface Clan {
   _id: string;
   name: string;
-  status?: 'top' | 'active' | 'ghost'; // Add status
-  members?: number; // Add members count
-  // Add other clan properties if known
+  status?: 'top' | 'active' | 'ghost';
+  members?: number;
 }
 
 export interface Match {

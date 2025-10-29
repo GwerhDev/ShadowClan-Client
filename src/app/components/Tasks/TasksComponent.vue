@@ -76,23 +76,22 @@ async function createTask() {
   <div class="container-tasks-component">
     <div class="tasks-container">
 
-      <CharacterSelector />
 
       <div class="section-container">
         <section class="todolist-section" v-if="store.currentUser.logged">
           <div class="filter-container">
+            <CharacterSelector />
             <input :value="date" type="date" @input="handleDate" v-if="store.currentUser.logged" />
           </div>
 
-          <form @submit.prevent="createTask" disabled
-            v-if="type === 'mytasks' && !store.currentUser.taskloading">
+          <form @submit.prevent="createTask" disabled v-if="type === 'mytasks' && !store.currentUser.taskloading">
             <input type="text" list="options" placeholder="Agregar una tarea a tu lista" v-model="title"
               @input="handleInput" />
 
             <datalist id="options">
               <option v-for="option of optionTodoList" :value="option"></option>
             </datalist>
-            <button class="add-button" type="submit" :disabled="isButtonDisabled">
+            <button class="add-task-button" type="submit" :disabled="isButtonDisabled">
               <p>+</p>
             </button>
           </form>

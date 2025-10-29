@@ -18,12 +18,12 @@ const shareableMessage = ref('');
 
 const route = useRoute();
 
-const sidebarTabs = [
-  { id: 'shadow-war', name: 'Guerra Sombría', icon: 'fas fa-shield', path: '/dashboard/shadow-war' },
-  { id: 'history', name: 'Historial', icon: 'fas fa-history', path: '/dashboard/history' },
-  { id: 'clans', name: 'Clanes', icon: 'fas fa-skull-crossbones', path: '/dashboard/clans' },
-  { id: 'members', name: 'Miembros', icon: 'fas fa-user-group', path: '/dashboard/members' },
-  { id: 'users', name: 'Usuarios', icon: 'fas fa-users', path: '/dashboard/users' },
+const tabs = [
+  { id: 'shadow-war', name: 'Guerra Sombría', icon: 'fas fa-shield', path: '/a/dashboard/shadow-war' },
+  { id: 'history', name: 'Historial', icon: 'fas fa-history', path: '/a/dashboard/history' },
+  { id: 'clans', name: 'Clanes', icon: 'fas fa-skull-crossbones', path: '/a/dashboard/clans' },
+  { id: 'members', name: 'Miembros', icon: 'fas fa-user-group', path: '/a/dashboard/members' },
+  { id: 'users', name: 'Usuarios', icon: 'fas fa-users', path: '/a/dashboard/users' },
 ];
 
 const prepareShareableMessage = async () => {
@@ -119,7 +119,7 @@ watch(() => store.currentUser.shadowWarData, (newVal) => {
 <template>
   <main class="red-shadow-fx" v-if="store.currentUser?.logged">
     <div class="div-container">
-      <AppLayout :logged="store.currentUser.logged" :loading="loading" :sidebar-tabs="sidebarTabs"
+      <AppLayout :logged="store.currentUser.logged" :loading="loading" :tabs="tabs"
         :active-layout-tab="route.path" title="Guerra Sombría">
         <router-view :openShareModal="openShareModalHandler" :nextWarDate="nextWarDate" :warTime="warTime"
           :enemyClanName="enemyClanName" />

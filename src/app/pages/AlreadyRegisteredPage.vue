@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { API_URL } from '../../middlewares/misc/const';
-import BackButton from '../utils/BackButton.vue';
+import BackButton from '../components/Buttons/BackButton.vue';
 
 let urlLogin: string = API_URL + "/login-bnet" || "";
 
