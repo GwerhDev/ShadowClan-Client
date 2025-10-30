@@ -1,9 +1,9 @@
-.container-lateral {
+.container-tab {
   margin: 0;
   height: 100%;
-  padding: 1rem;
   display: flex;
   justify-content: flex-start;
+  padding-inline: 1rem;
 
   ul {
     padding: 0;
@@ -20,7 +20,6 @@
 
       button {
         width: 180px;
-        height: 40px;
         background-color: var(--color-primary-bg);
         display: flex;
         align-items: center;
@@ -49,15 +48,72 @@
 }
 
 @media (max-width: 1100px) {
-  .container-lateral {
+  .container-tab {
     width: 100%;
     margin: 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+
+    .slider-nav-button {
+      padding: 0;
+      padding-inline: .3rem;
+      height: 100%;
+      background-color: var(--color-primary-bg);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 1;
+
+      .icon-button-tab {
+        font-size: .6rem;
+      }
+    
+
+      &.prev {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+      }
+
+      &.next {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+    }
 
     ul {
       gap: 0;
       width: 100%;
       display: flex;
       flex-direction: row;
+      height: 100%;
+
+      &.slider {
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        cursor: grab;
+
+        &.active {
+          cursor: grabbing;
+        }
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+
+        li {
+          scroll-snap-align: start;
+          flex: 0 0 25%;
+        }
+      }
 
       li {
         height: 100%;
@@ -67,6 +123,7 @@
           justify-content: center;
           border-radius: 0;
           width: 100%;
+          height: 100%;
           display: flex;
           flex-direction: column;
           gap: .1rem;
@@ -86,13 +143,29 @@
         }
 
         .first {
+          border: none;
           border-top-left-radius: 8px;
           border-bottom-left-radius: 8px;
         }
 
         .last {
+          border: none;
           border-top-right-radius: 8px;
           border-bottom-right-radius: 8px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 500px) {
+  .container-tab {
+    ul {
+      li {
+        button {
+          span {
+            font-size: 8px;
+          }
         }
       }
     }

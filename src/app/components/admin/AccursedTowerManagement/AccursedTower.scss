@@ -1,0 +1,50 @@
+.shadow-war-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  .title {
+    gap: .5rem;
+    width: 100%;
+    padding: .5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    i {
+      padding: .5rem;
+      border-radius: .3rem;
+      transition-duration: .4s;
+      cursor: pointer;
+      
+      &:hover {
+        color: rgb(227, 210, 168);
+        filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.245));
+      }
+    }
+  }
+
+  .info-text {
+    display: flex;
+    flex-direction: column;
+    padding-inline: 1rem;
+  }
+
+  .button-container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    margin-top: 1.5rem;
+    padding-inline: 1rem;
+  }
+
+  .copied-feedback {
+    color: #4CAF50;
+    font-weight: bold;
+    height: 1rem;
+  }
+}

@@ -19,7 +19,8 @@ const shareableMessage = ref('');
 const route = useRoute();
 
 const tabs = [
-  { id: 'shadow-war', name: 'Guerra Sombría', icon: 'fas fa-shield', path: '/a/dashboard/shadow-war' },
+  { id: 'shadow-war', name: 'Guerra', icon: 'fas fa-shield', path: '/a/dashboard/shadow-war' },
+  { id: 'accursed-tower', name: 'Torre', icon: 'fas fa-shield', path: '/a/dashboard/accursed-tower' },
   { id: 'history', name: 'Historial', icon: 'fas fa-history', path: '/a/dashboard/history' },
   { id: 'clans', name: 'Clanes', icon: 'fas fa-skull-crossbones', path: '/a/dashboard/clans' },
   { id: 'members', name: 'Miembros', icon: 'fas fa-user-group', path: '/a/dashboard/members' },

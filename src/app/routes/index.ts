@@ -12,6 +12,7 @@ import TasksPage from '../pages/TasksPage.vue';
 import UserPage from '../pages/UserPage.vue';
 import DashboardPage from '../pages/admin/DashboardPage.vue';
 import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
+import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
 import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
 import HistoryDetails from '../components/admin/HistoryManagement/HistoryDetails.vue';
 import MemberManagement from '../components/admin/MemberManagement/MemberManagement.vue';
@@ -93,6 +94,12 @@ const routes: RouteRecordRaw[] = [
             name: 'DashboardShadowWar',
             component: ShadowWarManagement,
             meta: { title: 'Guerra Sombría' },
+          },
+          {
+            path: 'accursed-tower',
+            name: 'DashboardAccursedTower',
+            component: AccursedTowerManagement,
+            meta: { title: 'Torre Maldita' },
           },
           {
             path: 'history',

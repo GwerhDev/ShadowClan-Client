@@ -73,39 +73,34 @@ async function createTask() {
 </script>
 
 <template>
-  <div class="container-tasks-component">
-    <div class="tasks-container">
+  <div class="tasks-container">
+    <div class="section-container">
+      <section class="todolist-section" v-if="store.currentUser.logged">
+        <div class="filter-container">
+          <CharacterSelector />
+          <input :value="date" type="date" @input="handleDate" v-if="store.currentUser.logged" />
+        </div>
 
+        <form @submit.prevent="createTask" disabled v-if="type === 'mytasks' && !store.currentUser.taskloading">
+          <input type="text" list="options" placeholder="Agregar una tarea a tu lista" v-model="title"
+            @input="handleInput" />
 
-      <div class="section-container">
-        <section class="todolist-section" v-if="store.currentUser.logged">
-          <div class="filter-container">
-            <CharacterSelector />
-            <input :value="date" type="date" @input="handleDate" v-if="store.currentUser.logged" />
-          </div>
-
-          <form @submit.prevent="createTask" disabled v-if="type === 'mytasks' && !store.currentUser.taskloading">
-            <input type="text" list="options" placeholder="Agregar una tarea a tu lista" v-model="title"
-              @input="handleInput" />
-
-            <datalist id="options">
-              <option v-for="option of optionTodoList" :value="option"></option>
-            </datalist>
-            <button class="add-task-button" type="submit" :disabled="isButtonDisabled">
-              <p>+</p>
-            </button>
-          </form>
-          <ul v-if="store.currentUser.task?.length && !store.currentUser.taskloading">
-            <TasksCard v-for="(item, index) in store.currentUser.task" :key="index" :todo="item" />
-          </ul>
-          <ul v-if="!store.currentUser.task?.length">{{ message }}</ul>
-          <LoaderComponent
-            v-if="(!store.currentUser.task?.length && !message.length) || store.currentUser.taskloading" />
-        </section>
-        <section v-else class="justify-content-center align-items-center d-flex g-1 w-100">
-          <DeniedAccess />
-        </section>
-      </div>
+          <datalist id="options">
+            <option v-for="option of optionTodoList" :value="option"></option>
+          </datalist>
+          <button class="add-task-button" type="submit" :disabled="isButtonDisabled">
+            <p>+</p>
+          </button>
+        </form>
+        <ul v-if="store.currentUser.task?.length && !store.currentUser.taskloading">
+          <TasksCard v-for="(item, index) in store.currentUser.task" :key="index" :todo="item" />
+        </ul>
+        <ul v-if="!store.currentUser.task?.length">{{ message }}</ul>
+        <LoaderComponent v-if="(!store.currentUser.task?.length && !message.length) || store.currentUser.taskloading" />
+      </section>
+      <section v-else class="justify-content-center align-items-center d-flex g-1 w-100">
+        <DeniedAccess />
+      </section>
     </div>
   </div>
 </template>

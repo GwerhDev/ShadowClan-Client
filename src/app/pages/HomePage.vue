@@ -5,7 +5,7 @@ import ActionButton from '../components/Buttons/ActionButton.vue';
 const router = useRouter();
 
 function apply() {
-  router.push('/shadow-war');
+  router.push('/login');
 }
 
 </script>
@@ -17,7 +17,7 @@ function apply() {
       <div class="warband pb-2">
         <h3 class="subtitle">Las Sombras reinarán</h3>
       </div>
-      <ActionButton message="Ir a Guerra Sombría" :action="apply" />
+      <ActionButton message="Ingresar" :action="apply" />
     </div>
   </main>
 </template>

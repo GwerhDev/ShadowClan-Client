@@ -57,9 +57,9 @@ watch(() => store.currentUser.shadowWarData, (newVal) => {
 
 <template>
   <main class="red-shadow-fx">
-      <AppLayout :loading="loading" :tabs="tabs" :active-layout-tab="route.path" title="Guerra Sombría">
+      <AppLayout :loading="loading" :tabs="tabs" :active-layout-tab="route.path" title="Torre Maldita">
         <span class="info-text">
-          <p v-if="!loading">La próxima <b>Guerra de Torre Maldita</b> es el <i>{{ nextWarDate }} a las 19:30h (hora del
+          <p v-if="!loading">La próxima <b>Guerra de Torre Maldita</b> es el <i>{{ nextWarDate }} a las 20:00h (hora del
               servidor)</i>.
             Enfrentaremos al Clan:
           <h4 class="clan-name">{{ enemyClanName }}</h4>

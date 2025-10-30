@@ -30,33 +30,25 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <div class="container-settings-component">
-    <div class="settings-container">
-      <span class="mb-3 mt-1">
-        <ul class="d-flex col g-1 w-100">
-          <h3 class="mb-1">Datos de la cuenta</h3>
-          <LabeledInput disabled id="battletag" label="BattleTag" :modelValue="store.currentUser?.userData?.battletag" />
-          <LabeledInput :disabled="!editionActive" id="telefono" label="Teléfono" :modelValue="store.currentUser?.userData?.number" />
+  <div class="settings-container">
+    <h3 class="mb-1">Datos de la cuenta</h3>
+    <LabeledInput disabled id="battletag" label="BattleTag" :modelValue="store.currentUser?.userData?.battletag" />
+    <LabeledInput :disabled="!editionActive" id="telefono" label="Teléfono"
+      :modelValue="store.currentUser?.userData?.number" />
 
-          <h3 class="mt-3">Tus personajes</h3>
-          <span>
-            <ul class="d-flex col g-1 w-100">
-              <li class="character-container"
-                v-for="(character, index) in store.currentUser?.userData?.character as any" :key="index">
-                <CharacterCard :character="character" />
-              </li>
-              <button @click="handleOpenModal"
-                class="button justify-content-center align-items-center d-flex g-1 w-100">
-                Agregar
-              </button>
-            </ul>
-          </span>
-          <button class="logout-button" @click="handleLogout">
-            Cerrar sesión
-          </button>
-        </ul>
-      </span>
-      <add-character-modal v-if="showModal" @close="showModal = false" />
-    </div>
+    <h3 class="mt-3">Tus personajes</h3>
+    <ul>
+      <li class="character-container" v-for="(character, index) in store.currentUser?.userData?.character as any"
+        :key="index">
+        <CharacterCard :character="character" />
+      </li>
+      <button @click="handleOpenModal" class="button justify-content-center align-items-center d-flex g-1 w-100">
+        Agregar
+      </button>
+      <button class="logout-button" @click="handleLogout">
+        Cerrar sesión
+      </button>
+    </ul>
+    <add-character-modal v-if="showModal" @close="showModal = false" />
   </div>
 </template>
