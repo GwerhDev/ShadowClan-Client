@@ -29,7 +29,8 @@
     border: solid 1px var(--element-color-primary);
 
     &:disabled,
-    &:focus:disabled {
+    &:focus:disabled,
+    &:active:disabled {
       padding: 1rem;
       padding-inline: 0;
       margin: 0;

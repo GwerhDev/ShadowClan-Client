@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--nav-color-primary);
-  border-top: solid 1px var(--element-color-primary-hover) ;
+  border-top: solid 1px var(--element-color-primary-hover);
 
   nav {
     width: 100%;
@@ -15,21 +15,11 @@
 
     .section-container {
       width: 100%;
-      height: 70px;
       border-radius: 7px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: space-around;
-
-      .logo-container {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
 
       .nav-menu-container {
         width: 100%;
@@ -39,19 +29,34 @@
       .dashboard-container {
         padding-right: .8rem;
       }
+
       .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        color: #fff;
-        font-size: .7rem;
         gap: 5px;
+        width: 100%;
+        padding: .5rem;
+        font-size: .7rem;
+        display: flex;
+        color: #fff;
+        align-items: center;
+        flex-direction: column;
+        text-decoration: none;
+        justify-content: center;
+        border-top: 3px solid transparent;
+        transition: all 0.3s ease-in-out;
 
         i {
           font-size: 1.2rem;
         }
+
+        &:hover {
+          color: #e3d2a8;
+        }
+      }
+
+      .router-link-active {
+        color: #e3d2a8;
+        filter: drop-shadow(0 0 4px #ff00003e);
+        border-top: 3px solid var(--color-primary);
       }
     }
   }

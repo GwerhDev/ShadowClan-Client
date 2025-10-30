@@ -38,16 +38,13 @@ function styleActive(path: string) {
   <div class="container-lateral">
     <ul>
       <li v-for="(tab, index) in tabs" :key="tab.id">
-        <button
-          :title="tab.name"
+        <button :title="tab.name"
           :class="{ 'first': index === 0, 'last': index === tabs.length - 1, 'disabled': tab.disabled }"
-          @click="handleType(tab)"
-          :style="styleActive(tab.path)"
-          :disabled="tab.disabled"
-        >
+          @click="handleType(tab)" :style="styleActive(tab.path)" :disabled="tab.disabled">
           <i :class="tab.icon"></i>
           <span>{{ tab.name }}</span>
-          <small v-if="store.currentUser.userBattleInfo.some(b => b.category === tab.id)"><i class="fas fa-user-shield user-battle-indicator"></i></small>
+          <small v-if="store.currentUser.userBattleInfo.some(b => b.category === tab.id)"><i
+              class="fas fa-user-shield user-battle-indicator"></i></small>
           <span v-else></span>
         </button>
       </li>

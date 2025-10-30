@@ -1,7 +1,10 @@
 <style scoped lang="scss" src="./NavComponent.scss" />
 <script setup lang="ts">
+import { useStore } from '../../middlewares/store';
+
 
 defineProps(["loading"]);
+const store: any = useStore();
 
 </script>
 
@@ -10,8 +13,8 @@ defineProps(["loading"]);
     <nav class="nav-web">
       <div class="section-container">
         <router-link to="/" class="nav-item">
-          <i class="fas fa-user"></i>
-          <small>Cuenta</small>
+          <i class="fas fa-users"></i>
+          <small>Social</small>
         </router-link>
         <router-link to="/shadow-war" class="nav-item">
           <i class="fas fa-khanda"></i>
@@ -24,6 +27,12 @@ defineProps(["loading"]);
         <router-link to="/tasks" class="nav-item">
           <i class="fas fa-tasks"></i>
           <small>Mis Tareas</small>
+        </router-link>
+        <router-link
+          v-if="store.currentUser.userData?.role === 'admin' || store.currentUser.userData?.role === 'clan-leader' || store.currentUser.userData?.role === 'officer'"
+          to="/a/dashboard" class="nav-item">
+          <i class="fas fa-user-lock"></i>
+          <small>Dashboard</small>
         </router-link>
       </div>
     </nav>

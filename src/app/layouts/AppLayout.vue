@@ -4,13 +4,12 @@ import { useStore } from '../../middlewares/store';
 import SideBar from './SideBar.vue';
 import diabloIcon from "../../assets/svg/diablo-icon.svg";
 import TabBar from './TabBar.vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { computed } from 'vue';
 import NavComponent from '../components/NavComponent.vue';
 
 const store: any = useStore();
 const route = useRoute();
-const router = useRouter();
 
 defineProps({
   loading: {
@@ -26,16 +25,10 @@ defineProps({
   }>,
 });
 
-const handleDashboard = () => {
-  router.push('/a/dashboard');
-};
-
 const dynamicTitle = computed(() => {
   if (route.meta.title) {
     return route.meta.title;
   }
-  // Fallback to route name if meta.title is not defined
-  return route.name ? String(route.name) : 'Dashboard';
 });
 </script>
 
@@ -54,8 +47,6 @@ const dynamicTitle = computed(() => {
               <img :src="diabloIcon" alt="icon" />
               <h1>{{ dynamicTitle }}</h1>
             </span>
-            <button @click="handleDashboard"
-              v-if="store.currentUser.userData?.role === 'admin' || store.currentUser.userData?.role === 'clan-leader' || store.currentUser.userData?.role === 'officer'">Dashboard</button>
           </div>
           <section class="menu-section mobile" v-if="tabs">
             <TabBar :logged="store.currentUser.logged" :tabs="tabs" />
