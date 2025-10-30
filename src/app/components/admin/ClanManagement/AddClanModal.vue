@@ -1,16 +1,14 @@
-<style scoped lang="scss" src="./AddEnemyClanModal.scss" />
+<style scoped lang="scss" src="./AddClanModal.scss" />
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { useStore } from '../../../../middlewares/store';
+import LabeledInput from '../../Inputs/LabeledInput.vue';
 
 const emit = defineEmits(['close', 'clanCreated']);
 
 const store: any = useStore();
 const clanName = ref('');
-const clanStatus = ref('active'); // Default status
-const clanMembers = ref(0); // Default members
-
 const isClanNameEmpty = computed(() => clanName.value.trim() === '');
 
 const handleCloseModal = () => {
@@ -21,8 +19,6 @@ const handleSubmit = async () => {
   if (clanName.value.trim()) {
     const newClan = {
       name: clanName.value.trim(),
-      status: clanStatus.value,
-      members: clanMembers.value,
     };
     await store.handleCreateClan(newClan);
     emit('clanCreated');
@@ -35,22 +31,7 @@ const handleSubmit = async () => {
   <CustomModal title="Crear nuevo Clan" @close="$emit('close')">
     <form @submit.prevent="handleSubmit">
       <ul class="d-flex col g-1">
-        <span class="d-flex g-1">
-          <label for="clanName">Nombre del Clan:</label>
-          <input type="text" id="clanName" v-model="clanName" required>
-        </span>
-        <span class="d-flex g-1">
-          <label for="clanStatus">Estado:</label>
-          <select id="clanStatus" v-model="clanStatus" required>
-            <option value="top">Top</option>
-            <option value="active">Activo</option>
-            <option value="ghost">Fantasma</option>
-          </select>
-        </span>
-        <span class="d-flex g-1">
-          <label for="clanMembers">Miembros:</label>
-          <input type="number" id="clanMembers" v-model.number="clanMembers" min="0" required>
-        </span>
+        <LabeledInput label="Nombre del Clan" id="name" v-model="clanName" required />
         <button type="submit" :disabled="isClanNameEmpty"
           class="submit-button button justify-content-center align-items-center d-flex g-1 w-100">Crear Clan</button>
       </ul>

@@ -1,4 +1,4 @@
-<style scoped lang="scss" src="./EnemyClanListCard.scss" />
+<style scoped lang="scss" src="./ClanListCard.scss" />
 <script setup lang="ts">
 import { useStore } from '../../../../middlewares/store';
 import { Ref, onMounted, ref } from 'vue';
@@ -100,7 +100,7 @@ function handleDelete() {
       <p>{{ clan.status }}</p>
     </span>
     <span>
-      <p>{{ clan.members }}</p>
+      <p>{{ clan.members.length }}</p>
     </span>
     <span>
       <ul class="buttons-container">

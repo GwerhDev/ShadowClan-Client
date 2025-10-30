@@ -13,7 +13,7 @@ const props = defineProps<{
   label?: string;
 }>();
 
-const emit = defineEmits(['update:modelValue', 'select']);
+const emit = defineEmits(['update:modelValue', 'select', 'clear']);
 
 const searchQuery = ref('');
 const showSuggestions = ref(false);
@@ -80,6 +80,7 @@ const handleInputChange = () => {
 // Clear the current selection
 const clearSelection = () => {
   emit('update:modelValue', '');
+  emit('clear');
   internalSelectedName.value = '';
   searchQuery.value = '';
   isSelected.value = false;
@@ -97,34 +98,27 @@ const inputValue = computed({
 </script>
 
 <template>
-  <div class="search-selector-container">
-    <label v-if="label"><h3>{{ label }}</h3></label>
-    <div class="input-wrapper">
-      <input
-        type="text"
-        v-model="inputValue"
-        :placeholder="placeholder"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        @input="handleInputChange"
-        :readonly="isSelected"
-      />
-      <button v-if="isSelected" @click="clearSelection" class="clear-button">
-        <i class="fas fa-exchange"></i>
-      </button>
-    </div>
-    <div v-if="showSuggestions && filteredOptions.length" class="suggestions-dropdown">
-      <div
-        v-for="option in filteredOptions"
-        :key="option._id"
-        @mousedown.prevent="selectOption(option)"
-        class="suggestion-item"
-      >
-        {{ option.name }}
+  <div class="search-selector-outter-container">
+    <div class="search-selector-container">
+      <label v-if="label">
+        {{ label }}
+      </label>
+      <div class="input-wrapper">
+        <input type="text" v-model="inputValue" :placeholder="placeholder" @focus="handleFocus" @blur="handleBlur"
+          @input="handleInputChange" :readonly="isSelected" />
+        <button title="Cambiar clan" v-if="isSelected" @click="clearSelection" class="clear-button">
+          <i class="fas fa-exchange"></i>
+        </button>
       </div>
-    </div>
-    <div v-else-if="showSuggestions && !filteredOptions.length && searchQuery" class="suggestions-dropdown">
-      No se encontraron resultados.
+      <div v-if="showSuggestions && filteredOptions.length" class="suggestions-dropdown">
+        <div v-for="option in filteredOptions" :key="option._id" @mousedown.prevent="selectOption(option)"
+          class="suggestion-item">
+          {{ option.name }}
+        </div>
+      </div>
+      <div v-else-if="showSuggestions && !filteredOptions.length && searchQuery" class="suggestions-dropdown">
+        No se encontraron resultados.
+      </div>
     </div>
   </div>
 </template>

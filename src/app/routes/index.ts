@@ -17,7 +17,7 @@ import HistoryManagement from '../components/admin/HistoryManagement/HistoryMana
 import HistoryDetails from '../components/admin/HistoryManagement/HistoryDetails.vue';
 import MemberManagement from '../components/admin/MemberManagement/MemberManagement.vue';
 import UserManagement from '../components/admin/UserManagement/UserManagement.vue';
-import EnemyClanManagement from '../components/admin/EnemyClanManagement/EnemyClanManagement.vue';
+import ClanManagement from '../components/admin/ClanManagement/ClanManagement.vue';
 import ShadowWarPage from '../pages/ShadowWarPage.vue';
 import ExaltedShadowWar from '../components/ShadowWar/ExaltedShadowWar.vue';
 import EminentShadowWar from '../components/ShadowWar/EminentShadowWar.vue';
@@ -119,7 +119,7 @@ const routes: RouteRecordRaw[] = [
           {
             path: 'clans',
             name: 'DashboardClans',
-            component: EnemyClanManagement,
+            component: ClanManagement,
             meta: { title: 'Clanes' },
           },
           {

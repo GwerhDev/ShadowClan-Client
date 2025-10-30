@@ -1,10 +1,10 @@
-<style scoped lang="scss" src="./EnemyClanManagement.scss" />
+<style scoped lang="scss" src="./ClanManagement.scss" />
 <script setup lang="ts">
 import { useStore } from '../../../../middlewares/store';
 import { computed, onMounted, ref } from 'vue';
 import TableComponent from '../../Tables/TableComponent.vue';
-import EnemyClanListCard from './EnemyClanListCard.vue';
-import AddEnemyClanModal from './AddEnemyClanModal.vue';
+import ClanListCard from './ClanListCard.vue';
+import AddClanModal from './AddClanModal.vue';
 
 const store: any = useStore();
 const showModal = ref(false);
@@ -33,7 +33,7 @@ const navItems = ['nombre', 'status', 'members', 'acciones'];
     <ul v-if="!loading && clans">
       <TableComponent :navItems="navItems">
         <li v-for="clan in clans" :key="clan._id">
-          <EnemyClanListCard :clan="clan"></EnemyClanListCard>
+          <ClanListCard :clan="clan"></ClanListCard>
         </li>
       </TableComponent>
     </ul>
@@ -49,6 +49,6 @@ const navItems = ['nombre', 'status', 'members', 'acciones'];
     </div>
     <p v-else>No hay clanes disponibles.</p>
 
-    <AddEnemyClanModal v-if="showModal" @close="showModal = false" />
+    <AddClanModal v-if="showModal" @close="showModal = false" />
   </div>
 </template>

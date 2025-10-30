@@ -1,0 +1,12 @@
+.character-selector-container {
+  width: 100%;
+
+  select {
+    width: 100%;
+    text-align: center;
+
+    option {
+      text-align: start;
+    }
+  }
+}
