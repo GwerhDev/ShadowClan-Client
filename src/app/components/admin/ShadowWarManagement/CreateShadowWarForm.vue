@@ -68,7 +68,8 @@ const confirmedMemberIds = computed(() => {
 });
 
 onMounted(async () => {
-  clans.value = await getClans();
+  const fetchedClans = await getClans();
+  clans.value = fetchedClans.clans;
   const fetchedMembers = await getMembers();
   members.value = fetchedMembers;
 
