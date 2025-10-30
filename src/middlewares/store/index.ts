@@ -277,7 +277,6 @@ export const useStore = defineStore('store', {
     async handleCreateCharacter(formData: any) {
       try {
         const response: any = await createCharacter(formData);
-        console.log(response)
         this.currentUser.userData.character = response?.character;
         return response;
       } catch (error) {

@@ -15,7 +15,7 @@
   label {
     margin: 0;
     padding: 0;
-    padding-inline: 1rem;
+    padding-inline: .5rem;
     text-align: start;
     font-size: smaller;
     font-weight: 800;
@@ -33,6 +33,7 @@
     width: 100%;
     background-color: transparent;
     transition: .4s;
+    padding-inline: .5rem;
   }
 
   .clear-button {
