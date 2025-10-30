@@ -10,6 +10,7 @@
   line-height: 1.5;
   font-weight: 400;
 
+  --color-app-white: #e6e3da;
   --color-primary-bg: #15171E;
   --color-primary-bg-transparency: #15171ec9;
   --color-secondary-bg: #1c1e26;
@@ -23,7 +24,7 @@
   --element-color-primary-hover: #373444f2;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: var(--color-app-white);
   background: var(--color-primary-bg);
 
   font-synthesis: none;
@@ -111,7 +112,7 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--color-app-white);
 
   &:focus {
     outline: none;
@@ -209,7 +210,7 @@ button,
   font-family: inherit;
   background-color: var(--color-primary);
   border: solid 2px transparent;
-  color: white;
+  color: var(--color-app-white);
   cursor: pointer;
   transition: border-color 0.25s;
 }

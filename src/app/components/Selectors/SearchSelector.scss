@@ -11,7 +11,7 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: bold;
-    color: white;
+    color: var(--color-app-white);
   }
 
   .input-wrapper {
@@ -43,7 +43,7 @@
     transition: color 0.2s ease;
 
     &:hover {
-      color: white;
+      color: var(--color-app-white);
     }
   }
 }
@@ -67,7 +67,7 @@
 .suggestion-item {
   padding: 0.5rem 1rem;
   cursor: pointer;
-  color: white;
+  color: var(--color-app-white);
 
   &:hover {
     background-color: #007bff;

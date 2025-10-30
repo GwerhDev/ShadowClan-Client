@@ -11,7 +11,7 @@
     height: 100%;
     background-color: var(--color-secondary-bg-transparency);
     backdrop-filter: blur(10px);
-    color: white;
+    color: var(--color-app-white);
     display: flex;
     overflow: hidden;
     flex-direction: column;

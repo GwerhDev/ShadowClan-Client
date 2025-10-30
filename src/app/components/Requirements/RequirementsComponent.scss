@@ -16,7 +16,7 @@
     backdrop-filter: blur(10px);
     max-width: 2500px;
     border-radius: 5px;
-    color: white;
+    color: var(--color-app-white);
     box-shadow: 0 0 4px rgba(255, 255, 255, .15);
     display: flex;
     flex-direction: column;

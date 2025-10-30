@@ -175,7 +175,7 @@ watch(() => store.currentUser.shadowWarData, (newVal) => {
 
 .copy-button {
   background-color: #4CAF50;
-  color: white;
+  color: var(--color-app-white);
   padding: 10px 15px;
   border: none;
   border-radius: 5px;

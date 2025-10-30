@@ -1,7 +1,7 @@
 .tasks-container {
   padding: 1rem;
   border-radius: 5px;
-  color: white;
+  color: var(--color-app-white);
   overflow-y: auto;
 
   span {
@@ -19,7 +19,7 @@
       width: 100%;
       background-color: transparent;
       border: none;
-      color: white;
+      color: var(--color-app-white);
       font-size: 16px;
       border-bottom: solid 1px rgba(255, 255, 255, .15);
 

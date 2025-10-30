@@ -33,7 +33,7 @@
   }
 
   .secondary-button {
-    background-color: white;
+    background-color: var(--color-app-white);
     color: black;
     width: 100%;
   }
@@ -91,7 +91,7 @@
     width: 100%;
 
     .slider-arrow {
-      color: white;
+      color: var(--color-app-white);
       border: none;
       cursor: pointer;
       transform: translateY(-50%);

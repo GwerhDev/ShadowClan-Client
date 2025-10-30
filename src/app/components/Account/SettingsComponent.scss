@@ -1,7 +1,7 @@
 .settings-container {
   gap: .5rem;
   border-radius: 5px;
-  color: white;
+  color: var(--color-app-white);
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -18,5 +18,5 @@
 .logout-button {
   width: 100%;
   color: black;
-  background-color: white;
+  background-color: var(--color-app-white);
 }
