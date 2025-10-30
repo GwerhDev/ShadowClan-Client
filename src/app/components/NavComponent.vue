@@ -12,23 +12,23 @@ const store: any = useStore();
   <div class="nav-container">
     <nav class="nav-web">
       <div class="section-container">
-        <router-link to="/" class="nav-item">
+        <router-link title="Social" to="/" class="nav-item">
           <i class="fas fa-users"></i>
           <small>Social</small>
         </router-link>
-        <router-link to="/shadow-war" class="nav-item">
+        <router-link title="Guerra Sombría" to="/shadow-war" class="nav-item">
           <i class="fas fa-khanda"></i>
           <small>Guerra</small>
         </router-link>
-        <router-link to="/accursed-tower" class="nav-item">
+        <router-link title="Torre Maldita" to="/accursed-tower" class="nav-item">
           <i class="fas fa-chess-rook"></i>
           <small>Torre</small>
         </router-link>
-        <router-link to="/tasks" class="nav-item">
+        <router-link title="Mis Tareas" to="/tasks" class="nav-item">
           <i class="fas fa-tasks"></i>
-          <small>Mis Tareas</small>
+          <small>Tareas</small>
         </router-link>
-        <router-link
+        <router-link title="Dashboard"
           v-if="store.currentUser.userData?.role === 'admin' || store.currentUser.userData?.role === 'clan-leader' || store.currentUser.userData?.role === 'officer'"
           to="/a/dashboard" class="nav-item">
           <i class="fas fa-user-lock"></i>

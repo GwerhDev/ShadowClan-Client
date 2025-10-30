@@ -4,7 +4,7 @@ import AppLayout from '../layouts/AppLayout.vue';
 
 const tabs = [
   { id: 'profile', name: 'Perfil', icon: 'fas fa-user', path: '/u/profile' },
-  { id: 'clan', name: 'Clan', icon: 'fas fa-shield', path: '/u/clan' },
+  { id: 'clan', name: 'Clan', icon: 'fas fa-shield-alt', path: '/u/clan' },
   { id: 'history', name: 'Historial', icon: 'fas fa-history', path: '/u/history' },
   { id: 'settings', name: 'Ajustes', icon: 'fas fa-gear', path: '/u/settings' },
 ];
@@ -12,7 +12,6 @@ const tabs = [
 const loading = ref(true);
 
 </script>
-
 
 <template>
   <main class="red-shadow-fx">

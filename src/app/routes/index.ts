@@ -8,7 +8,7 @@ import UserNotFoundPage from '../pages/UserNotFoundPage.vue';
 import RegisterErrorPage from '../pages/RegisterErrorPage.vue';
 import RegisterSuccessPage from '../pages/RegisterSuccessPage.vue';
 import AlreadyRegisteredPage from '../pages/AlreadyRegisteredPage.vue';
-import TasksPage from '../pages/TasksPage.vue';
+import TaskPage from '../pages/TaskPage.vue';
 import UserPage from '../pages/UserPage.vue';
 import DashboardPage from '../pages/admin/DashboardPage.vue';
 import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
@@ -223,8 +223,8 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/tasks',
-    name: 'TasksPage',
-    component: TasksPage,
+    name: 'TaskPage',
+    component: TaskPage,
     redirect: '/tasks/my-tasks',
     children: [
       {
