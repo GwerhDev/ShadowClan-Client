@@ -12,10 +12,9 @@ const loading = ref(true);
 const route = useRoute();
 
 const tabs = [
-  { id: 'exalted', name: 'Sublime', icon: 'fas fa-crown', path: '/shadow-war/exalted' },
-  { id: 'eminent', name: 'Eminente', icon: 'fas fa-trophy', path: '/shadow-war/eminent' },
-  { id: 'famed', name: 'Célebre', icon: 'fas fa-medal', path: '/shadow-war/famed' },
-  { id: 'proud', name: 'Imponente', icon: 'fas fa-fist-raised', path: '/shadow-war/proud' },
+  { id: '1', name: 'Torre 1', icon: 'fas fa-chess-rook', path: '/accursed-tower/1', disabled: true },
+  { id: '2', name: 'Torre 2', icon: 'fas fa-chess-rook', path: '/accursed-tower/2', disabled: true },
+  { id: '3', name: 'Torre 3', icon: 'fas fa-chess-rook', path: '/accursed-tower/3', disabled: true },
 ];
 
 onMounted(async () => {

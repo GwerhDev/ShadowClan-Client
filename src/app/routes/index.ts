@@ -30,6 +30,7 @@ import HistoryComponent from '../components/Account/HistoryComponent.vue';
 import SettingsComponent from '../components/Account/SettingsComponent.vue';
 import AccursedTowerPage from '../pages/AccursedTowerPage.vue';
 import LoginPage from '../pages/LoginPage.vue';
+import AccursedTower from '../components/AccursedTower/AccursedTower.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -68,12 +69,12 @@ const routes: RouteRecordRaw[] = [
     path: '/accursed-tower',
     name: 'AccursedTower',
     component: AccursedTowerPage,
-    redirect: '/accursed-tower/exalted',
+    redirect: '/accursed-tower/1',
     children: [
       {
-        path: 'exalted',
+        path: ':accursedtower_id',
         name: 'Tower',
-        component: ExaltedShadowWar,
+        component: AccursedTower,
         meta: { title: 'Torre Maldita' },
       },
     ],
