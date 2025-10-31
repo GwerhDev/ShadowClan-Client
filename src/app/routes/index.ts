@@ -1,36 +1,33 @@
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
-import AuthPage from '../pages/AuthPage.vue';
-import SignupPage from '../pages/SignupPage.vue';
+import DashboardPage from '../pages/admin/DashboardPage.vue';
+import UserManagement from '../components/admin/UserManagement/UserManagement.vue';
+import ClanManagement from '../components/admin/ClanManagement/ClanManagement.vue';
+import HistoryDetails from '../components/admin/HistoryManagement/HistoryDetails.vue';
+import MemberManagement from '../components/admin/MemberManagement/MemberManagement.vue';
+import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
+import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
+import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
+import TaskPage from '../pages/TaskPage.vue';
+import UserPage from '../pages/UserPage.vue';
+import ShadowWarPage from '../pages/ShadowWarPage.vue';
 import LoginErrorPage from '../pages/LoginErrorPage.vue';
 import UserPendingPage from '../pages/UserPendingPage.vue';
 import UserInactivePage from '../pages/UserInactivePage.vue';
 import UserNotFoundPage from '../pages/UserNotFoundPage.vue';
+import AccursedTowerPage from '../pages/AccursedTowerPage.vue';
 import RegisterErrorPage from '../pages/RegisterErrorPage.vue';
 import RegisterSuccessPage from '../pages/RegisterSuccessPage.vue';
 import AlreadyRegisteredPage from '../pages/AlreadyRegisteredPage.vue';
-import TaskPage from '../pages/TaskPage.vue';
-import UserPage from '../pages/UserPage.vue';
-import DashboardPage from '../pages/admin/DashboardPage.vue';
-import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
-import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
-import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
-import HistoryDetails from '../components/admin/HistoryManagement/HistoryDetails.vue';
-import MemberManagement from '../components/admin/MemberManagement/MemberManagement.vue';
-import UserManagement from '../components/admin/UserManagement/UserManagement.vue';
-import ClanManagement from '../components/admin/ClanManagement/ClanManagement.vue';
-import ShadowWarPage from '../pages/ShadowWarPage.vue';
-import ExaltedShadowWar from '../components/ShadowWar/ExaltedShadowWar.vue';
-import EminentShadowWar from '../components/ShadowWar/EminentShadowWar.vue';
+import ClanComponent from '../components/Account/ClanComponent.vue';
+import TasksComponent from '../components/Tasks/TasksComponent.vue';
 import FamedShadowWar from '../components/ShadowWar/FamedShadowWar.vue';
 import ProudShadowWar from '../components/ShadowWar/ProudShadowWar.vue';
-import TasksComponent from '../components/Tasks/TasksComponent.vue';
-import ProfileComponent from '../components/Account/ProfileComponent.vue';
-import ClanComponent from '../components/Account/ClanComponent.vue';
-import HistoryComponent from '../components/Account/HistoryComponent.vue';
-import SettingsComponent from '../components/Account/SettingsComponent.vue';
-import AccursedTowerPage from '../pages/AccursedTowerPage.vue';
-import LoginPage from '../pages/LoginPage.vue';
 import AccursedTower from '../components/AccursedTower/AccursedTower.vue';
+import ProfileComponent from '../components/Account/ProfileComponent.vue';
+import HistoryComponent from '../components/Account/HistoryComponent.vue';
+import ExaltedShadowWar from '../components/ShadowWar/ExaltedShadowWar.vue';
+import EminentShadowWar from '../components/ShadowWar/EminentShadowWar.vue';
+import SettingsComponent from '../components/Account/SettingsComponent.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -172,16 +169,6 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
-    path: '/login',
-    name: 'LoginPage',
-    component: LoginPage
-  },
-  {
-    path: '/signup',
-    name: 'SignupPage',
-    component: SignupPage
-  },
-  {
     path: '/signup/already-registered',
     name: 'AlreadyRegisteredPage',
     component: AlreadyRegisteredPage
@@ -215,11 +202,6 @@ const routes: RouteRecordRaw[] = [
     path: '/signup/register-error',
     name: 'RegisterErrorPage',
     component: RegisterErrorPage
-  },
-  {
-    path: '/auth/:token',
-    name: 'AuthPage',
-    component: AuthPage
   },
   {
     path: '/tasks',

@@ -1,15 +1,15 @@
 <script setup lang="ts">
+import SplashComponent from './app/components/SplashComponent.vue';
 import { useStore } from './middlewares/store/index';
 import { Ref, ref, onMounted } from 'vue';
 
 const store: any = useStore();
-const token: any = localStorage.getItem('userToken');
 const loading: Ref = ref(false);
 
 onMounted(async () => {
   try {
     loading.value = true;
-    await store.handleUserData(token);
+    await store.handleUserData();
     loading.value = false;
 
   } catch (error) {
@@ -20,5 +20,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  <router-view />
+  <SplashComponent v-if="loading" />
+  <router-view v-else />
 </template>
