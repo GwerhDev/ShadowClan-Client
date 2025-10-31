@@ -6,6 +6,7 @@
   border-top-right-radius: 8px;
   background-color: var(--nav-color-primary);
   border-top: solid 1px var(--element-color-primary-hover);
+  backdrop-filter: blur(10px);
 
   nav {
     width: 100%;
@@ -59,6 +60,23 @@
         color: #e3d2a8;
         filter: drop-shadow(0 0 4px #ff00003e);
         border-top: 3px solid var(--color-primary);
+      }
+    }
+  }
+}
+
+@media (max-width: 1100px) {
+  .nav-container {
+    position: fixed;
+    bottom: 0;
+
+    nav {
+
+      .section-container {
+
+        .nav-item {
+          padding-bottom: 2rem;
+        }
       }
     }
   }

@@ -7,27 +7,24 @@ import MemberManagement from '../components/admin/MemberManagement/MemberManagem
 import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
 import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
 import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
-import TaskPage from '../pages/TaskPage.vue';
+
 import UserPage from '../pages/UserPage.vue';
-import ShadowWarPage from '../pages/ShadowWarPage.vue';
-import LoginErrorPage from '../pages/LoginErrorPage.vue';
-import UserPendingPage from '../pages/UserPendingPage.vue';
-import UserInactivePage from '../pages/UserInactivePage.vue';
-import UserNotFoundPage from '../pages/UserNotFoundPage.vue';
-import AccursedTowerPage from '../pages/AccursedTowerPage.vue';
-import RegisterErrorPage from '../pages/RegisterErrorPage.vue';
-import RegisterSuccessPage from '../pages/RegisterSuccessPage.vue';
-import AlreadyRegisteredPage from '../pages/AlreadyRegisteredPage.vue';
 import ClanComponent from '../components/Account/ClanComponent.vue';
-import TasksComponent from '../components/Tasks/TasksComponent.vue';
-import FamedShadowWar from '../components/ShadowWar/FamedShadowWar.vue';
-import ProudShadowWar from '../components/ShadowWar/ProudShadowWar.vue';
-import AccursedTower from '../components/AccursedTower/AccursedTower.vue';
 import ProfileComponent from '../components/Account/ProfileComponent.vue';
 import HistoryComponent from '../components/Account/HistoryComponent.vue';
+import SettingsComponent from '../components/Account/SettingsComponent.vue';
+
+import ShadowWarPage from '../pages/ShadowWarPage.vue';
+import FamedShadowWar from '../components/ShadowWar/FamedShadowWar.vue';
+import ProudShadowWar from '../components/ShadowWar/ProudShadowWar.vue';
 import ExaltedShadowWar from '../components/ShadowWar/ExaltedShadowWar.vue';
 import EminentShadowWar from '../components/ShadowWar/EminentShadowWar.vue';
-import SettingsComponent from '../components/Account/SettingsComponent.vue';
+
+import AccursedTowerPage from '../pages/AccursedTowerPage.vue';
+import AccursedTower from '../components/AccursedTower/AccursedTower.vue';
+
+import TaskPage from '../pages/TaskPage.vue';
+import TasksComponent from '../components/Tasks/TasksComponent.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -167,41 +164,6 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Ajustes' },
       }
     ]
-  },
-  {
-    path: '/signup/already-registered',
-    name: 'AlreadyRegisteredPage',
-    component: AlreadyRegisteredPage
-  },
-  {
-    path: '/signup/register-success',
-    name: 'RegisterSuccessPage',
-    component: RegisterSuccessPage
-  },
-  {
-    path: '/login/user-not-found',
-    name: 'UserNotFoundPage',
-    component: UserNotFoundPage
-  },
-  {
-    path: '/login/user-pending-approve',
-    name: 'UserPendingPage',
-    component: UserPendingPage
-  },
-  {
-    path: '/login/user-inactive',
-    name: 'UserInactivePage',
-    component: UserInactivePage
-  },
-  {
-    path: '/login/login-error',
-    name: 'LoginErrorPage',
-    component: LoginErrorPage
-  },
-  {
-    path: '/signup/register-error',
-    name: 'RegisterErrorPage',
-    component: RegisterErrorPage
   },
   {
     path: '/tasks',
