@@ -32,7 +32,7 @@ export interface storeState {
     clans: any,
     currentShadowWar: ShadowWar | null;
   },
-  currentCharacter: CharacterInterface,
+  currentCharacter: CharacterInterface | null,
   warbands: any,
 }
 

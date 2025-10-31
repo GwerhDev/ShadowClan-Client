@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getMembers, createMember, updateMember, deleteMember, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById } from '../services';
 import { API_URL } from '../misc/const';
-import { storeState } from '../../interfaces/storeState';
+import { storeState, CharacterInterface } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces/shadowWar';
 
 export const useStore = defineStore('store', {
@@ -235,7 +235,14 @@ export const useStore = defineStore('store', {
     async handleCreateCharacter(formData: any) {
       try {
         const response: any = await createCharacter(formData);
-        this.currentUser.userData.character = response?.character;
+        const newCharacter = response?.character;
+        if (newCharacter) {
+          if (!Array.isArray(this.currentUser.userData.character)) {
+            this.currentUser.userData.character = [];
+          }
+          this.currentUser.userData.character.push(newCharacter);
+          this.setCurrentCharacter(newCharacter);
+        }
         return response;
       } catch (error) {
         console.error(error);
@@ -317,7 +324,7 @@ export const useStore = defineStore('store', {
       }
     },
 
-    setCurrentCharacter(character: string | null) {
+    setCurrentCharacter(character: CharacterInterface | null) {
       this.currentCharacter = character;
     },
   }
