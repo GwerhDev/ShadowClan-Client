@@ -35,6 +35,9 @@ const dynamicTitle = computed(() => {
 <template>
   <div class="container-lo-page">
     <div class="lo-container">
+      <section>
+        <NavComponent :loading="loading" />
+      </section>
       <div class="section-container">
         <section class="menu-section desktop" v-if="tabs">
           <img :src="diabloIcon" alt="icon" />
@@ -56,9 +59,6 @@ const dynamicTitle = computed(() => {
           </div>
         </section>
       </div>
-      <section>
-        <NavComponent :loading="loading" />
-      </section>
     </div>
   </div>
 </template>
