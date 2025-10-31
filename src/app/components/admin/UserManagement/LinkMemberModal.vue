@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref, onMounted, defineProps, defineEmits, watch } from 'vue';
 import { getMembers } from '../../../../middlewares/services';
-import type { Member } from '../../../../interfaces/shadowWar';
+import type { Member } from '../../../../interfaces';
 import CustomModal from '../../Modals/CustomModal.vue';
 
 const props = defineProps<{

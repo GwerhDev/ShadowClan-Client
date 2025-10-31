@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watchEffect } from 'vue';
-import * as ShadowWarInterfaces from '../../../interfaces/shadowWar';
+import * as ShadowWarInterfaces from '../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';

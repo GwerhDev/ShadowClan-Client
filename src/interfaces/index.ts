@@ -9,7 +9,7 @@ export interface Member {
 export interface Character {
   _id: string;
   name: string;
-  clan?: string;
+  clan?: Clan | string;
   resonance?: number | undefined | null;
   currentClass?: string;
 }

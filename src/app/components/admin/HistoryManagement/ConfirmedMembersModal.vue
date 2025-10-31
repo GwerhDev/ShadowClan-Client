@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
-import { Member } from '../../../../interfaces/shadowWar';
+import { Member } from '../../../../interfaces';
 import CustomModal from '../../Modals/CustomModal.vue';
 import ShadowWarMemberCard from '../ShadowWarManagement/ShadowWarMemberCard.vue';
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watchEffect } from 'vue';
-import * as ShadowWarInterfaces from '../../../interfaces/shadowWar';
+import * as ShadowWarInterfaces from '../../../interfaces';
 import { useStore } from '../../../middlewares/store';
 
 const store: any = useStore();

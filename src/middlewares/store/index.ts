@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getMembers, createMember, updateMember, deleteMember, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById } from '../services';
 import { API_URL } from '../misc/const';
-import { storeState, CharacterInterface } from '../../interfaces/storeState';
-import { ShadowWar } from '../../interfaces/shadowWar';
+import { storeState } from '../../interfaces/storeState';
+import { Character, ShadowWar } from '../../interfaces';
 
 export const useStore = defineStore('store', {
   state: (): storeState => ({
@@ -324,7 +324,7 @@ export const useStore = defineStore('store', {
       }
     },
 
-    setCurrentCharacter(character: CharacterInterface | null) {
+    setCurrentCharacter(character: Character | null) {
       this.currentCharacter = character;
     },
   }

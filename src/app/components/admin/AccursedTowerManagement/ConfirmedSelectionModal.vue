@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PropType, ref, watch } from 'vue';
-import { Member } from '../../../../interfaces/shadowWar';
+import { Member } from '../../../../interfaces';
 import ShadowWarMemberCard from './AccursedTowerMemberCard.vue';
 import CustomModal from '../../Modals/CustomModal.vue';
 

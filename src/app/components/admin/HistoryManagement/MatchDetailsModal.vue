@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, PropType, ref, watch } from 'vue';
-import { Match, Member } from '../../../../interfaces/shadowWar';
+import { Match, Member } from '../../../../interfaces';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { useStore } from '../../../../middlewares/store';
 import ShadowWarMemberCard from '../ShadowWarManagement/ShadowWarMemberCard.vue';

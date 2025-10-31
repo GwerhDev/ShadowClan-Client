@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref, computed } from 'vue';
 import { updateShadowWar, getClans, getMembers } from '../../../../middlewares/services';
-import { Clan, Member, Match } from '../../../../interfaces/shadowWar';
+import { Clan, Member, Match } from '../../../../interfaces';
 import ShadowWarMemberCard from './AccursedTowerMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';

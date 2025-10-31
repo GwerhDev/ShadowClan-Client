@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
-import { Character } from '../../../interfaces/shadowWar';
+import { Character } from '../../../interfaces';
 import { classes } from '../../../middlewares/misc/const';
 
 defineProps({
