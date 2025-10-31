@@ -6,7 +6,7 @@
 <template>
   <div class="logo-container">
     <router-link to='/'>
-      <span class="logo-styles">ShadowClan</span>
+      <span class="logo-styles">ShadowclaN</span>
     </router-link>
   </div>
 </template>
