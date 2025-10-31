@@ -21,6 +21,11 @@
       padding-inline: 1rem;
     }
 
+    .logo-section {
+      width: 200px;
+      justify-content: center;
+    }
+
     .user-section {
       gap: 1rem;
 
@@ -85,6 +90,7 @@
 
       .logo-section,
       .user-section {
+        width: auto;
         padding: .6rem;
         padding-inline: 1rem;
       }

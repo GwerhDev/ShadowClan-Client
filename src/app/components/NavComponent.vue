@@ -16,9 +16,9 @@ const store: any = useStore();
         <LogoComponent />
       </section>
       <section class="router-section">
-        <router-link title="Social" to="/" class="nav-item">
-          <i class="fas fa-users"></i>
-          <small>Social</small>
+        <router-link title="Inicio" to="/" class="nav-item">
+          <i class="fas fa-home"></i>
+          <small>Inicio</small>
         </router-link>
         <router-link title="Guerra Sombría" to="/shadow-war" class="nav-item">
           <i class="fas fa-khanda"></i>
@@ -42,7 +42,9 @@ const store: any = useStore();
 
       <section class="user-section">
         <i class="fas fa-bell"></i>
-        <i class="fas fa-user"></i>
+        <router-link to="/u/profile" title="Perfil">
+          <i class="fas fa-user"></i>
+        </router-link>
       </section>
     </nav>
   </div>

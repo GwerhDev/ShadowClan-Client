@@ -3,8 +3,9 @@ import { ref } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
 
 const tabs = [
-  { id: 'profile', name: 'Perfil', icon: 'fas fa-user', path: '/u/profile' },
-  { id: 'settings', name: 'Ajustes', icon: 'fas fa-gear', path: '/u/settings' },
+  { id: 'home', name: 'Inicio', icon: 'fas fa-home', path: '/' },
+  { id: 'clan', name: 'Clan', icon: 'fas fa-shield-alt', path: '/c/clan' },
+  { id: 'history', name: 'Historial', icon: 'fas fa-history', path: '/c/history' },
 ];
 
 const loading = ref(true);

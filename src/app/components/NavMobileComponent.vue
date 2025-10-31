@@ -11,9 +11,9 @@ const store: any = useStore();
   <div class="nav-container">
     <nav>
       <section class="router-section">
-        <router-link title="Social" to="/" class="nav-item">
-          <i class="fas fa-users"></i>
-          <small>Social</small>
+        <router-link title="Inicio" to="/" class="nav-item">
+          <i class="fas fa-home"></i>
+          <small>Inicio</small>
         </router-link>
         <router-link title="Guerra Sombría" to="/shadow-war" class="nav-item">
           <i class="fas fa-khanda"></i>

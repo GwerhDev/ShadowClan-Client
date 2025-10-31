@@ -102,7 +102,7 @@ export const useStore = defineStore('store', {
     async handleUserData() {
       try {
         this.currentUser = { ...this.currentUser, ...await getUserData() };
-        this.currentCharacter = this.currentUser.userData?.character[0]?._id || null;
+        this.currentCharacter = this.currentUser.userData?.character?.[0] || null;
       } catch (error) {
         console.error(error);
         window.location.href = 'https://shadowclan.cl/login';

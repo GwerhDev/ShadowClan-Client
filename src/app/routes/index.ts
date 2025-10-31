@@ -25,6 +25,7 @@ import AccursedTower from '../components/AccursedTower/AccursedTower.vue';
 
 import TaskPage from '../pages/TaskPage.vue';
 import TasksComponent from '../components/Tasks/TasksComponent.vue';
+import HomePage from '../pages/HomePage.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -133,36 +134,44 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
-    path: '/',
+    path: '/u',
     name: 'UserPage',
     component: UserPage,
-    redirect: '/u/profile',
-    meta: { title: 'Social' },
+    redirect: '/profile',
+    meta: { title: 'Usuario' },
     children: [
       {
-        path: '/u/profile',
+        path: 'profile',
         name: 'Profile',
         component: ProfileComponent,
         meta: { title: 'Perfil' },
       },
       {
-        path: '/u/clan',
+        path: 'settings',
+        name: 'Settings',
+        component: SettingsComponent,
+        meta: { title: 'Ajustes' },
+      }
+    ]
+  },
+  {
+    path: '/',
+    name: 'Home',
+    component: HomePage,
+    meta: { title: 'Inicio' },
+    children: [
+      {
+        path: '/c/clan',
         name: 'Clan',
         component: ClanComponent,
         meta: { title: 'Clan' },
       },
       {
-        path: '/u/history',
+        path: '/c/history',
         name: 'History',
         component: HistoryComponent,
         meta: { title: 'Historial' },
       },
-      {
-        path: '/u/settings',
-        name: 'Settings',
-        component: SettingsComponent,
-        meta: { title: 'Ajustes' },
-      }
     ]
   },
   {
