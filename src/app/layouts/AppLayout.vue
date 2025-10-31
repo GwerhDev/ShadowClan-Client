@@ -7,6 +7,7 @@ import TabBar from './TabBar.vue';
 import { useRoute } from 'vue-router';
 import { computed } from 'vue';
 import NavComponent from '../components/NavComponent.vue';
+import NavMobileComponent from '../components/NavMobileComponent.vue';
 
 const store: any = useStore();
 const route = useRoute();
@@ -59,6 +60,9 @@ const dynamicTitle = computed(() => {
           </div>
         </section>
       </div>
+      <section>
+        <NavMobileComponent :loading="loading" />
+      </section>
     </div>
   </div>
 </template>

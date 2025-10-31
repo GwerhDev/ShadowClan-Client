@@ -6,6 +6,7 @@
   border-bottom: solid 1px var(--element-color-primary-hover);
   backdrop-filter: blur(10px);
   z-index: 9;
+  display: none;
 
   nav {
     width: 100%;
@@ -13,24 +14,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    .logo-section,
-    .user-section {
-      display: flex;
-      align-items: center;
-      padding-inline: 1rem;
-    }
-
-    .user-section {
-      gap: 1rem;
-
-      i {
-        cursor: pointer;
-
-        &:hover {
-          color: #e3d2a8;
-        }
-      }
+    
+    .logo-section {
+      padding-inline: 2rem;
     }
 
     .router-section {
@@ -76,21 +62,38 @@
         border-bottom: 3px solid var(--color-primary);
       }
     }
+
+    .user-section {
+      padding-inline: 2rem;
+
+    }
   }
 }
 
 @media (max-width: 1100px) {
   .nav-container {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    border-top: solid 1px var(--element-color-primary-hover);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
     nav {
-
-      .logo-section,
-      .user-section {
-        padding: .6rem;
-        padding-inline: 1rem;
-      }
-
       .router-section {
-        display: none;
+        max-width: none;
+
+        .nav-item {
+          padding-bottom: 2rem;
+          border: none;
+          border-top: 3px solid transparent;
+        }
+
+        .router-link-active {
+          color: #e3d2a8;
+          filter: drop-shadow(0 0 4px #ff00003e);
+          border-top: 3px solid var(--color-primary);
+        }
       }
     }
   }

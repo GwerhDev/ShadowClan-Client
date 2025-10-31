@@ -1,14 +1,19 @@
 <style scoped lang="scss" src="./SettingsComponent.scss" />
 <script setup lang="ts">
 import { useStore } from '../../../middlewares/store';
-import { $d } from '../../../functions';
 import { onMounted, Ref, ref } from 'vue';
 import LabeledInput from '../Inputs/LabeledInput.vue';
 import CharacterCard from '../Cards/CharacterCard.vue';
 import AddCharacterModal from './AddCharacterModal.vue';
+import DangerButton from '../Buttons/DangerButton.vue';
+import PrimaryButton from '../Buttons/PrimaryButton.vue';
+import LogoutModal from '../Modals/LogoutModal.vue';
+import DeleteAccountModal from '../Modals/DeleteAccountModal.vue';
 
 const store: any = useStore();
-const showModal: Ref = ref(false);
+const showLogoutModal: Ref = ref(false);
+const showAddCharacterModal: Ref = ref(false);
+const showDeleteAccountModal: Ref = ref(false);
 const editionActive: boolean = false;
 
 onMounted(async () => {
@@ -16,12 +21,15 @@ onMounted(async () => {
 });
 
 const handleOpenModal = () => {
-  showModal.value = true;
+  showAddCharacterModal.value = true;
+};
+
+const handleDeleteAccount = () => {
+  showDeleteAccountModal.value = true;
 };
 
 const handleLogout = async () => {
-  $d('#account-menu-mobile').style.display = 'none'
-  store.handleLogout();
+  showLogoutModal.value = true;
 };
 
 </script>
@@ -39,13 +47,24 @@ const handleLogout = async () => {
         :key="index">
         <CharacterCard :character="character" />
       </li>
-      <button @click="handleOpenModal" class="button justify-content-center align-items-center d-flex g-1 w-100">
-        Agregar
-      </button>
-      <button class="logout-button" @click="handleLogout">
-        Cerrar sesión
-      </button>
+      <li>
+        <PrimaryButton text="Agregar" :onclick="handleOpenModal" />
+      </li>
     </ul>
-    <add-character-modal v-if="showModal" @close="showModal = false" />
+
+    <h3 class="mt-3">Aplicación</h3>
+    <ul>
+      <li>
+        <DangerButton text="Eliminar cuenta" :onclick="handleDeleteAccount" />
+      </li>
+      <li>
+        <button class="logout-button" @click="handleLogout">
+          Cerrar sesión
+        </button>
+      </li>
+    </ul>
+    <LogoutModal v-if="showLogoutModal" @close="showLogoutModal = false" />
+    <DeleteAccountModal v-if="showDeleteAccountModal" @close="showDeleteAccountModal = false" />
+    <add-character-modal v-if="showAddCharacterModal" @close="showAddCharacterModal = false" />
   </div>
 </template>

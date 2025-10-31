@@ -1,0 +1,14 @@
+.danger-button {
+  margin: 0;
+  width: 100%;
+  color: var(--color-red-action);
+  border: 1px solid var(--color-red-action);
+  padding: .5rem;
+  padding-inline: 2rem;
+  background-color: var(--color-danger-bg);
+
+  &:hover {
+    color: var(--color-app-white);
+    background-color: var(--color-red-action);
+  }
+}

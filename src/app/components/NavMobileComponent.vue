@@ -1,8 +1,6 @@
-<style scoped lang="scss" src="./NavComponent.scss" />
+<style scoped lang="scss" src="./NavMobileComponent.scss" />
 <script setup lang="ts">
 import { useStore } from '../../middlewares/store';
-import LogoComponent from './LogoComponent.vue';
-
 
 defineProps(["loading"]);
 const store: any = useStore();
@@ -12,9 +10,6 @@ const store: any = useStore();
 <template>
   <div class="nav-container">
     <nav>
-      <section class="logo-section">
-        <LogoComponent />
-      </section>
       <section class="router-section">
         <router-link title="Social" to="/" class="nav-item">
           <i class="fas fa-users"></i>
@@ -38,11 +33,6 @@ const store: any = useStore();
           <i class="fas fa-lock"></i>
           <small>Dashboard</small>
         </router-link>
-      </section>
-
-      <section class="user-section">
-        <i class="fas fa-bell"></i>
-        <i class="fas fa-user"></i>
       </section>
     </nav>
   </div>

@@ -1,7 +1,7 @@
-<style scoped lang="scss" src="./ActionButton.scss" />
+<style scoped lang="scss" src="./PrimaryButton.scss" />
 <script setup lang="ts">
 defineProps({
-  action: {
+  onclick: {
     type: Function,
     required: true
   },
@@ -13,7 +13,7 @@ defineProps({
 </script>
 
 <template>
-  <span class="container" @click="action()">
+  <button class="primary-button" @click="onclick()">
     {{ text }}
-  </span>
+  </button>
 </template>
