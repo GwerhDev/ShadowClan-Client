@@ -3,7 +3,6 @@
 import { useStore } from '../../../middlewares/store';
 import { $d } from '../../../functions';
 import { onMounted, Ref, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import LabeledInput from '../Inputs/LabeledInput.vue';
 import CharacterCard from '../Cards/CharacterCard.vue';
 import AddCharacterModal from './AddCharacterModal.vue';
@@ -11,7 +10,6 @@ import AddCharacterModal from './AddCharacterModal.vue';
 const store: any = useStore();
 const showModal: Ref = ref(false);
 const editionActive: boolean = false;
-const router: any = useRouter();
 
 onMounted(async () => {
   await store.handleGetCharacter();
@@ -23,8 +21,7 @@ const handleOpenModal = () => {
 
 const handleLogout = async () => {
   $d('#account-menu-mobile').style.display = 'none'
-  store.logout();
-  router.push('/');
+  store.handleLogout();
 };
 
 </script>

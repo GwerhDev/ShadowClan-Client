@@ -123,5 +123,11 @@ export const getWarbands: any = async () => {
   return response;
 };
 
+export const logout: any = async () => {
+  const response: any = await axios.get(API_URL + "/logout/", { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
+
 export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, getShadowWars } from './shadowWarService';
 export { getClans, createClan, updateClan, deleteClan } from './clanService';

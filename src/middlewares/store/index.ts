@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getMembers, createMember, updateMember, deleteMember, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getMembers, createMember, updateMember, deleteMember, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById } from '../services';
 import { API_URL } from '../misc/const';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces/shadowWar';
@@ -40,35 +40,9 @@ export const useStore = defineStore('store', {
   }),
 
   actions: {
-    logout() {
-      localStorage.clear();
-      this.currentUser = {
-        logged: false,
-        userData: null,
-        task: null,
-        taskdate: null,
-        tasktype: '',
-        taskloading: false,
-        guidetype: 'chatbot',
-        chatbotmodel: '',
-        shadowWarData: null,
-        shadowWarError: null,
-      } as storeState['currentUser'];
-      this.layout = {
-        tab: { value: '', label: '' },
-      };
-
-      this.admin = {
-        users: null,
-        tasks: null,
-        clantasks: null,
-        warbandtasks: null,
-        notifications: null,
-        members: null,
-        clans: null,
-        shadowWars: null,
-        currentShadowWar: null,
-      };
+    async handleLogout() {
+      await logout
+      window.location.href = 'https://shadowclan.cl/login';
     },
 
     setTaskDate(date: any) {
@@ -131,6 +105,7 @@ export const useStore = defineStore('store', {
         this.currentCharacter = this.currentUser.userData?.character[0]?._id || null;
       } catch (error) {
         console.error(error);
+        window.location.href = 'https://shadowclan.cl/login';
       }
     },
 
