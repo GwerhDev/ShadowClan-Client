@@ -254,6 +254,7 @@ export const useStore = defineStore('store', {
     async handleClaimCharacterAsAdmin(formData: any) {
       try {
         const response = await claimCharacterAsAdmin(formData);
+        this.admin.users = response.users;
         this.admin.characters = response.characters;
 
       } catch (error) {
@@ -264,6 +265,7 @@ export const useStore = defineStore('store', {
     async handleUnclaimCharacterAsAdmin(formData: any) {
       try {
         const response = await unclaimCharacterAsAdmin(formData);
+        this.admin.users = response.users;
         this.admin.characters = response.characters;
 
       } catch (error) {

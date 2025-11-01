@@ -2,11 +2,12 @@
 <script setup lang="ts">
 import { useStore } from '../../../../middlewares/store';
 import { Ref, ref, defineProps } from 'vue';
-import LinkMemberModal from './LinkMemberModal.vue';
+import LinkCharacterModal from './LinkCharacterModal.vue';
 
 const store: any = useStore();
 const props = defineProps<{ user: any }>();
 
+const loading: Ref<boolean> = ref(true);
 const role: Ref<string> = ref(props.user.role);
 const status: Ref<string> = ref(props.user.status);
 const character: Ref<string[]> = ref(props.user.character || []);
@@ -20,8 +21,6 @@ function handleEdit() {
 }
 
 async function handleUpdate(id: string) {
-  console.log(id)
-
   const formData = {
     role: role.value,
     status: status.value,
@@ -53,7 +52,9 @@ function handleDelete() {
   deleteActive.value = true;
 }
 
-function openLinkModal() {
+async function openLinkModal() {
+  await store.handleGetAdminCharacters();
+  loading.value = false;
   isModalOpen.value = true;
 }
 
@@ -98,10 +99,11 @@ function styleStatus(status: string) {
       </select>
     </span>
     <span>
-      <button @click="openLinkModal">Vincular ({{ character.length }})</button>
+      <p>{{ user.character?.length || 0 }}</p>
     </span>
     <span>
       <ul class="buttons-container">
+        <button @click="openLinkModal"><i class="fas fa-link"></i></button>
         <button @click="handleUpdate(user._id)">✔️</button>
         <button @click="handleCancel">❌</button>
       </ul>
@@ -116,11 +118,18 @@ function styleStatus(status: string) {
         <span class="status" :style="styleStatus(user.status)"></span>
       </div>
     </span>
-    <span><p>{{ user.battletag }}</p></span>
-    <span><p>{{ user.role }}</p></span>
-    <span><p>{{ user.character?.length || 0 }}</p></span>
+    <span>
+      <p>{{ user.battletag }}</p>
+    </span>
+    <span>
+      <p>{{ user.role }}</p>
+    </span>
+    <span>
+      <p>{{ user.character?.length || 0 }}</p>
+    </span>
     <span>
       <ul class="buttons-container">
+        <button @click="openLinkModal"><i class="fas fa-link"></i></button>
         <button @click="handleDeleteUser(user._id)">✔️</button>
         <button @click="handleCancel">❌</button>
       </ul>
@@ -135,11 +144,19 @@ function styleStatus(status: string) {
         <span class="status" :style="styleStatus(user.status)"></span>
       </div>
     </span>
-    <span><p>{{ user.battletag }}</p></span>
-    <span><p>{{ user.role }}</p></span>
-    <span><p>{{ user.character?.length || 0 }}</p></span>
+    <span>
+      <p>{{ user.battletag }}</p>
+    </span>
+    <span>
+      <p>{{ user.role }}</p>
+    </span>
+    <span>
+      <p>{{ user.character?.length || 0 }}</p>
+    </span>
     <span>
       <ul class="buttons-container">
+        <button @click="openLinkModal"><i class="fas fa-link"></i></button>
+
         <button @click="handleEdit">
           <img src="../../../../assets/svg/edit-icon.svg" alt="" width="18px">
         </button>
@@ -150,11 +167,6 @@ function styleStatus(status: string) {
     </span>
   </div>
 
-  <LinkMemberModal
-    v-if="isModalOpen"
-    :initial-selected-ids="character"
-    :user-name="user.battletag"
-    @close="handleModalClose"
-    @save="handleModalSave"
-  />
+  <LinkCharacterModal :user-id="user._id" :loading="loading" v-if="isModalOpen" :initial-selected-ids="character"
+    :user-name="user.battletag" @close="handleModalClose" @save="handleModalSave" />
 </template>
