@@ -109,18 +109,25 @@ function claimCharacter(character: any) {
     <div class="search-character-container" v-if="step === 1">
       <LabeledInput label="Nombre del Personaje" id="name" v-model="characterName" @input="handleNameInput" required />
       <div v-if="isLoading">Buscando...</div>
-      <ul v-if="characters.length > 0">
+      <ul class="character-card-container">
         <li v-for="char in characters" :key="char.id" @click="selectCharacterToClaim(char)">
-            <CharacterCard :character="char" />
+          <CharacterCard :character="char" />
         </li>
       </ul>
       <button :disabled="isCharacterEmpty" @click="goToCreateNewCharacter">Crear Nuevo Personaje</button>
     </div>
 
-    <div v-if="step === 2">
-      <p>Reclamar al personaje: {{ selectedCharacter.name }}</p>
-      <button @click="claimCharacter(selectedCharacter)">Confirmar Reclamo</button>
-      <button @click="backToStep1">Volver</button>
+    <div v-if="step === 2" class="search-character-container">
+      <ul class="character-card-container">
+        <li>
+          <CharacterCard :character="selectedCharacter" />
+        </li>
+      </ul>
+      <button @click="claimCharacter(selectedCharacter)" type="submit"
+        class="submit-button button justify-content-center align-items-center d-flex g-1 w-100">
+        <i class="fas fa-link"></i>
+        Confirmar Reclamo</button>
+      <button class="secondary-button" type="button" @click="backToStep1">Volver</button>
     </div>
 
     <form v-if="step === 3" @submit.prevent="handleSubmit">
@@ -149,7 +156,7 @@ function claimCharacter(character: any) {
           class="submit-button button justify-content-center align-items-center d-flex g-1 w-100">
           <i class="fas fa-link"></i>
           Vincular a tu cuenta</button>
-        <button type="button" @click="backToStep1">Volver</button>
+        <button class="secondary-button" type="button" @click="backToStep1">Volver</button>
       </ul>
     </form>
   </CustomModal>

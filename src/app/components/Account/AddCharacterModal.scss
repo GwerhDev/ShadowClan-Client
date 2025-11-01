@@ -2,6 +2,19 @@
   gap: 1rem;
   display: flex;
   flex-direction: column;
+
+  .character-card-container {
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    li {
+      display: flex;
+    }
+  }
 }
 
 .submit-button:disabled {
@@ -13,6 +26,7 @@
 .secondary-button {
   background-color: var(--color-app-white);
   width: 100%;
+  color: black;
 }
 
 .class-selection-wrapper {
