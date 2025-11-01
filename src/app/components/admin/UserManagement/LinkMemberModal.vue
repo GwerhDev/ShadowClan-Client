@@ -1,5 +1,5 @@
 <template>
-  <CustomModal :title="`Vincular Miembros a ${userName}`">
+  <CustomModal :title="`Vincular personajes a ${userName}`">
     <div class="modal-body">
       <div v-if="loading" class="loader">Cargando miembros...</div>
       <div v-else class="members-list">

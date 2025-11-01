@@ -9,6 +9,7 @@ const editionActive: Ref<boolean> = ref(false);
 const deleteActive: Ref<boolean> = ref(false);
 
 const name: Ref<string> = ref('');
+const status: Ref<string> = ref('');
 const resonance: Ref<number> = ref(0);
 const currentClass: Ref<string> = ref('');
 
@@ -18,6 +19,7 @@ onMounted(() => {
   name.value = props.character.name;
   resonance.value = props.character.resonance;
   currentClass.value = props.character.currentClass;
+  status.value = props.character.claimed ? "claimed" : "unclaimed";
 });
 
 function handleEdit() {
@@ -55,7 +57,8 @@ function handleDelete() {
 <template>
   <div class="list-container" v-if="editionActive && !deleteActive">
     <span>
-      <img src="../../../../assets/svg/profile-icon.svg" alt="">
+      <i v-if="status === 'claimed'" class="fas fa-link" :alt="status" :title="status"></i>
+      <i v-if="status === 'unclaimed'" class="fas fa-unlink" :alt="status" :title="status"></i>
     </span>
     <span>
       <input type="text" v-model="name">
@@ -72,7 +75,7 @@ function handleDelete() {
     </span>
     <span>
       <ul class="buttons-container">
-        <button @click="handleUpdate(character)">
+        <button @click="handleUpdate(character._id)">
           ✔️
         </button>
         <button @click="handleCancel">
@@ -83,13 +86,14 @@ function handleDelete() {
   </div>
   <div class="list-container red-bg" v-if="!editionActive && deleteActive">
     <span>
-      <img src="../../../../assets/svg/profile-icon.svg" alt="">
+      <i v-if="status === 'claimed'" class="fas fa-link" :alt="status" :title="status"></i>
+      <i v-if="status === 'unclaimed'" class="fas fa-unlink" :alt="status" :title="status"></i>
     </span>
     <span>
       <p>{{ character.name }}</p>
     </span>
     <span>
-      <p>{{ character.name }}</p>
+      <p>{{ character.resonance }}</p>
     </span>
     <span>
       <ul class="class-container">
@@ -109,17 +113,19 @@ function handleDelete() {
   </div>
   <div class="list-container" v-if="!editionActive && !deleteActive">
     <span>
-      <img src="../../../../assets/svg/profile-icon.svg" alt="">
+      <i v-if="status === 'claimed'" class="fas fa-link" :alt="status" :title="status"></i>
+      <i v-if="status === 'unclaimed'" class="fas fa-unlink" :alt="status" :title="status"></i>
     </span>
     <span>
       <p>{{ character.name }}</p>
     </span>
     <span>
-      <p>{{ character.name }}</p>
+      <p>{{ character.resonance }}</p>
     </span>
     <span>
       <ul class="class-container">
-        <img :src="classes.find(cls => cls.value === character.currentClass)?.image" alt="" width="30">
+        <img :src="classes.find(cls => cls.value === character.currentClass)?.image" :alt="character.currentClass"
+          :title="character.currentClass" width="30">
       </ul>
     </span>
     <span>

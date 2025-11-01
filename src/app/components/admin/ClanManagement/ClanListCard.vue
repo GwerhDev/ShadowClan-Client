@@ -55,7 +55,9 @@ function handleDelete() {
       <input type="text" v-model="name">
     </span>
     <span>
-      <input type="text" v-model="leader">
+      <span>
+        <button>Change leader ({{ clan.leader?.name }})</button>
+      </span>
     </span>
     <span>
       <input type="text" v-model="member">
@@ -76,7 +78,7 @@ function handleDelete() {
       <p>{{ clan.name }}</p>
     </span>
     <span>
-      <p>{{ clan.leader }}</p>
+      <p>{{ clan.leader?.name }}</p>
     </span>
     <span>
       <p>{{ clan.member }}</p>
@@ -97,7 +99,7 @@ function handleDelete() {
       <p>{{ clan.name }}</p>
     </span>
     <span>
-      <p>{{ clan.leader.name }}</p>
+      <p>{{ clan.leader?.name }}</p>
     </span>
     <span>
       <p>{{ clan.member.length }}</p>

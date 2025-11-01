@@ -34,14 +34,14 @@ function handleAddMember() {
   showModal.value = true;
 };
 
-const navItems = ['#', 'character', 'resonance', 'class', 'actions'];
+const navItems = ['status', 'name', 'resonance', 'class', 'actions'];
 
 </script>
 
 <template>
   <div class="ul-container">
     <span class="button-list">
-      <button @click="handleAddMember">Agregar miembro</button>
+      <button @click="handleAddMember">Agregar personaje</button>
     </span>
     <ul v-if="!loading && store.admin.characters">
       <TableComponent :navItems="navItems">

@@ -214,6 +214,9 @@ button,
   color: var(--color-app-white);
   cursor: pointer;
   transition: border-color 0.25s;
+  display: flex;
+  text-align: center;
+  align-items: center;
 }
 
 button:hover,

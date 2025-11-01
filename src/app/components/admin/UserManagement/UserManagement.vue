@@ -25,7 +25,7 @@ watch(() => store.currentUser.logged, async (isLoggedIn) => {
 }, { immediate: true }); // immediate: true to run the watcher immediately on component setup
 
 
-const navItems = ['statud', 'battletag', 'role', 'claimed', 'actions'];
+const navItems = ['status', 'battletag', 'role', 'claimed', 'actions'];
 
 </script>
 

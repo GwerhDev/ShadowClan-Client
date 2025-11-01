@@ -24,7 +24,7 @@ function handleSubmit() {
 </script>
 
 <template>
-  <CustomModal title="Agregar miembro" @close="$emit('close')">
+  <CustomModal title="Agregar personaje" @close="$emit('close')">
     <form @submit.prevent="handleSubmit">
       <ul class="d-flex col g-1">
         <LabeledInput label="Nombre del personaje" id="name" v-model="name" required />
