@@ -13,8 +13,8 @@ export const createClan: any = async (formData: any) => {
   return response;
 };
 
-export const updateClan: any = async (id: any, formData: any) => {
-  const response: any = await axios.patch(API_URL + "/admin/clans/" + id, formData, { withCredentials: true })
+export const updateClan: any = async (formData: any) => {
+  const response: any = await axios.patch(API_URL + "/admin/clans", formData, { withCredentials: true })
                                    .then(response => response.data)
   return response;
 };

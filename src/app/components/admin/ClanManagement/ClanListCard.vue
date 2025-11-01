@@ -25,12 +25,11 @@ function handleEdit() {
 
 async function handleUpdate(clan: any) {
   const formData = {
+    _id: clan._id,
     name: name.value,
-    member: member.value,
-    leader: leader.value,
   };
 
-  await store.handleUpdateClan(clan._id, formData);
+  await store.handleUpdateClan(formData);
   editionActive.value = false;
 };
 
@@ -51,6 +50,12 @@ function handleDelete() {
 
 <template>
   <div class="list-container" v-if="editionActive && !deleteActive">
+    <span>
+      <i v-if="clan.status === 'claimed'" class="fas fa-link" :alt="clan.status" :title="clan.status"></i>
+      <i v-if="clan.status === 'pending'" class="fas fa-hourglass-half" :alt="clan.status" :title="clan.status"></i>
+      <i v-if="clan.status === 'unclaimed'" class="fas fa-unlink" :alt="clan.status" :title="clan.status"></i>
+    </span>
+
     <span>
       <input type="text" v-model="name">
     </span>
@@ -75,6 +80,11 @@ function handleDelete() {
   </div>
   <div class="list-container red-bg" v-if="!editionActive && deleteActive">
     <span>
+      <i v-if="clan.status === 'claimed'" class="fas fa-link" :alt="clan.status" :title="clan.status"></i>
+      <i v-if="clan.status === 'pending'" class="fas fa-hourglass-half" :alt="clan.status" :title="clan.status"></i>
+      <i v-if="clan.status === 'unclaimed'" class="fas fa-unlink" :alt="clan.status" :title="clan.status"></i>
+    </span>
+    <span>
       <p>{{ clan.name }}</p>
     </span>
     <span>
@@ -95,6 +105,11 @@ function handleDelete() {
     </span>
   </div>
   <div class="list-container" v-if="!editionActive && !deleteActive">
+    <span>
+      <i v-if="clan.status === 'claimed'" class="fas fa-link" :alt="clan.status" :title="clan.status"></i>
+      <i v-if="clan.status === 'pending'" class="fas fa-hourglass-half" :alt="clan.status" :title="clan.status"></i>
+      <i v-if="clan.status === 'unclaimed'" class="fas fa-unlink" :alt="clan.status" :title="clan.status"></i>
+    </span>
     <span>
       <p>{{ clan.name }}</p>
     </span>

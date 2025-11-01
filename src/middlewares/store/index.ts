@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById } from '../services';
-import { API_URL } from '../misc/const';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
+import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
 
 export const useStore = defineStore('store', {
   state: (): storeState => ({
@@ -41,8 +41,7 @@ export const useStore = defineStore('store', {
 
   actions: {
     async handleLogout() {
-      await logout
-      window.location.href = 'https://shadowclan.cl/login';
+      await logout();
     },
 
     setTaskDate(date: any) {
@@ -94,18 +93,13 @@ export const useStore = defineStore('store', {
       }
     },
 
-    handleLogin() {
-      const url: string = API_URL + '/login-bnet';
-      return url;
-    },
-
     async handleUserData() {
       try {
         this.currentUser = { ...this.currentUser, ...await getUserData() };
         this.currentCharacter = this.currentUser.userData?.character?.[0] || null;
       } catch (error) {
         console.error(error);
-        window.location.href = 'https://shadowclan.cl/login';
+        this.handleLogout();
       }
     },
 
@@ -115,16 +109,18 @@ export const useStore = defineStore('store', {
     },
 
     async handleGetUsers() {
-      this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin" ? this.admin.users = await getUsers() : null;
+      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin") {
+        this.admin.users = await getUsers();
+      }
     },
 
-    async handleGetMembers() {
+    async handleGetAdminCharacters() {
       if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin") {
         this.admin.characters = await getAdminCharacters();
       }
     },
 
-    async handleCreateMember(formData: any) {
+    async handleCreateAdminCharacter(formData: any) {
       try {
         const response: any = await createAdminCharacter(formData);
         return response;
@@ -133,8 +129,14 @@ export const useStore = defineStore('store', {
       }
     },
 
-    async handleUpdateMember(id: string, formData: any) {
-      await updateAdminCharacter(id, formData);
+    async handleUpdateAdminCharacter(formData: any) {
+      try {
+        const response = await updateAdminCharacter(formData);
+        this.admin.characters = response.characters;
+
+      } catch (error) {
+        console.error(error);
+      }
     },
 
     async handleDeleteMember(id: string) {
@@ -249,6 +251,26 @@ export const useStore = defineStore('store', {
       }
     },
 
+    async handleClaimCharacterAsAdmin(formData: any) {
+      try {
+        const response = await claimCharacterAsAdmin(formData);
+        this.admin.characters = response.characters;
+
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
+    async handleUnclaimCharacterAsAdmin(formData: any) {
+      try {
+        const response = await unclaimCharacterAsAdmin(formData);
+        this.admin.characters = response.characters;
+
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
     async handleGetWarbands() {
       try {
         const response: any = await getWarbands();
@@ -273,10 +295,10 @@ export const useStore = defineStore('store', {
       }
     },
 
-    async handleUpdateClan(id: string, formData: any) {
-      const response = await updateClan(id, formData);
+    async handleUpdateClan(formData: any) {
+      const response = await updateClan(formData);
       this.admin.clans = response;
-      return response;
+      return;
     },
 
     async handleDeleteClan(id: string) {

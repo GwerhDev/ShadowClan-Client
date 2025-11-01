@@ -1,8 +1,8 @@
 export interface Character {
   _id: string;
   name?: string;
-  claimed?: boolean;
   clan?: Clan;
+  status?: string;
   resonance?: number | undefined | null;
   currentClass?: string;
 }
@@ -14,7 +14,6 @@ export interface Clan {
   member?: Character[];
   officer?: Character[];
   leader?: Character;
-  claimed?: boolean;
 }
 
 export interface Match {

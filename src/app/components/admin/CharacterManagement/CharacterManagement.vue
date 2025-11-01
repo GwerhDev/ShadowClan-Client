@@ -1,7 +1,7 @@
 <style scoped lang="scss" src="./CharacterManagement.scss"/>
 <script setup lang="ts">
 import { useStore } from '../../../../middlewares/store';
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import TableComponent from '../../Tables/TableComponent.vue';
 import CharacterListCard from './CharacterListCard.vue';
 import AddCharacterModal from './AddCharacterModal.vue';
@@ -10,17 +10,13 @@ const store: any = useStore();
 const showModal = ref(false);
 const loading = ref(true); // New ref for loading state
 
-onMounted(() => {
-  // Data fetching is now handled by the watch effect
-});
-
 watch(() => store.currentUser.logged, async (isLoggedIn) => {
   if (isLoggedIn) {
     // Always set loading to true when we start fetching or re-evaluating data
     loading.value = true;
     // Only fetch if characters data is not already present or if it's explicitly null/undefined
     if (!store.admin.characters) {
-      await store.handleGetMembers();
+      await store.handleGetAdminCharacters();
     }
     loading.value = false; // Set loading to false after data is processed
   } else {

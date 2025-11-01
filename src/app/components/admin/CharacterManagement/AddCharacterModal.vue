@@ -18,7 +18,7 @@ function handleSubmit() {
   const formData = {
     name: name.value,
   };
-  store.handleCreateMember(formData);
+  store.handleCreateAdminCharacter(formData);
   handleCloseModal();
 };
 </script>

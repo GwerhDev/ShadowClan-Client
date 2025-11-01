@@ -19,7 +19,7 @@ onMounted(() => {
   name.value = props.character.name;
   resonance.value = props.character.resonance;
   currentClass.value = props.character.currentClass;
-  status.value = props.character.claimed ? "claimed" : "unclaimed";
+  status.value = props.character.status;
 });
 
 function handleEdit() {
@@ -28,19 +28,18 @@ function handleEdit() {
 
 async function handleUpdate(id: string) {
   const formData = {
+    _id: id,
     character: name.value,
     resonance: resonance.value,
     class: currentClass.value,
   };
 
-  await store.handleUpdateMember(id, formData);
-  await store.handleGetMembers();
+  await store.handleUpdateAdminCharacter(formData);
   editionActive.value = false;
 };
 
 async function handleDeleteMember(id: string) {
   await store.handleDeleteMember(id);
-  await store.handleGetMembers();
 };
 
 function handleCancel() {
@@ -58,6 +57,7 @@ function handleDelete() {
   <div class="list-container" v-if="editionActive && !deleteActive">
     <span>
       <i v-if="status === 'claimed'" class="fas fa-link" :alt="status" :title="status"></i>
+      <i v-if="status === 'pending'" class="fas fa-hourglass-half" :alt="status" :title="status"></i>
       <i v-if="status === 'unclaimed'" class="fas fa-unlink" :alt="status" :title="status"></i>
     </span>
     <span>
@@ -87,6 +87,7 @@ function handleDelete() {
   <div class="list-container red-bg" v-if="!editionActive && deleteActive">
     <span>
       <i v-if="status === 'claimed'" class="fas fa-link" :alt="status" :title="status"></i>
+      <i v-if="status === 'pending'" class="fas fa-hourglass-half" :alt="status" :title="status"></i>
       <i v-if="status === 'unclaimed'" class="fas fa-unlink" :alt="status" :title="status"></i>
     </span>
     <span>
@@ -114,6 +115,7 @@ function handleDelete() {
   <div class="list-container" v-if="!editionActive && !deleteActive">
     <span>
       <i v-if="status === 'claimed'" class="fas fa-link" :alt="status" :title="status"></i>
+      <i v-if="status === 'pending'" class="fas fa-hourglass-half" :alt="status" :title="status"></i>
       <i v-if="status === 'unclaimed'" class="fas fa-unlink" :alt="status" :title="status"></i>
     </span>
     <span>

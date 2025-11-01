@@ -33,9 +33,9 @@ export const createAdminCharacter: any = async (formData: any) => {
   return response;
 };
 
-export const updateAdminCharacter: any = async (id: string, formData: any) => {
-  await axios.patch(API_URL + "/admin/characters/" + id, formData, { withCredentials: true });
-  return;
+export const updateAdminCharacter: any = async (formData: any) => {
+  const response: any =await axios.patch(API_URL + "/admin/characters", formData, { withCredentials: true });
+  return response.data;
 };
 
 export const deleteAdminCharacter: any = async (id: string) => {
@@ -124,9 +124,9 @@ export const getWarbands: any = async () => {
 };
 
 export const logout: any = async () => {
-  const response: any = await axios.get(API_URL + "/logout/", { withCredentials: true })
+  await axios.get(API_URL + "/logout/", { withCredentials: true })
     .then(response => response.data);
-  return response;
+  return;
 };
 
 export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, getShadowWars } from './shadowWarService';
