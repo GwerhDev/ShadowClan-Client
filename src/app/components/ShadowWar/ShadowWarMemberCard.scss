@@ -1,4 +1,4 @@
-.member-card {
+.character-card {
   position: relative; // Needed for absolute positioning of the button
   border: 1px solid var(--primary-border-color);
   border-radius: 8px;
@@ -17,7 +17,7 @@
     background-color: var(--element-color-primary-hover);
   }
 
-  &.linked-member {
+  &.linked-character {
     border: solid 1px var(--color-primary);
   }
 
@@ -46,7 +46,7 @@
     }
   }
 
-  .member-info {
+  .character-info {
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -59,7 +59,7 @@
       height: 30px; // Reduced size
     }
     
-    .member-details {
+    .character-details {
       display: flex;
       flex-direction: column;
       width: 100%;

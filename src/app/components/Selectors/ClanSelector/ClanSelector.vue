@@ -25,7 +25,7 @@ function handleChange(e: Event) {
   <span class="character-selector-container">
     <select :value="store.currentCharacter || 'Por defecto'" :onchange="handleChange" class="" name="character-selector"
       id="character-selector">
-      <option v-for="character in store.currentUser?.userData?.character" :value="character._id">{{ character.name }}
+      <option v-for="character in store.currentUser?.userData?.character" :value="character">{{ character.name }}
       </option>
       <option v-if="!store.currentUser?.userData?.character.length">Por defecto</option>
       <option value="create-character">Vincular personaje</option>

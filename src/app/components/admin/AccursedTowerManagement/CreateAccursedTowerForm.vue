@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref, computed } from 'vue';
-import { updateShadowWar, getClans, getMembers } from '../../../../middlewares/services';
-import { Clan, Member, Match } from '../../../../interfaces';
+import { updateShadowWar, getClans, getAdminCharacters } from '../../../../middlewares/services';
+import { Clan, Character, Match } from '../../../../interfaces';
 import ShadowWarMemberCard from './AccursedTowerMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
@@ -11,7 +11,7 @@ import { useStore } from '../../../../middlewares/store';
 const store: any = useStore();
 
 const clans: Ref<Clan[]> = ref([]);
-const members: Ref<Member[]> = ref([]);
+const characters: Ref<Character[]> = ref([]);
 const shadowWarData = computed(() => store.currentUser.shadowWarData);
 const enemyClan = ref('');
 const showMemberSelectionModal = ref(false);
@@ -22,7 +22,7 @@ const currentSelectionContext = ref<{
   memberIndex: number;
 } | null>(null);
 
-const confirmedMembers: Ref<Member[]> = ref([]);
+const confirmedCharacters: Ref<Character[]> = ref([]);
 const showConfirmedMemberSelectionModal = ref(false);
 
 const battleCategoryTranslations: Record<string, string> = {
@@ -38,10 +38,10 @@ const battleCategories = ref<{
   famed: Match[];
   proud: Match[];
 }>({
-  exalted: Array(3).fill(null).map(() => ({ group1: { member: Array(4).fill(undefined) }, group2: { member: Array(4).fill(undefined) }, result: 'pending' })),
-  eminent: Array(3).fill(null).map(() => ({ group1: { member: Array(4).fill(undefined) }, group2: { member: Array(4).fill(undefined) }, result: 'pending' })),
-  famed: Array(3).fill(null).map(() => ({ group1: { member: Array(4).fill(undefined) }, group2: { member: Array(4).fill(undefined) }, result: 'pending' })),
-  proud: Array(3).fill(null).map(() => ({ group1: { member: Array(4).fill(undefined) }, group2: { member: Array(4).fill(undefined) }, result: 'pending' })),
+  exalted: Array(3).fill(null).map(() => ({ group1: { character: Array(4).fill(undefined) }, group2: { character: Array(4).fill(undefined) }, result: 'pending' })),
+  eminent: Array(3).fill(null).map(() => ({ group1: { character: Array(4).fill(undefined) }, group2: { character: Array(4).fill(undefined) }, result: 'pending' })),
+  famed: Array(3).fill(null).map(() => ({ group1: { character: Array(4).fill(undefined) }, group2: { character: Array(4).fill(undefined) }, result: 'pending' })),
+  proud: Array(3).fill(null).map(() => ({ group1: { character: Array(4).fill(undefined) }, group2: { character: Array(4).fill(undefined) }, result: 'pending' })),
 });
 
 const translatedCategoryName = computed(() => (categoryName: string) => {
@@ -52,11 +52,11 @@ const assignedMemberIds = computed(() => {
   const ids = new Set<string>();
   for (const category of Object.values(battleCategories.value)) {
     for (const match of category) {
-      for (const member of match.group1.member) {
-        if (member?._id) ids.add(member._id);
+      for (const character of match.group1.character) {
+        if (character?._id) ids.add(character._id);
       }
-      for (const member of match.group2.member) {
-        if (member?._id) ids.add(member._id);
+      for (const character of match.group2.character) {
+        if (character?._id) ids.add(character._id);
       }
     }
   }
@@ -64,13 +64,13 @@ const assignedMemberIds = computed(() => {
 });
 
 const confirmedMemberIds = computed(() => {
-  return confirmedMembers.value.map(member => member._id);
+  return confirmedCharacters.value.map(character => character._id);
 });
 
 onMounted(async () => {
   clans.value = await getClans();
-  const fetchedMembers = await getMembers();
-  members.value = fetchedMembers;
+  const fetchedMembers = await getAdminCharacters();
+  characters.value = fetchedMembers;
 
   if (shadowWarData.value) {
     if (shadowWarData.value.battle) {
@@ -85,7 +85,7 @@ onMounted(async () => {
       enemyClan.value = shadowWarData.value.enemyClan._id;
     }
     if (shadowWarData.value.confirmed) {
-      confirmedMembers.value = shadowWarData.value.confirmed;
+      confirmedCharacters.value = shadowWarData.value.confirmed;
     }
   }
 });
@@ -95,7 +95,7 @@ const updateShadowWarData = async () => {
   const formData = {
     enemyClan: enemyClan.value,
     battle: battleData,
-    confirmed: confirmedMembers.value.filter(member => member && member._id).map(member => member._id), // Include confirmed members
+    confirmed: confirmedCharacters.value.filter(character => character && character._id).map(character => character._id), // Include confirmed characters
   };
   await updateShadowWar(store.currentUser.shadowWarData._id, formData);
 };
@@ -105,17 +105,17 @@ const openMemberSelection = (categoryName: keyof typeof battleCategories.value, 
   showMemberSelectionModal.value = true;
 };
 
-const handleMemberSelected = (selectedMember: Member) => {
+const handleMemberSelected = (selectedMember: Character) => {
   if (currentSelectionContext.value) {
     const { categoryName, group, matchIndex, memberIndex } = currentSelectionContext.value;
-    battleCategories.value[categoryName][matchIndex][group].member[memberIndex] = selectedMember;
+    battleCategories.value[categoryName][matchIndex][group].character[memberIndex] = selectedMember;
     updateShadowWarData();
   }
   showMemberSelectionModal.value = false;
 };
 
 const unassignMember = (categoryName: keyof typeof battleCategories.value, group: 'group1' | 'group2', matchIndex: number, memberIndex: number) => {
-  battleCategories.value[categoryName][matchIndex][group].member[memberIndex] = undefined;
+  battleCategories.value[categoryName][matchIndex][group].character[memberIndex] = undefined;
   updateShadowWarData();
 };
 
@@ -124,12 +124,12 @@ const openConfirmedMembersSelection = () => {
 };
 
 const handleConfirmedMembersUpdate = (selectedMemberIds: string[]) => {
-  const oldConfirmedMemberIds = new Set(confirmedMembers.value.map(member => member._id));
-  confirmedMembers.value = members.value.filter(member => member && selectedMemberIds.includes(member._id));
-  const newConfirmedMemberIds = new Set(confirmedMembers.value.map(member => member._id));
+  const oldConfirmedMemberIds = new Set(confirmedCharacters.value.map(character => character._id));
+  confirmedCharacters.value = characters.value.filter(character => character && selectedMemberIds.includes(character._id));
+  const newConfirmedMemberIds = new Set(confirmedCharacters.value.map(character => character._id));
   const removedMemberIds = [...oldConfirmedMemberIds].filter(id => !newConfirmedMemberIds.has(id));
 
-  // Unassign removed members from battle groups
+  // Unassign removed characters from battle groups
   if (removedMemberIds.length > 0) {
     for (const categoryName in battleCategories.value) {
       // Ensure categoryName is a valid key
@@ -139,18 +139,18 @@ const handleConfirmedMembersUpdate = (selectedMemberIds: string[]) => {
           const match = category[matchIndex];
 
           // Check group1
-          for (let memberIndex = 0; memberIndex < match.group1.member.length; memberIndex++) {
-            const member = match.group1.member[memberIndex];
-            if (member && removedMemberIds.includes(member._id)) {
-              match.group1.member[memberIndex] = undefined;
+          for (let memberIndex = 0; memberIndex < match.group1.character.length; memberIndex++) {
+            const character = match.group1.character[memberIndex];
+            if (character && removedMemberIds.includes(character._id)) {
+              match.group1.character[memberIndex] = undefined;
             }
           }
 
           // Check group2
-          for (let memberIndex = 0; memberIndex < match.group2.member.length; memberIndex++) {
-            const member = match.group2.member[memberIndex];
-            if (member && removedMemberIds.includes(member._id)) {
-              match.group2.member[memberIndex] = undefined;
+          for (let memberIndex = 0; memberIndex < match.group2.character.length; memberIndex++) {
+            const character = match.group2.character[memberIndex];
+            if (character && removedMemberIds.includes(character._id)) {
+              match.group2.character[memberIndex] = undefined;
             }
           }
         }
@@ -177,11 +177,11 @@ const handleConfirmedMembersUpdate = (selectedMemberIds: string[]) => {
       </div>
     </div>
 
-    <MemberSelectionModal v-if="showMemberSelectionModal" :members="confirmedMembers"
-      :assigned-member-ids="assignedMemberIds" @close="showMemberSelectionModal = false"
-      @member-selected="handleMemberSelected" />
-    <ConfirmedSelectionModal v-if="showConfirmedMemberSelectionModal" :members="members"
-      :initial-selected-member-ids="confirmedMemberIds" @close="showConfirmedMemberSelectionModal = false"
+    <MemberSelectionModal v-if="showMemberSelectionModal" :characters="confirmedCharacters"
+      :assigned-character-ids="assignedMemberIds" @close="showMemberSelectionModal = false"
+      @character-selected="handleMemberSelected" />
+    <ConfirmedSelectionModal v-if="showConfirmedMemberSelectionModal" :characters="characters"
+      :initial-selected-character-ids="confirmedMemberIds" @close="showConfirmedMemberSelectionModal = false"
       @update-selection="handleConfirmedMembersUpdate" />
     <div v-for="(category, categoryName) in battleCategories" :key="categoryName">
       <h2>Batalla {{ translatedCategoryName(categoryName) }}</h2>
@@ -192,9 +192,9 @@ const handleConfirmedMembersUpdate = (selectedMemberIds: string[]) => {
             <label>
               <h5>Grupo 1</h5>
             </label>
-            <div class="member-cards-grid">
-              <ShadowWarMemberCard v-for="n in 4" :key="n" :member="match.group1.member[n - 1]"
-                :show-unassign-button="!!match.group1.member[n - 1]"
+            <div class="character-cards-grid">
+              <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group1.character[n - 1]"
+                :show-unassign-button="!!match.group1.character[n - 1]"
                 @click="openMemberSelection(categoryName, 'group1', matchIndex, n - 1)"
                 @unassign="unassignMember(categoryName, 'group1', matchIndex, n - 1)" />
             </div>
@@ -203,9 +203,9 @@ const handleConfirmedMembersUpdate = (selectedMemberIds: string[]) => {
             <label>
               <h5>Grupo 2</h5>
             </label>
-            <div class="member-cards-grid">
-              <ShadowWarMemberCard v-for="n in 4" :key="n" :member="match.group2.member[n - 1]"
-                :show-unassign-button="!!match.group2.member[n - 1]"
+            <div class="character-cards-grid">
+              <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group2.character[n - 1]"
+                :show-unassign-button="!!match.group2.character[n - 1]"
                 @click="openMemberSelection(categoryName, 'group2', matchIndex, n - 1)"
                 @unassign="unassignMember(categoryName, 'group2', matchIndex, n - 1)" />
             </div>

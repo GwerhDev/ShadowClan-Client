@@ -49,7 +49,7 @@
         <div v-for="(match, index) in matches" :key="index" class="match-summary-section">
           <h5>Partida {{ index + 1 }}</h5>
           <p>
-            Miembros participantes: {{match.group1.member.filter(m => m).length + match.group2.member.filter(m =>
+            Miembros participantes: {{match.group1.character.filter(m => m).length + match.group2.character.filter(m =>
               m).length}}
           </p>
           <p>Resultado: {{ translateResult(match.result) }}</p>

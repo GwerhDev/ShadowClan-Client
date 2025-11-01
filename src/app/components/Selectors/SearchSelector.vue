@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-
-interface Option {
-  _id: string;
-  name: string;
-}
+import { Clan } from '../../../interfaces';
 
 const props = defineProps<{
   modelValue: string; // The currently selected value (clan ID)
-  options: Option[]; // All available options (clans)
+  options: Clan[]; // All available options (clans)
   placeholder?: string;
   label?: string;
 }>();
@@ -26,13 +22,13 @@ const filteredOptions = computed(() => {
     return props.options;
   }
   const query = searchQuery.value.toLowerCase();
-  return props.options.filter(option => option.name.toLowerCase().includes(query));
+  return props.options.filter((option: any) => option.name.toLowerCase().includes(query));
 });
 
 // Update internalSelectedName and isSelected when modelValue changes
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
-    const selectedOption = props.options.find(option => option._id === newValue);
+    const selectedOption: Clan | any = props.options.find(option => option._id === newValue);
     internalSelectedName.value = selectedOption ? selectedOption.name : '';
     isSelected.value = !!selectedOption; // Set isSelected based on whether an option is found
   } else {
@@ -59,7 +55,7 @@ const handleBlur = () => {
 };
 
 // Handle selection from suggestions
-const selectOption = (option: Option) => {
+const selectOption = (option: Clan | any) => {
   emit('update:modelValue', option._id);
   emit('select', option);
   internalSelectedName.value = option.name;

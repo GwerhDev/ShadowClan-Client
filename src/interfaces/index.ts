@@ -1,38 +1,34 @@
-export interface Member {
-  _id: string;
-  character: string;
-  class?: string;
-  whatsapp?: string;
-  resonance?: number;
-}
-
 export interface Character {
   _id: string;
-  name: string;
-  clan?: Clan | string;
+  name?: string;
+  claimed?: boolean;
+  clan?: Clan;
   resonance?: number | undefined | null;
   currentClass?: string;
 }
 
 export interface Clan {
   _id: string;
-  name: string;
-  status?: 'top' | 'active' | 'ghost';
-  members?: number;
+  name?: string;
+  status?: string;
+  member?: Character[];
+  officer?: Character[];
+  leader?: Character;
+  claimed?: boolean;
 }
 
 export interface Match {
   group1: {
-    member: (Member | undefined)[];
+    character: (Character | undefined)[];
   };
   group2: {
-    member: (Member | undefined)[];
+    character: (Character | undefined)[];
   };
-  result?: string; // Optional, as it's 'pending' initially
+  result?: string;
 }
 
 export interface ShadowWar {
-  _id?: string; // Optional, as it might not exist for new wars
+  _id?: string;
   date: Date;
   result: string;
   enemyClan: Clan;
@@ -42,5 +38,5 @@ export interface ShadowWar {
     famed: Match[];
     proud: Match[];
   };
-  confirmed: Member[];
+  confirmed: Character[];
 }

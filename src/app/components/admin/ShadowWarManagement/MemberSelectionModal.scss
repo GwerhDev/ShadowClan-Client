@@ -1,4 +1,4 @@
-.member-selection-grid {
+.characters-selection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
@@ -12,7 +12,7 @@
   pointer-events: none;
 }
 
-.no-member {
+.no-characters {
   padding: 1rem;
   border-radius: 1rem;
     background-color: var(--element-color-primary-hover);

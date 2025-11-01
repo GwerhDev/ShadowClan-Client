@@ -1,13 +1,13 @@
 
 
-.member-grid {
+.character-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
   margin-bottom: 20px;
 }
 
-.member-card-wrapper {
+.character-card-wrapper {
   position: relative;
   cursor: pointer;
   border: 2px solid transparent;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, PropType, ref, watch } from 'vue';
-import { Match, Member } from '../../../../interfaces';
+import { Match, Character } from '../../../../interfaces';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { useStore } from '../../../../middlewares/store';
 import ShadowWarMemberCard from '../ShadowWarManagement/ShadowWarMemberCard.vue';
@@ -25,12 +25,12 @@ watch(() => props.match, (newMatch) => {
   }
 }, { immediate: true });
 
-const compareMemberGroups = (groupA: (Member | undefined)[] | undefined, groupB: (Member | undefined)[] | undefined) => {
+const compareMemberGroups = (groupA: (Character | undefined)[] | undefined, groupB: (Character | undefined)[] | undefined) => {
   if (!groupA || !groupB) return false;
   if (groupA.length !== groupB.length) return false;
 
-  const idsA = groupA.map(member => member?._id).filter(Boolean).sort();
-  const idsB = groupB.map(member => member?._id).filter(Boolean).sort();
+  const idsA = groupA.map(character => character?._id).filter(Boolean).sort();
+  const idsB = groupB.map(character => character?._id).filter(Boolean).sort();
 
   if (idsA.length !== idsB.length) return false;
 
@@ -52,8 +52,8 @@ const updateResult = async () => {
   let matchFound = false;
   for (const type of battleTypes) {
     const matchIndex = updatedShadowWar.battle[type].findIndex((m: Match) =>
-      compareMemberGroups(m.group1.member, props.match?.group1.member) &&
-      compareMemberGroups(m.group2.member, props.match?.group2.member)
+      compareMemberGroups(m.group1.character, props.match?.group1.character) &&
+      compareMemberGroups(m.group2.character, props.match?.group2.character)
     );
     if (matchIndex !== -1) {
       updatedShadowWar.battle[type][matchIndex].result = editableResult.value;
@@ -91,16 +91,16 @@ const updateResult = async () => {
         <div class="team-group">
           <h5>Grupo 1</h5>
           <ul>
-            <li v-for="(member, memberIndex) in match?.group1.member" :key="memberIndex">
-              <ShadowWarMemberCard :member="member" />
+            <li v-for="(character, memberIndex) in match?.group1.character" :key="memberIndex">
+              <ShadowWarMemberCard :character="character" />
             </li>
           </ul>
         </div>
         <div class="team-group">
           <h5>Grupo 2</h5>
           <ul>
-            <li v-for="(member, memberIndex) in match?.group2.member" :key="memberIndex">
-              <ShadowWarMemberCard :member="member" />
+            <li v-for="(character, memberIndex) in match?.group2.character" :key="memberIndex">
+              <ShadowWarMemberCard :character="character" />
             </li>
           </ul>
         </div>

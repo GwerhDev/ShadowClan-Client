@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, watchEffect } from 'vue';
-import * as ShadowWarInterfaces from '../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';
+import { Character } from '../../../interfaces';
 
 const store: any = useStore();
 
@@ -24,20 +24,20 @@ const loggedInUser = computed(() => store.currentUser.userData);
 const error = computed(() => store.currentUser.shadowWarError);
 
 watchEffect(() => {
-  if (shadowWarData.value && shadowWarData.value.battle && loggedInUser.value && loggedInUser.value.member) {
+  if (shadowWarData.value && shadowWarData.value.battle && loggedInUser.value && loggedInUser.value.character) {
     const battlesSet = new Set<string>();
     for (const categoryName in shadowWarData.value.battle) {
       const category = shadowWarData.value.battle[categoryName];
       for (let matchIndex = 0; matchIndex < category.length; matchIndex++) {
         const match = category[matchIndex];
 
-        const group1Members = match.group1.member || [];
-        if (Array.isArray(loggedInUser.value.member) && group1Members.some((m: ShadowWarInterfaces.Member) => m && loggedInUser.value.member.includes(m._id))) {
+        const group1Members = match.group1.character || [];
+        if (Array.isArray(loggedInUser.value.character) && group1Members.some((m: Character) => m && loggedInUser.value.character.includes(m._id))) {
           battlesSet.add(JSON.stringify({ category: categoryName, match: matchIndex + 1, group: 1 }));
         }
 
-        const group2Members = match.group2.member || [];
-        if (Array.isArray(loggedInUser.value.member) && group2Members.some((m: ShadowWarInterfaces.Member) => m && loggedInUser.value.member.includes(m._id))) {
+        const group2Members = match.group2.character || [];
+        if (Array.isArray(loggedInUser.value.character) && group2Members.some((m: Character) => m && loggedInUser.value.character.includes(m._id))) {
           battlesSet.add(JSON.stringify({ category: categoryName, match: matchIndex + 1, group: 2 }));
         }
       }
@@ -50,8 +50,8 @@ watchEffect(() => {
   }
 });
 
-const getPaddedMembers = (members: ShadowWarInterfaces.Member[] | undefined) => {
-  const padded: (ShadowWarInterfaces.Member | undefined)[] = members ? [...members] : [];
+const getPaddedMembers = (members: Character[] | undefined) => {
+  const padded: (Character | undefined)[] = members ? [...members] : [];
   const missingMembers = 4 - padded.length;
   if (missingMembers > 0) {
     return padded.concat(Array(missingMembers).fill(undefined));
@@ -59,11 +59,11 @@ const getPaddedMembers = (members: ShadowWarInterfaces.Member[] | undefined) => 
   return padded;
 };
 
-const isMemberLinked = (member: ShadowWarInterfaces.Member | undefined) => {
-  if (!loggedInUser.value || !loggedInUser.value.member || !member) {
+const isMemberLinked = (character: Character | undefined) => {
+  if (!loggedInUser.value || !loggedInUser.value.character || !character) {
     return false;
   }
-  return loggedInUser.value.member.includes(member._id);
+  return loggedInUser.value.character.includes(character._id);
 };
 </script>
 
@@ -89,25 +89,25 @@ const isMemberLinked = (member: ShadowWarInterfaces.Member | undefined) => {
                   <div class="match-groups">
                     <div class="group">
                       <h5>Grupo 1</h5>
-                      <div class="member-cards-grid">
+                      <div class="character-cards-grid">
                         <template v-if="props.loading">
                           <MemberCardSkeleton />
                         </template>
                         <template v-else>
-                          <ShadowWarMemberCard v-for="(member, index) in getPaddedMembers(match.group1.member)"
-                            :key="index" :member="member" :is-linked="isMemberLinked(member)" />
+                          <ShadowWarMemberCard v-for="(character, index) in getPaddedMembers(match.group1.character)"
+                            :key="index" :character="character" :is-linked="isMemberLinked(character)" />
                         </template>
                       </div>
                     </div>
                     <div class="group">
                       <h5>Grupo 2</h5>
-                      <div class="member-cards-grid">
+                      <div class="character-cards-grid">
                         <template v-if="props.loading">
                           <MemberCardSkeleton />
                         </template>
                         <template v-else>
-                          <ShadowWarMemberCard v-for="(member, index) in getPaddedMembers(match.group2.member)"
-                            :key="index" :member="member" :is-linked="isMemberLinked(member)" />
+                          <ShadowWarMemberCard v-for="(character, index) in getPaddedMembers(match.group2.character)"
+                            :key="index" :character="character" :is-linked="isMemberLinked(character)" />
                         </template>
                       </div>
                     </div>

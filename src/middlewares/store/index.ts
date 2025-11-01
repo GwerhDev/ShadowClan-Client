@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getMembers, createMember, updateMember, deleteMember, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById } from '../services';
 import { API_URL } from '../misc/const';
 import { storeState } from '../../interfaces/storeState';
 import { Character, ShadowWar } from '../../interfaces';
@@ -30,7 +30,7 @@ export const useStore = defineStore('store', {
       clantasks: null,
       warbandtasks: null,
       notifications: null,
-      members: null,
+      characters: null,
       clans: null,
       shadowWars: null,
       currentShadowWar: null,
@@ -120,13 +120,13 @@ export const useStore = defineStore('store', {
 
     async handleGetMembers() {
       if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "leader" || this.currentUser.userData?.role === "officer") {
-        this.admin.members = await getMembers();
+        this.admin.characters = await getAdminCharacters();
       }
     },
 
     async handleCreateMember(formData: any) {
       try {
-        const response: any = await createMember(formData);
+        const response: any = await createAdminCharacter(formData);
         return response;
       } catch (error) {
         console.error(error);
@@ -134,11 +134,11 @@ export const useStore = defineStore('store', {
     },
 
     async handleUpdateMember(id: string, formData: any) {
-      await updateMember(id, formData);
+      await updateAdminCharacter(id, formData);
     },
 
     async handleDeleteMember(id: string) {
-      await deleteMember(id);
+      await deleteAdminCharacter(id);
     },
 
     async handleUpdateUser(id: string, formData: any) {
@@ -324,7 +324,7 @@ export const useStore = defineStore('store', {
       }
     },
 
-    setCurrentCharacter(character: Character | null) {
+    setCurrentCharacter(character: Character | string | null) {
       this.currentCharacter = character;
     },
   }

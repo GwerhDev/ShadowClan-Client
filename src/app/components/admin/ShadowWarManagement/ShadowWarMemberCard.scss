@@ -1,6 +1,6 @@
 @import '../../../../styles/root.css';
 
-.member-card {
+.character-card {
   position: relative; // Needed for absolute positioning of the button
   border: 1px solid var(--primary-border-color);
   border-radius: 8px;
@@ -44,7 +44,7 @@
     }
   }
 
-  .member-info {
+  .character-info {
     gap: 1rem;
     display: flex;
     align-items: center;
@@ -62,7 +62,7 @@
       }
     }
 
-    .member-details {
+    .character-details {
       width: 100%;
       display: flex;
       align-items: center;

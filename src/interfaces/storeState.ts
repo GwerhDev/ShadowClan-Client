@@ -28,10 +28,10 @@ export interface storeState {
     warbandtasks: any,
     notifications: any,
     shadowWars: any,
-    members: any,
+    characters: any,
     clans: any,
     currentShadowWar: ShadowWar | null;
   },
-  currentCharacter: Character | null,
+  currentCharacter: Character | string | null,
   warbands: any,
 }

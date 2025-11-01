@@ -21,25 +21,25 @@ export const getUsers: any = async () => {
   return response;
 };
 
-export const getMembers: any = async () => {
-  const response: any = await axios.get(API_URL + "/admin/members", { withCredentials: true })
+export const getAdminCharacters: any = async () => {
+  const response: any = await axios.get(API_URL + "/admin/characters", { withCredentials: true })
     .then(response => response.data)
   return response;
 };
 
-export const createMember: any = async (formData: any) => {
-  const response: any = await axios.post(API_URL + "/admin/members", formData, { withCredentials: true })
+export const createAdminCharacter: any = async (formData: any) => {
+  const response: any = await axios.post(API_URL + "/admin/characters", formData, { withCredentials: true })
     .then(response => response.data)
   return response;
 };
 
-export const updateMember: any = async (id: string, formData: any) => {
-  await axios.patch(API_URL + "/admin/members/" + id, formData, { withCredentials: true });
+export const updateAdminCharacter: any = async (id: string, formData: any) => {
+  await axios.patch(API_URL + "/admin/characters/" + id, formData, { withCredentials: true });
   return;
 };
 
-export const deleteMember: any = async (id: string) => {
-  await axios.delete(API_URL + "/admin/members/" + id, { withCredentials: true });
+export const deleteAdminCharacter: any = async (id: string) => {
+  await axios.delete(API_URL + "/admin/characters/" + id, { withCredentials: true });
   return;
 };
 

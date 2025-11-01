@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
-import { Member } from '../../../../interfaces';
+import { Character } from '../../../../interfaces';
 import CustomModal from '../../Modals/CustomModal.vue';
 import ShadowWarMemberCard from '../ShadowWarManagement/ShadowWarMemberCard.vue';
 
 defineProps({
   members: {
-    type: Array as PropType<Member[]> | undefined,
+    type: Array as PropType<Character[]> | undefined,
     required: true
   }
 });

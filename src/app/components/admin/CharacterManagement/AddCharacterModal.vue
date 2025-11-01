@@ -1,4 +1,4 @@
-<style scoped lang="scss" src="./AddMemberModal.scss" />
+<style scoped lang="scss" src="./AddCharacterModal.scss" />
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useStore } from '../../../../middlewares/store';

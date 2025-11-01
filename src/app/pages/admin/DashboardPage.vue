@@ -4,7 +4,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import AppLayout from '../../layouts/AppLayout.vue';
 import DeniedAccess from '../../utils/DeniedAccess.vue';
-import { ShadowWar as ShadowWarInterface, Match, Member } from '../../../interfaces';
+import { ShadowWar as ShadowWarInterface, Match, Character } from '../../../interfaces';
 import CustomModal from '../../components/Modals/CustomModal.vue';
 
 const store: any = useStore();
@@ -33,9 +33,9 @@ const prepareShareableMessage = async () => {
 
   const enemy = warData.enemyClan?.name || 'Clan enemigo no definido';
 
-  const formatGroup = (group: (Member | undefined)[]) => {
+  const formatGroup = (group: (Character | undefined)[]) => {
     return group
-      .map(m => m?.character || 'Vacío')
+      .map(c => c?.name || 'Vacío')
       .join(', ');
   };
 
@@ -44,8 +44,8 @@ const prepareShareableMessage = async () => {
     let section = `*${title.toUpperCase()}*\n\n`;
     matches.forEach((match, index) => {
       section += `*PARTIDA ${index + 1}*\n`;
-      section += `_grupo 1:_ ${formatGroup(match.group1.member)}\n`;
-      section += `_grupo 2:_ ${formatGroup(match.group2.member)}\n\n`;
+      section += `_grupo 1:_ ${formatGroup(match.group1.character)}\n`;
+      section += `_grupo 2:_ ${formatGroup(match.group2.character)}\n\n`;
     });
     return section + '\n';
   };

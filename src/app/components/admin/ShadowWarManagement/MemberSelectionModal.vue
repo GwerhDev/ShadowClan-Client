@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
-import { Member } from '../../../../interfaces';
+import { Character } from '../../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import CustomModal from '../../Modals/CustomModal.vue';
 
 const props = defineProps({
-  members: {
-    type: Array as PropType<Member[]>,
+  characters: {
+    type: Array as PropType<Character[]>,
     required: true
   },
   assignedMemberIds: {
@@ -15,13 +15,13 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['close', 'member-selected']);
+const emit = defineEmits(['close', 'characters-selected']);
 
-const handleCardClick = (member: Member) => {
-  if (props.assignedMemberIds.includes(member._id)) {
-    return; // Do nothing if member is already assigned
+const handleCardClick = (characters: Character) => {
+  if (props.assignedMemberIds.includes(characters._id)) {
+    return; // Do nothing if characters is already assigned
   }
-  emit('member-selected', member);
+  emit('characters-selected', characters);
   emit('close');
 };
 
@@ -32,11 +32,11 @@ const isAssigned = (memberId: string) => {
 
 <template>
   <CustomModal title="Seleccionar Miembro" @close="$emit('close')">
-    <div v-if="members.length" class="member-selection-grid">
-      <ShadowWarMemberCard v-for="member in members" :key="member._id" :member="member" @click="handleCardClick(member)"
-        :class="{ 'is-assigned': isAssigned(member._id) }" />
+    <div v-if="characters.length" class="characters-selection-grid">
+      <ShadowWarMemberCard v-for="characters in characters" :key="characters._id" :characters="characters" @click="handleCardClick(characters)"
+        :class="{ 'is-assigned': isAssigned(characters._id) }" />
     </div>
-    <div class="no-member" v-else>
+    <div class="no-characters" v-else>
       <h1><i class="fas fa-ban"></i></h1>
       <h4>
         No hay miembros confirmados

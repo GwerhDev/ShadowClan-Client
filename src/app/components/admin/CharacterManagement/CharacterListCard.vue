@@ -1,44 +1,37 @@
-<style scoped lang="scss" src="./MemberListCard.scss" />
+<style scoped lang="scss" src="./CharacterListCard.scss" />
 <script setup lang="ts">
 import { classes } from '../../../../middlewares/misc/const';
 import { useStore } from '../../../../middlewares/store';
-import { Ref, computed, onMounted, ref } from 'vue';
+import { Ref, onMounted, ref } from 'vue';
 
 const store: any = useStore();
 const editionActive: Ref<boolean> = ref(false);
 const deleteActive: Ref<boolean> = ref(false);
 
-const character: Ref<string> = ref('');
+const name: Ref<string> = ref('');
 const resonance: Ref<number> = ref(0);
-const memberClass: Ref<string> = ref('');
-const whatsapp: Ref<string> = ref('');
+const currentClass: Ref<string> = ref('');
 
-const formattedWhatsapp = computed(() => {
-  return props.member.whatsapp.replace(/[+\s]/g, '');
-});
-
-const props = defineProps(['member']);
+const props = defineProps(['character']);
 
 onMounted(() => {
-  character.value = props.member.character;
-  resonance.value = props.member.resonance;
-  memberClass.value = props.member.class;
-  whatsapp.value = props.member.whatsapp;
+  name.value = props.character.name;
+  resonance.value = props.character.resonance;
+  currentClass.value = props.character.currentClass;
 });
 
 function handleEdit() {
   editionActive.value = true;
 };
 
-async function handleUpdate(member: any) {
+async function handleUpdate(id: string) {
   const formData = {
-    character: character.value,
+    character: name.value,
     resonance: resonance.value,
-    class: memberClass.value,
-    whatsapp: whatsapp.value,
+    class: currentClass.value,
   };
 
-  await store.handleUpdateMember(member._id, formData);
+  await store.handleUpdateMember(id, formData);
   await store.handleGetMembers();
   editionActive.value = false;
 };
@@ -65,24 +58,21 @@ function handleDelete() {
       <img src="../../../../assets/svg/profile-icon.svg" alt="">
     </span>
     <span>
-      <input type="text" v-model="character">
+      <input type="text" v-model="name">
     </span>
     <span>
       <input type="number" v-model.number="resonance">
     </span>
     <span>
-      <select v-model="memberClass">
+      <select v-model="currentClass">
         <option v-for="cls in classes" :key="cls.value" :value="cls.value">
           {{ cls.name }}
         </option>
       </select>
     </span>
     <span>
-      <input type="text" v-model="whatsapp">
-    </span>
-    <span>
       <ul class="buttons-container">
-        <button @click="handleUpdate(member)">
+        <button @click="handleUpdate(character)">
           ✔️
         </button>
         <button @click="handleCancel">
@@ -96,24 +86,19 @@ function handleDelete() {
       <img src="../../../../assets/svg/profile-icon.svg" alt="">
     </span>
     <span>
-      <p>{{ member.character }}</p>
+      <p>{{ character.name }}</p>
     </span>
     <span>
-      <p>{{ member.resonance }}</p>
+      <p>{{ character.name }}</p>
     </span>
     <span>
       <ul class="class-container">
-        <img :src="classes.find(cls => cls.value === member.class)?.image" alt="" width="30">
+        <img :src="classes.find(cls => cls.value === character.currentClass)?.image" alt="" width="30">
       </ul>
     </span>
     <span>
-      <a :href="'https://wa.me/' + formattedWhatsapp" target="_blank">
-        <i class="fab fa-whatsapp whatsapp-icon"></i>
-      </a>
-    </span>
-    <span>
       <ul class="buttons-container">
-        <button @click="handleDeleteMember(member._id)">
+        <button @click="handleDeleteMember(character._id)">
           ✔️
         </button>
         <button @click="handleCancel">
@@ -127,20 +112,15 @@ function handleDelete() {
       <img src="../../../../assets/svg/profile-icon.svg" alt="">
     </span>
     <span>
-      <p>{{ member.character }}</p>
+      <p>{{ character.name }}</p>
     </span>
     <span>
-      <p>{{ member.resonance }}</p>
+      <p>{{ character.name }}</p>
     </span>
     <span>
       <ul class="class-container">
-        <img :src="classes.find(cls => cls.value === member.class)?.image" alt="" width="30">
+        <img :src="classes.find(cls => cls.value === character.currentClass)?.image" alt="" width="30">
       </ul>
-    </span>
-    <span>
-      <a :href="'https://wa.me/' + formattedWhatsapp" target="_blank">
-        <i class="fab fa-whatsapp whatsapp-icon"></i>
-      </a>
     </span>
     <span>
       <ul class="buttons-container">

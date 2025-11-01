@@ -3,9 +3,9 @@ import DashboardPage from '../pages/admin/DashboardPage.vue';
 import UserManagement from '../components/admin/UserManagement/UserManagement.vue';
 import ClanManagement from '../components/admin/ClanManagement/ClanManagement.vue';
 import HistoryDetails from '../components/admin/HistoryManagement/HistoryDetails.vue';
-import MemberManagement from '../components/admin/MemberManagement/MemberManagement.vue';
-import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
 import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
+import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
+import CharacterManagement from '../components/admin/CharacterManagement/CharacterManagement.vue';
 import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
 
 import UserPage from '../pages/UserPage.vue';
@@ -120,7 +120,7 @@ const routes: RouteRecordRaw[] = [
           {
             path: 'members',
             name: 'DashboardMembers',
-            component: MemberManagement,
+            component: CharacterManagement,
             meta: { title: 'Miembros' },
           },
           {

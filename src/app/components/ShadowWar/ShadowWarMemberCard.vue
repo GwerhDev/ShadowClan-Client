@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
-import { Member } from '../../../interfaces';
+import { Character } from '../../../interfaces';
 import { classes } from '../../../middlewares/misc/const';
 
 defineProps({
-  member: {
-    type: Object as PropType<Member | undefined>,
+  character: {
+    type: Object as PropType<Character | undefined>,
     default: undefined,
   },
   isLinked: {
@@ -21,11 +21,11 @@ const getClassImage = (className: string | undefined) => {
 </script>
 
 <template>
-  <div class="member-card" :class="{ 'linked-member': isLinked }">
-    <div v-if="member" class="member-info">
-      <img :src="getClassImage(member!.class)" :alt="member!.class" class="class-image" />
-      <div class="member-details">
-        <span class="character-name">{{ member!.character }}</span>
+  <div class="character-card" :class="{ 'linked-character': isLinked }">
+    <div v-if="character" class="character-info">
+      <img :src="getClassImage(character!.name)" :alt="character!.name" class="class-image" />
+      <div class="character-details">
+        <span class="character-name">{{ character!.name }}</span>
       </div>
     </div>
     <div v-else class="empty-card">
