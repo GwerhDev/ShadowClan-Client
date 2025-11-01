@@ -118,10 +118,10 @@ const routes: RouteRecordRaw[] = [
             meta: { title: 'Clanes' },
           },
           {
-            path: 'members',
-            name: 'DashboardMembers',
+            path: 'characters',
+            name: 'DashboardCharacters',
             component: CharacterManagement,
-            meta: { title: 'Miembros' },
+            meta: { title: 'Personajes' },
           },
           {
             path: 'users',

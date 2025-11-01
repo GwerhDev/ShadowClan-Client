@@ -23,7 +23,7 @@ const tabs = [
   { id: 'accursed-tower', name: 'Torre', icon: 'fas fa-chess-rook', path: '/a/dashboard/accursed-tower' },
   { id: 'history', name: 'Historial', icon: 'fas fa-history', path: '/a/dashboard/history' },
   { id: 'clans', name: 'Clanes', icon: 'fas fa-shield-alt', path: '/a/dashboard/clans' },
-  { id: 'members', name: 'Miembros', icon: 'fas fa-user-group', path: '/a/dashboard/members' },
+  { id: 'characters', name: 'Persojanes', icon: 'fas fa-user-group', path: '/a/dashboard/characters' },
   { id: 'users', name: 'Usuarios', icon: 'fas fa-users', path: '/a/dashboard/users' },
 ];
 

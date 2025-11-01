@@ -21,7 +21,7 @@ onMounted(async () => {
   loading.value = false;
 });
 
-const navItems = ['nombre', 'status', 'members', 'acciones'];
+const navItems = ['name', 'leader', 'members', 'actions'];
 
 </script>
 

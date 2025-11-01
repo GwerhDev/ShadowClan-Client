@@ -8,15 +8,15 @@ const editionActive: Ref<boolean> = ref(false);
 const deleteActive: Ref<boolean> = ref(false);
 
 const name: Ref<string> = ref('');
-const status: Ref<string> = ref('');
-const members: Ref<string> = ref('');
+const member: Ref<string> = ref('');
+const leader: Ref<string> = ref('');
 
 const props = defineProps(['clan']);
 
 onMounted(() => {
   name.value = props.clan.name;
-  status.value = props.clan.status;
-  members.value = props.clan.members;
+  member.value = props.clan.member;
+  leader.value = props.clan.leader;
 });
 
 function handleEdit() {
@@ -26,8 +26,8 @@ function handleEdit() {
 async function handleUpdate(clan: any) {
   const formData = {
     name: name.value,
-    status: status.value,
-    members: members.value
+    member: member.value,
+    leader: leader.value,
   };
 
   await store.handleUpdateClan(clan._id, formData);
@@ -55,10 +55,10 @@ function handleDelete() {
       <input type="text" v-model="name">
     </span>
     <span>
-      <input type="text" v-model="status">
+      <input type="text" v-model="leader">
     </span>
     <span>
-      <input type="text" v-model="members">
+      <input type="text" v-model="member">
     </span>
     <span>
       <ul class="buttons-container">
@@ -76,10 +76,10 @@ function handleDelete() {
       <p>{{ clan.name }}</p>
     </span>
     <span>
-      <p>{{ clan.status }}</p>
+      <p>{{ clan.leader }}</p>
     </span>
     <span>
-      <p>{{ clan.members }}</p>
+      <p>{{ clan.member }}</p>
     </span>
     <span>
       <ul class="buttons-container">
@@ -97,10 +97,10 @@ function handleDelete() {
       <p>{{ clan.name }}</p>
     </span>
     <span>
-      <p>{{ clan.status }}</p>
+      <p>{{ clan.leader.name }}</p>
     </span>
     <span>
-      <p>{{ clan.members.length }}</p>
+      <p>{{ clan.member.length }}</p>
     </span>
     <span>
       <ul class="buttons-container">
