@@ -230,6 +230,13 @@ button:focus,
   border-color: var(--color-primary-light);
 }
 
+button:disabled {
+  opacity: .5;
+  border: none;
+  outline: none;
+  cursor: default;
+}
+
 .card {
   padding: 2em;
 }

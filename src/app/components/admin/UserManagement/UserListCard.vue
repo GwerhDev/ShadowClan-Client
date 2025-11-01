@@ -82,21 +82,29 @@ function styleStatus(status: string) {
 <template>
   <!-- Edit Mode -->
   <div class="list-container" v-if="editionActive && !deleteActive">
-    <span>
+    <span v-if="user.role !== 'super_admin'">
       <select v-model="status">
         <option value="active">active</option>
         <option value="pending">pending</option>
         <option value="inactive">inactive</option>
       </select>
     </span>
+    <span v-else class="status-container">
+      <div class="status-image">
+        <img src="../../../../assets/svg/profile-icon.svg" alt="">
+        <span class="status" :style="styleStatus(user.status)"></span>
+      </div>
+    </span>
     <span>
       <p>{{ user.battletag }}</p>
     </span>
     <span>
-      <select v-model="role">
+      <select v-model="role" v-if="user.role !== 'super_admin'">
+        <option disabled value="super_admin">super_admin</option>
         <option value="admin">admin</option>
         <option value="user">user</option>
       </select>
+      <p v-else>{{ user.role }}</p>
     </span>
     <span>
       <p>{{ user.character?.length || 0 }}</p>
@@ -104,8 +112,8 @@ function styleStatus(status: string) {
     <span>
       <ul class="buttons-container">
         <button @click="openLinkModal"><i class="fas fa-link"></i></button>
-        <button @click="handleUpdate(user._id)">✔️</button>
-        <button @click="handleCancel">❌</button>
+        <button :disabled="user.role === 'super_admin'" @click="handleUpdate(user._id)">✔️</button>
+        <button :disabled="user.role === 'super_admin'" @click="handleCancel">❌</button>
       </ul>
     </span>
   </div>
@@ -130,8 +138,8 @@ function styleStatus(status: string) {
     <span>
       <ul class="buttons-container">
         <button @click="openLinkModal"><i class="fas fa-link"></i></button>
-        <button @click="handleDeleteUser(user._id)">✔️</button>
-        <button @click="handleCancel">❌</button>
+        <button :disabled="user.role === 'super_admin'" @click="handleDeleteUser(user._id)">✔️</button>
+        <button :disabled="user.role === 'super_admin'" @click="handleCancel">❌</button>
       </ul>
     </span>
   </div>
@@ -157,10 +165,10 @@ function styleStatus(status: string) {
       <ul class="buttons-container">
         <button @click="openLinkModal"><i class="fas fa-link"></i></button>
 
-        <button @click="handleEdit">
+        <button :disabled="user.role === 'super_admin'" @click="handleEdit">
           <img src="../../../../assets/svg/edit-icon.svg" alt="" width="18px">
         </button>
-        <button @click="handleDelete">
+        <button :disabled="user.role === 'super_admin'" @click="handleDelete">
           <img src="../../../../assets/svg/delete-icon.svg" alt="" width="22px">
         </button>
       </ul>

@@ -15,8 +15,9 @@ span {
   display: flex;
   flex-direction: column;
   gap: .5rem;
-
+  
   button {
+    color: #99938a;
     background-color: var(--color-primary-bg);
     width: 80px;
   }
