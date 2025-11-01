@@ -139,3 +139,4 @@ export const logout: any = async () => {
 
 export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, getShadowWars } from './shadowWarService';
 export { getClans, createClan, updateClan, deleteClan } from './clanService';
+export { getCharacterByName } from './characterService';
