@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
 
 const tabs = [
@@ -7,14 +6,12 @@ const tabs = [
   { id: 'settings', name: 'Ajustes', icon: 'fas fa-gear', path: '/u/settings' },
 ];
 
-const loading = ref(true);
-
 </script>
 
 <template>
   <main class="red-shadow-fx">
     <div class="div-container">
-      <AppLayout :loading="loading" :tabs="tabs">
+      <AppLayout :tabs="tabs">
         <router-view />
       </AppLayout>
     </div>

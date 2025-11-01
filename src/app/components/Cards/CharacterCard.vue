@@ -30,7 +30,7 @@ const getClassImage = (className: string | undefined) => {
         <h4 class="character-name">{{ character!.name }}</h4>
         <p class="resonance">{{ character!.resonance }}</p>
       </div>
-      <h4 v-if="character!.clan!.name" class="clan-name" :title="character!.clan!.name">{{ character!.clan!.name }}</h4>
+      <h4 v-if="character!.clan?.name" class="clan-name" :title="character!.clan?.name">{{ character!.clan?.name }}</h4>
     </div>
   </div>
 </template>

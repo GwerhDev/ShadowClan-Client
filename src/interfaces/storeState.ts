@@ -1,4 +1,4 @@
-import { ShadowWar, Character } from ".";
+import { ShadowWar } from ".";
 
 export interface storeState {
   currentUser: {
@@ -32,6 +32,6 @@ export interface storeState {
     clans: any,
     currentShadowWar: ShadowWar | null;
   },
-  currentCharacter: Character | string | null,
+  currentCharacter: string | null,
   warbands: any,
 }

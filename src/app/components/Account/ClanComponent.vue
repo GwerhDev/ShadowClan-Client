@@ -1,13 +1,5 @@
 <style scoped lang="scss" src="./ClanComponent.scss" />
 <script setup lang="ts">
-import { useStore } from '../../../middlewares/store';
-import { onMounted } from 'vue';
-
-const store: any = useStore();
-
-onMounted(async () => {
-  await store.handleGetCharacter();
-});
 
 </script>
 

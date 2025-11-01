@@ -15,9 +15,11 @@ const showLogoutModal: Ref = ref(false);
 const showAddCharacterModal: Ref = ref(false);
 const showDeleteAccountModal: Ref = ref(false);
 const editionActive: boolean = false;
+const loading: Ref = ref(true);
 
 onMounted(async () => {
   await store.handleGetCharacter();
+  loading.value = false;
 });
 
 const handleOpenModal = () => {
@@ -45,7 +47,7 @@ const handleLogout = async () => {
     <ul>
       <li class="character-container" v-for="(character, index) in store.currentUser?.userData?.character as any"
         :key="index">
-        <CharacterCard :character="character" />
+        <CharacterCard v-if="!loading" :character="character" />
       </li>
       <li>
         <PrimaryButton text="Agregar" :onclick="handleOpenModal" />

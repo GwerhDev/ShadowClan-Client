@@ -15,7 +15,7 @@ const route = useRoute();
 defineProps({
   loading: {
     type: Boolean,
-    required: true
+    required: false
   },
   tabs: Array as () => Array<{
     id: string;

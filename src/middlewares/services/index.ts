@@ -106,7 +106,7 @@ export const getChatbotModel: any = async () => {
 };
 
 export const getCharacter: any = async () => {
-  const response: any = await axios.get(API_URL + "/character/", { withCredentials: true })
+  const response: any = await axios.get(API_URL + "/character", { withCredentials: true })
     .then(response => response.data);
   return response;
 };
