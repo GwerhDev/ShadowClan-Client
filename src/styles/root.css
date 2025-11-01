@@ -213,10 +213,11 @@ button,
   border: solid 2px transparent;
   color: var(--color-app-white);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all .4s;
   display: flex;
   text-align: center;
   align-items: center;
+  justify-content: center;
 }
 
 button:hover,
