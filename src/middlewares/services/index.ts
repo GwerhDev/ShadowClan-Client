@@ -34,7 +34,7 @@ export const createAdminCharacter: any = async (formData: any) => {
 };
 
 export const updateAdminCharacter: any = async (formData: any) => {
-  const response: any =await axios.patch(API_URL + "/admin/characters", formData, { withCredentials: true });
+  const response: any = await axios.patch(API_URL + "/admin/characters", formData, { withCredentials: true });
   return response.data;
 };
 
@@ -112,9 +112,17 @@ export const getCharacter: any = async () => {
 };
 
 export const createCharacter: any = async (formData: any) => {
-  const response: any = await axios.post(API_URL + "/character/create", formData, { withCredentials: true })
+  try { 
+    const response: any = await axios.post(API_URL + "/character/create", formData, { withCredentials: true })
     .then(response => response.data);
-  return response;
+    return response;
+
+  } catch (error: any) {
+    if (error.status === 409) {
+      return error.response.data;
+    }
+    return error;
+  }
 };
 
 export const getWarbands: any = async () => {

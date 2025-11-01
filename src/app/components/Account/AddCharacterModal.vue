@@ -46,10 +46,9 @@ function handleCloseModal() {
   emit('close');
 };
 
-function handleSubmit() {
-  console.log(formData.value)
-  store.handleCreateCharacter(formData.value);
-  handleCloseModal();
+async function handleSubmit() {
+  const response = await store.handleCreateCharacter(formData.value);
+  if (!response?.error) return handleCloseModal();
 };
 </script>
 

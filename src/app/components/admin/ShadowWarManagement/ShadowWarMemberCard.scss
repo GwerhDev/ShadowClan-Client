@@ -1,7 +1,5 @@
-@import '../../../../styles/root.css';
-
 .character-card {
-  position: relative; // Needed for absolute positioning of the button
+  position: relative;
   border: 1px solid var(--primary-border-color);
   border-radius: 8px;
   padding-inline: 1rem;

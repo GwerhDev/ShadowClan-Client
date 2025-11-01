@@ -235,20 +235,20 @@ export const useStore = defineStore('store', {
     },
 
     async handleCreateCharacter(formData: any) {
-      try {
-        const response: any = await createCharacter(formData);
-        const newCharacter = response?.character;
-        if (newCharacter) {
-          if (!Array.isArray(this.currentUser.userData.character)) {
-            this.currentUser.userData.character = [];
-          }
-          this.currentUser.userData.character.push(newCharacter);
-          this.setCurrentCharacter(newCharacter._id);
-        }
+      const response: any = await createCharacter(formData);
+      if(response?.error) {
         return response;
-      } catch (error) {
-        console.error(error);
+      };
+
+      const newCharacter = response.character;
+      if (newCharacter) {
+        if (!Array.isArray(this.currentUser.userData.character)) {
+          this.currentUser.userData.character = [];
+        }
+        this.currentUser.userData.character.push(newCharacter);
+        this.setCurrentCharacter(newCharacter._id);
       }
+      return response;
     },
 
     async handleClaimCharacterAsAdmin(formData: any) {
