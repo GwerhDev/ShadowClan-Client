@@ -28,7 +28,7 @@ const store: any = useStore();
           <small>Tareas</small>
         </router-link>
         <router-link title="Dashboard"
-          v-if="store.currentUser.userData?.role === 'admin' || store.currentUser.userData?.role === 'clan-leader' || store.currentUser.userData?.role === 'officer'"
+          v-if="store.currentUser?.userData?.role === 'admin' || store.currentUser?.userData?.role === 'super_admin'"
           to="/a/dashboard" class="nav-item">
           <i class="fas fa-lock"></i>
           <small>Dashboard</small>

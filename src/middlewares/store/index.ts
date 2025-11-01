@@ -109,17 +109,17 @@ export const useStore = defineStore('store', {
       }
     },
 
-    async handleUpdateUserData(formData: any, id: any) {
+    async handleUpdateUserData(formData: any, id: string) {
       await updateUserData(formData, id);
       this.currentUser = await getUserData();
     },
 
     async handleGetUsers() {
-      this.currentUser.userData?.role === "admin" ? this.admin.users = await getUsers() : null;
+      this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin" ? this.admin.users = await getUsers() : null;
     },
 
     async handleGetMembers() {
-      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "leader" || this.currentUser.userData?.role === "officer") {
+      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin") {
         this.admin.characters = await getAdminCharacters();
       }
     },
@@ -141,7 +141,7 @@ export const useStore = defineStore('store', {
       await deleteAdminCharacter(id);
     },
 
-    async handleUpdateUser(id: string, formData: any) {
+    async handleUpdateUser(formData: any, id: string) {
       await updateUser(id, formData);
     },
 
@@ -205,7 +205,7 @@ export const useStore = defineStore('store', {
 
     async handleGetAdminNotifications() {
       try {
-        this.currentUser.userData?.role === "admin" ? this.admin.notifications = await getAdminNotifications() : null;
+        this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin" ? this.admin.notifications = await getAdminNotifications() : null;
         return;
       } catch (error) {
         console.error(error);
@@ -260,9 +260,7 @@ export const useStore = defineStore('store', {
     },
 
     async handleGetClans() {
-      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "leader" || this.currentUser.userData?.role === "officer") {
-        this.admin.clans = await getClans();
-      }
+      this.admin.clans = await getClans();
     },
 
     async handleCreateClan(formData: any) {
@@ -288,7 +286,7 @@ export const useStore = defineStore('store', {
     },
 
     async handleGetShadowWars(page: number = 1, append: boolean = false) {
-      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "leader" || this.currentUser.userData?.role === "officer") {
+      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin" || this.currentUser.userData?.role === "leader" || this.currentUser.userData?.role === "officer") {
         const newShadowWars = await getShadowWars(page);
         if (append && this.admin.shadowWars) {
           this.admin.shadowWars = [...this.admin.shadowWars, ...newShadowWars];

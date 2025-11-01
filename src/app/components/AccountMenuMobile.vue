@@ -87,7 +87,7 @@ function handleLogout() {
           <img src="../../assets/svg/support-icon.svg" alt="">
           Asistencia
         </li>
-        <span class="dashboard-container" @click="handleButton" v-if="store.currentUser?.userData?.role === 'admin' || store.currentUser?.userData?.role === 'leader' || store.currentUser?.userData?.role === 'officer'">
+        <span class="dashboard-container" @click="handleButton" v-if="store.currentUser?.userData?.role === 'admin' || store.currentUser?.userData?.role === 'super_admin'">
           <DashboardButton />
         </span>
       </ul>

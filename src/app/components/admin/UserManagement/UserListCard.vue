@@ -9,7 +9,7 @@ const props = defineProps<{ user: any }>();
 
 const role: Ref<string> = ref(props.user.role);
 const status: Ref<string> = ref(props.user.status);
-const member: Ref<string[]> = ref(props.user.member || []);
+const character: Ref<string[]> = ref(props.user.character || []);
 
 const editionActive = ref(false);
 const deleteActive = ref(false);
@@ -19,14 +19,16 @@ function handleEdit() {
   editionActive.value = true;
 }
 
-async function handleUpdate(user: any) {
+async function handleUpdate(id: string) {
+  console.log(id)
+
   const formData = {
-    status: status.value,
     role: role.value,
-    member: member.value,
+    status: status.value,
+    character: character.value,
   };
 
-  await store.handleUpdateUser(user._id, formData);
+  await store.handleUpdateUser(formData, id);
   await store.handleGetUsers();
   await store.handleGetAdminNotifications();
   editionActive.value = false;
@@ -40,9 +42,9 @@ async function handleDeleteUser(id: string) {
 
 function handleCancel() {
   // Reset fields to original values
-  status.value = props.user.status;
   role.value = props.user.role;
-  member.value = props.user.linked_members || [];
+  status.value = props.user.status;
+  character.value = props.user.character || [];
   editionActive.value = false;
   deleteActive.value = false;
 }
@@ -60,7 +62,7 @@ function handleModalClose() {
 }
 
 function handleModalSave(selectedIds: string[]) {
-  member.value = selectedIds;
+  character.value = selectedIds;
 }
 
 function styleStatus(status: string) {
@@ -92,17 +94,15 @@ function styleStatus(status: string) {
     <span>
       <select v-model="role">
         <option value="admin">admin</option>
-        <option value="leader">líder</option>
-        <option value="officer">oficial</option>
-        <option value="member">miembro</option>
+        <option value="user">user</option>
       </select>
     </span>
     <span>
-      <button @click="openLinkModal">Vincular ({{ member.length }})</button>
+      <button @click="openLinkModal">Vincular ({{ character.length }})</button>
     </span>
     <span>
       <ul class="buttons-container">
-        <button @click="handleUpdate(user)">✔️</button>
+        <button @click="handleUpdate(user._id)">✔️</button>
         <button @click="handleCancel">❌</button>
       </ul>
     </span>
@@ -118,7 +118,7 @@ function styleStatus(status: string) {
     </span>
     <span><p>{{ user.battletag }}</p></span>
     <span><p>{{ user.role }}</p></span>
-    <span><p>{{ user.linked_members?.length || 0 }}</p></span>
+    <span><p>{{ user.character?.length || 0 }}</p></span>
     <span>
       <ul class="buttons-container">
         <button @click="handleDeleteUser(user._id)">✔️</button>
@@ -137,7 +137,7 @@ function styleStatus(status: string) {
     </span>
     <span><p>{{ user.battletag }}</p></span>
     <span><p>{{ user.role }}</p></span>
-    <span><p>{{ user.member?.length || 0 }}</p></span>
+    <span><p>{{ user.character?.length || 0 }}</p></span>
     <span>
       <ul class="buttons-container">
         <button @click="handleEdit">
@@ -152,7 +152,7 @@ function styleStatus(status: string) {
 
   <LinkMemberModal
     v-if="isModalOpen"
-    :initial-selected-ids="member"
+    :initial-selected-ids="character"
     :user-name="user.battletag"
     @close="handleModalClose"
     @save="handleModalSave"
