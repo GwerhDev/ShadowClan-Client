@@ -41,7 +41,9 @@ export const useStore = defineStore('store', {
 
   actions: {
     async handleLogout() {
-      await logout();
+      const response = await logout();
+      console.log('Logged out:', response);
+      window.location.href = response.redirectUrl;
     },
 
     setTaskDate(date: any) {

@@ -112,9 +112,9 @@ export const getCharacter: any = async () => {
 };
 
 export const createCharacter: any = async (formData: any) => {
-  try { 
+  try {
     const response: any = await axios.post(API_URL + "/character/create", formData, { withCredentials: true })
-    .then(response => response.data);
+      .then(response => response.data);
     return response;
 
   } catch (error: any) {
@@ -132,9 +132,9 @@ export const getWarbands: any = async () => {
 };
 
 export const logout: any = async () => {
-  await axios.get(API_URL + "/logout/", { withCredentials: true })
+  const response: any = await axios.get(API_URL + "/logout/", { withCredentials: true })
     .then(response => response.data);
-  return;
+  return response;
 };
 
 export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, getShadowWars } from './shadowWarService';
