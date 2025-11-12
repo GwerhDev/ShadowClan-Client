@@ -37,7 +37,6 @@ function handleSettings() {
 
 function handleLogout() {
   store.logout();
-  router.push('/');
 };
 
 </script>
