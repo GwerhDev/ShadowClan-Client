@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import AppLayout from '../layouts/AppLayout.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useStore } from '../../middlewares/store';
 
-const loading = ref(false); // This can be connected to a real loading state later
+const store: any = useStore();
+const loading = ref(false);
 
-const tabs = [
-  { id: 'mytasks', name: 'Mis Tareas', icon: 'fas fa-user', path: '/tasks/my-tasks' },
-  { id: 'clantasks', name: 'Clan', icon: 'fas fa-shield-alt', path: '/tasks/clan-tasks' },
-  { id: 'warband', name: 'Cofradía', icon: 'fas fa-users', path: '/tasks/warband', disabled: true },
-  { id: 'calendar', name: 'Calendario', icon: 'fas fa-calendar-alt', path: '/tasks/calendar', disabled: true },
-];
+const activeChar = computed(() => {
+  const chars = store.currentUser.userData?.character ?? [];
+  return chars.find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
+});
+
+const tabs = computed(() => [
+  { id: 'mytasks',  name: 'Mis Tareas',  icon: 'fas fa-user',         path: '/tasks/my-tasks' },
+  { id: 'clantasks', name: 'Clan',       icon: 'fas fa-shield-alt',   path: '/tasks/clan-tasks', disabled: !activeChar.value?.clan },
+  { id: 'warband',  name: 'Cofradía',    icon: 'fas fa-users',        path: '/tasks/warband',    disabled: true },
+  { id: 'calendar', name: 'Calendario',  icon: 'fas fa-calendar-alt', path: '/tasks/calendar',   disabled: true },
+]);
 </script>
 
 <template>

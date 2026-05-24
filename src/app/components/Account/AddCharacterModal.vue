@@ -37,23 +37,32 @@ function scrollRight() {
 
 const formData = ref({
   name: '',
-  clan: '',
-  resonance: null,
+  resonance: null as number | null,
   currentClass: '',
 });
 
 const sliderContainer = ref<HTMLElement | null>(null);
+const submitError = ref('');
+const submitted = ref(false);
 
 const isCharacterEmpty = computed(() => characterName.value.trim().length < 3);
-const isFormEmpty = computed(() => formData.value.name.trim() === '');
+
+const errors = computed(() => ({
+  resonance: submitted.value && !formData.value.resonance,
+  currentClass: submitted.value && !formData.value.currentClass,
+}));
+
+const isFormValid = computed(() =>
+  !!formData.value.resonance && !!formData.value.currentClass
+);
 
 function handleClassSelection(classValue: string) {
   formData.value.currentClass = classValue;
-};
+}
 
 function handleCloseModal() {
   emit('close');
-};
+}
 
 const searchCharacter = async () => {
   if (isCharacterEmpty.value) {
@@ -62,14 +71,9 @@ const searchCharacter = async () => {
   }
   isLoading.value = true;
   const response = await getCharacterByName(characterName.value);
-  if (response.found) {
-    characters.value = response.characters;
-  } else {
-    characters.value = [];
-  }
+  characters.value = response.found ? response.characters : [];
   isLoading.value = false;
 };
-
 
 const handleNameInput = () => {
   clearTimeout(debounceTimer);
@@ -85,21 +89,35 @@ const selectCharacterToClaim = (character: any) => {
 
 const goToCreateNewCharacter = () => {
   formData.value.name = characterName.value;
+  submitted.value = false;
+  submitError.value = '';
   step.value = 3;
 };
 
 async function handleSubmit() {
-  const response = await store.handleCreateCharacter(formData.value);
-  if (!response?.error) return handleCloseModal();
-};
+  submitted.value = true;
+  if (!isFormValid.value) return;
+  submitError.value = '';
+  try {
+    const response = await store.handleCreateCharacter(formData.value);
+    if (response?.error) {
+      submitError.value = response.error;
+      return;
+    }
+    handleCloseModal();
+  } catch {
+    submitError.value = 'Ocurrió un error al vincular el personaje. Intenta de nuevo.';
+  }
+}
 
 function backToStep1() {
+  submitted.value = false;
+  submitError.value = '';
   step.value = 1;
 }
 
 function claimCharacter(character: any) {
   console.log('Claiming character:', character);
-  // Logic to claim the character will be added here
 }
 
 </script>
@@ -132,14 +150,21 @@ function claimCharacter(character: any) {
 
     <form v-if="step === 3" @submit.prevent="handleSubmit">
       <ul class="d-flex col g-1">
-        <LabeledInput label="Nombre" id="name" v-model="formData.name" required disabled />
+        <LabeledInput label="Nombre" id="name" v-model="formData.name" disabled />
 
-        <LabeledInput label="Resonancia" id="resonance" v-model.number="formData.resonance" type="number" />
+        <div class="field-group">
+          <LabeledInput
+            label="Resonancia *"
+            id="resonance"
+            v-model.number="formData.resonance"
+            type="number"
+            :class="{ 'input-error': errors.resonance }"
+          />
+          <p v-if="errors.resonance" class="field-error">La resonancia es obligatoria.</p>
+        </div>
 
-        <LabeledInput label="Clan" id="clan" v-model="formData.clan" type="text" />
-
-        <span class="class-selector-container">
-          <label>Clase:</label>
+        <span class="class-selector-container" :class="{ 'input-error': errors.currentClass }">
+          <label>Clase: <span class="required-mark">*</span></label>
           <div class="class-selection-wrapper">
             <button type="button" class="slider-arrow left-arrow" @click="scrollLeft">&lt;</button>
             <div class="class-selection" ref="sliderContainer">
@@ -151,11 +176,16 @@ function claimCharacter(character: any) {
             </div>
             <button type="button" class="slider-arrow right-arrow" @click="scrollRight">&gt;</button>
           </div>
+          <p v-if="errors.currentClass" class="field-error">Debes seleccionar una clase.</p>
         </span>
-        <button :disabled="isFormEmpty" type="submit"
+
+        <p v-if="submitError" class="submit-error">{{ submitError }}</p>
+
+        <button type="submit"
           class="submit-button button justify-content-center align-items-center d-flex g-1 w-100">
           <i class="fas fa-link"></i>
-          Vincular a tu cuenta</button>
+          Vincular a tu cuenta
+        </button>
         <button class="secondary-button" type="button" @click="backToStep1">Volver</button>
       </ul>
     </form>

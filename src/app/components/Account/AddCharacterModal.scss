@@ -23,6 +23,58 @@
   cursor: not-allowed;
 }
 
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  width: 100%;
+}
+
+.field-error {
+  margin: 0;
+  font-size: .75rem;
+  color: #e57373;
+}
+
+.submit-error {
+  margin: 0;
+  font-size: .82rem;
+  color: #e57373;
+  padding: .5rem .75rem;
+  background: rgba(229, 115, 115, .08);
+  border: 1px solid rgba(229, 115, 115, .3);
+  border-radius: 6px;
+}
+
+.required-mark {
+  color: #e57373;
+}
+
+.optional-mark {
+  font-size: .75rem;
+  color: rgba(255, 255, 255, .4);
+  font-weight: normal;
+}
+
+.field-label {
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.field-hint {
+  margin: 0;
+  font-size: .78rem;
+  color: rgba(227, 210, 168, .8);
+
+  i { margin-right: .3rem; }
+}
+
+.input-error {
+  border-color: #e57373 !important;
+  box-shadow: 0 0 0 1px #e57373;
+}
+
 .secondary-button {
   background-color: var(--color-app-white);
   width: 100%;

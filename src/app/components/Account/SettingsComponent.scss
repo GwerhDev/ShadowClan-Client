@@ -1,30 +1,75 @@
+$gold: rgb(227, 210, 168);
+$gold-mid: rgba(227, 210, 168, .5);
+
 .settings-container {
-  gap: .5rem;
-  border-radius: 5px;
-  color: var(--color-app-white);
+  gap: 1rem;
   display: flex;
-  align-items: center;
   flex-direction: column;
-  padding: 1rem;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  color: var(--color-app-white);
+
+  h3 {
+    width: 100%;
+    max-width: 500px;
+    font-size: .65rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .35);
+    margin: 0;
+
+    &.mt-3 { margin-top: 1.25rem; }
+  }
 
   ul {
-    gap: .5rem;
+    gap: .6rem;
     width: 100%;
+    max-width: 500px;
     display: flex;
-    align-items: center;
     flex-direction: column;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 
-    li {
-      width: 100%;
-      max-width: 500px;
-      display: flex;
-      justify-content: center;
-    }
+    li { width: 100%; }
   }
 }
 
-.logout-button {
+.logout-button,
+.danger-button {
   width: 100%;
-  color: black;
-  background-color: var(--color-app-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  padding: .6rem 1.2rem;
+  border-radius: 6px;
+  font-family: 'Cinzel', serif;
+  font-size: .8rem;
+  letter-spacing: .05em;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+
+.logout-button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .2);
+  color: rgba(255, 255, 255, .75);
+
+  &:hover {
+    background: rgba(255, 255, 255, .06);
+    border-color: rgba(255, 255, 255, .4);
+    color: #fff;
+  }
+}
+
+.danger-button {
+  background: transparent;
+  border: 1px solid rgba(229, 115, 115, .35);
+  color: #e57373;
+
+  &:hover {
+    background: rgba(229, 115, 115, .08);
+    border-color: #e57373;
+  }
 }

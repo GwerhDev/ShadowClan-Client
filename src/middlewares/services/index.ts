@@ -137,6 +137,34 @@ export const logout: any = async () => {
   return;
 };
 
+export const getClanRequests: any = async () => {
+  const response: any = await axios.get(API_URL + "/clan-request", { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
+
+export const createClanRequest: any = async (characterId: string, clanId: string) => {
+  const response: any = await axios.post(API_URL + "/clan-request", { characterId, clanId }, { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
+
+export const deleteAccount: any = async () => {
+  await axios.delete(API_URL + "/auth/account", { withCredentials: true });
+};
+
+export const getClanRequestsManagement: any = async () => {
+  const response: any = await axios.get(API_URL + "/clan-request/manage", { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
+
+export const reviewClanRequest: any = async (id: string, action: 'accept' | 'reject') => {
+  const response: any = await axios.patch(API_URL + "/clan-request/" + id, { action }, { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
+
 export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, getShadowWars } from './shadowWarService';
 export { getClans, createClan, updateClan, deleteClan } from './clanService';
 export { getCharacterByName } from './characterService';

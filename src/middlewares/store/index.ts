@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount } from '../services';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
 import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
 import { WEB_URL } from '../misc/const';
+import { getStoredCharacter, setStoredCharacter } from '../misc/characterStorage';
 
 export const useStore = defineStore('store', {
   state: (): storeState => ({
@@ -38,11 +39,17 @@ export const useStore = defineStore('store', {
     },
     currentCharacter: "",
     warbands: null,
+    notifications: [],
   }),
 
   actions: {
     async handleLogout() {
       await logout();
+      window.location.href = WEB_URL + '/login';
+    },
+
+    async handleDeleteAccount() {
+      await deleteAccount();
       window.location.href = WEB_URL + '/login';
     },
 
@@ -98,7 +105,17 @@ export const useStore = defineStore('store', {
     async handleUserData() {
       try {
         this.currentUser = { ...this.currentUser, ...await getUserData() };
-        this.currentCharacter = this.currentUser.userData?.character?.[0] || null;
+
+        const chars  = this.currentUser.userData?.character ?? [];
+        const userId = this.currentUser.userData?.id;
+
+        if (chars.length > 0 && userId) {
+          const stored    = await getStoredCharacter(userId);
+          const stillValid = stored && chars.some((c: any) => c._id === stored);
+          const resolvedId = stillValid ? stored : chars[0]._id;
+          this.currentCharacter = resolvedId;
+          setStoredCharacter(userId, resolvedId).catch(() => {});
+        }
       } catch (error: any) {
         if (error?.response?.status === 401) {
           window.location.href = WEB_URL + '/login';
@@ -353,6 +370,52 @@ export const useStore = defineStore('store', {
 
     setCurrentCharacter(id: string | null) {
       this.currentCharacter = id;
+      const userId = this.currentUser.userData?.id;
+      if (id && userId) {
+        setStoredCharacter(userId, id).catch(() => {});
+      }
+    },
+
+    async handleGetClanRequests() {
+      try {
+        return await getClanRequests();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
+    async handleCreateClanRequest(characterId: string, clanId: string) {
+      try {
+        return await createClanRequest(characterId, clanId);
+      } catch (error: any) {
+        throw error;
+      }
+    },
+
+    async handleGetClanRequestsManagement() {
+      try {
+        return await getClanRequestsManagement();
+      } catch (error) {
+        console.error(error);
+        return [];
+      }
+    },
+
+    async handleReviewClanRequest(id: string, action: 'accept' | 'reject') {
+      return await reviewClanRequest(id, action);
+    },
+
+    addNotification(notification: { id: string; type: string; data: any }) {
+      if (this.notifications.some(n => n.id === notification.id)) return;
+      this.notifications.unshift({ ...notification, read: false });
+    },
+
+    markNotificationsRead() {
+      this.notifications.forEach(n => { n.read = true; });
+    },
+
+    clearNotifications() {
+      this.notifications = [];
     },
   }
 });

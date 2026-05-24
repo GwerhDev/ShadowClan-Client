@@ -7,7 +7,6 @@ import { optionTodoList } from "../../../helpers/lists";
 import TasksCard from "./TasksCard.vue";
 import DeniedAccess from "../../utils/DeniedAccess.vue";
 import LoaderComponent from "../../utils/LoaderComponent.vue";
-import CharacterSelector from "../Selectors/CharacterSelector/CharacterSelector.vue";
 
 const store: any = useStore();
 const route = useRoute();
@@ -77,7 +76,6 @@ async function createTask() {
     <div class="section-container">
       <section class="todolist-section" v-if="store.currentUser.logged">
         <div class="filter-container">
-          <CharacterSelector />
           <input :value="date" type="date" @input="handleDate" v-if="store.currentUser.logged" />
         </div>
 

@@ -1,4 +1,5 @@
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
+import { useStore } from '../../middlewares/store';
 import DashboardPage from '../pages/admin/DashboardPage.vue';
 import UserManagement from '../components/admin/UserManagement/UserManagement.vue';
 import ClanManagement from '../components/admin/ClanManagement/ClanManagement.vue';
@@ -26,6 +27,7 @@ import AccursedTower from '../components/AccursedTower/AccursedTower.vue';
 import TaskPage from '../pages/TaskPage.vue';
 import TasksComponent from '../components/Tasks/TasksComponent.vue';
 import HomePage from '../pages/HomePage.vue';
+import ClanRequestsPage from '../pages/ClanRequestsPage.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -79,6 +81,12 @@ const routes: RouteRecordRaw[] = [
     name: 'Admin',
     redirect: '/a/dashboard',
     children: [
+      {
+        path: 'clan-requests',
+        name: 'ClanRequests',
+        component: ClanRequestsPage,
+        meta: { title: 'Solicitudes de Clan' },
+      },
       {
         path: 'dashboard',
         name: 'Dashboard',
@@ -147,10 +155,10 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Perfil' },
       },
       {
-        path: 'settings',
-        name: 'Settings',
+        path: 'account',
+        name: 'Account',
         component: SettingsComponent,
-        meta: { title: 'Ajustes' },
+        meta: { title: 'Cuenta' },
       }
     ]
   },
@@ -199,6 +207,27 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+});
+
+const WALKER_ALLOWED: string[] = ['Home', 'TaskPage', 'MyTasks', 'ClanTasks', 'UserPage', 'Profile', 'Account'];
+
+router.beforeEach((to, _from, next) => {
+  const store = useStore();
+
+  if (!store.currentUser.logged) return next();
+
+  const role    = store.currentUser.userData?.role;
+  const isAdmin = role === 'admin' || role === 'super_admin';
+  if (!isAdmin) {
+    const chars  = store.currentUser.userData?.character ?? [];
+    const active = (chars as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
+    const isWalker = !active?.clan;
+    if (isWalker && to.name && !WALKER_ALLOWED.includes(to.name as string)) {
+      return next({ name: 'Home' });
+    }
+  }
+
+  next();
 });
 
 export default router;

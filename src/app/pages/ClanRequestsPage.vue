@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import AppLayout from '../layouts/AppLayout.vue';
-
-const tabs = [
-  { id: 'profile', name: 'Perfil', icon: 'fas fa-user', path: '/u/profile' },
-  { id: 'account', name: 'Cuenta', icon: 'fas fa-gear', path: '/u/account' },
-];
-
+import ClanRequestsComponent from '../components/ClanRequests/ClanRequestsComponent.vue';
 </script>
 
 <template>
   <main class="red-shadow-fx">
     <div class="div-container">
-      <AppLayout :tabs="tabs">
-        <router-view />
+      <AppLayout :tabs="[]">
+        <ClanRequestsComponent />
       </AppLayout>
     </div>
   </main>
@@ -20,15 +15,12 @@ const tabs = [
 
 <style scoped>
 .div-container {
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 @media (max-width: 1100px) {
-  .div-container {
-    padding: 0;
-  }
+  .div-container { padding: 0; }
 }
 </style>

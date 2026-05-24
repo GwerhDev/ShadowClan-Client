@@ -17,6 +17,10 @@ defineProps({
     type: Boolean,
     required: false
   },
+  hideTitle: {
+    type: Boolean,
+    default: false
+  },
   tabs: Array as () => Array<{
     id: string;
     name: string;
@@ -40,19 +44,19 @@ const dynamicTitle = computed(() => {
         <NavComponent :loading="loading" />
       </section>
       <div class="section-container">
-        <section class="menu-section desktop" v-if="tabs">
+        <section class="menu-section desktop" v-if="tabs && tabs.length">
           <img :src="diabloIcon" alt="icon" />
           <SideBar :logged="store.currentUser.logged" :tabs="tabs" />
         </section>
 
         <section class="content-section">
-          <div class="header-section">
+          <div class="header-section" v-if="!hideTitle">
             <span class="title-section">
               <img :src="diabloIcon" alt="icon" />
               <h1>{{ dynamicTitle }}</h1>
             </span>
           </div>
-          <section class="menu-section mobile" v-if="tabs">
+          <section class="menu-section mobile" v-if="tabs && tabs.length">
             <TabBar :logged="store.currentUser.logged" :tabs="tabs" />
           </section>
           <div class="scrollable-content">
