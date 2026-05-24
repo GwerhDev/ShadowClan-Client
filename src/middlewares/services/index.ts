@@ -112,9 +112,9 @@ export const getCharacter: any = async () => {
 };
 
 export const createCharacter: any = async (formData: any) => {
-  try { 
+  try {
     const response: any = await axios.post(API_URL + "/character/create", formData, { withCredentials: true })
-    .then(response => response.data);
+      .then(response => response.data);
     return response;
 
   } catch (error: any) {

@@ -32,7 +32,6 @@ function handleSettings() {
 function handleLogout() {
   $d('#user-menu-container').style.display = 'none';
   store.logout();
-  router.push('/');
 };
 
 </script>
