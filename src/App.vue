@@ -5,21 +5,21 @@ import { Ref, ref, onMounted } from 'vue';
 
 const store: any = useStore();
 const loading: Ref = ref(false);
+const authDone: Ref = ref(false);
 
 onMounted(async () => {
+  loading.value = true;
   try {
-    loading.value = true;
     await store.handleUserData();
-    loading.value = false;
-
-  } catch (error) {
+  } finally {
+    authDone.value = true;
+    await new Promise(resolve => setTimeout(resolve, 500));
     loading.value = false;
   }
 });
-
 </script>
 
 <template>
-  <SplashComponent v-if="loading" />
+  <SplashComponent v-if="loading" :done="authDone" />
   <router-view v-else />
 </template>

@@ -132,8 +132,8 @@ export const getWarbands: any = async () => {
 };
 
 export const logout: any = async () => {
-  await axios.get(API_URL + "/logout/", { withCredentials: true })
-    .then(response => response.data);
+  await axios.get(API_URL + "/logout/", { withCredentials: true, maxRedirects: 0 })
+    .catch(() => {});
   return;
 };
 

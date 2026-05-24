@@ -3,6 +3,7 @@ import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, update
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
 import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
+import { WEB_URL } from '../misc/const';
 
 export const useStore = defineStore('store', {
   state: (): storeState => ({
@@ -42,6 +43,7 @@ export const useStore = defineStore('store', {
   actions: {
     async handleLogout() {
       await logout();
+      window.location.href = WEB_URL + '/login';
     },
 
     setTaskDate(date: any) {
@@ -97,9 +99,12 @@ export const useStore = defineStore('store', {
       try {
         this.currentUser = { ...this.currentUser, ...await getUserData() };
         this.currentCharacter = this.currentUser.userData?.character?.[0] || null;
-      } catch (error) {
-        console.error(error);
-        this.handleLogout();
+      } catch (error: any) {
+        if (error?.response?.status === 401) {
+          window.location.href = WEB_URL + '/login';
+        } else {
+          console.error(error);
+        }
       }
     },
 
