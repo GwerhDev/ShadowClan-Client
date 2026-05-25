@@ -22,8 +22,6 @@ const editResonance    = ref<number | ''>('');
 const editRole         = ref<'officer' | 'member'>('member');
 const editMemberStatus = ref('');
 
-const memberStatusOptions = ['activo', 'inactivo', 'retirado'];
-
 onMounted(() => {
   editClass.value        = props.char.currentClass ?? '';
   editResonance.value    = props.char.resonance ?? '';
