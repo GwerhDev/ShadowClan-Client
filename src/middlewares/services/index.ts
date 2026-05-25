@@ -111,6 +111,12 @@ export const getCharacter: any = async () => {
   return response;
 };
 
+export const updateCharacter: any = async (id: string, data: { name?: string; currentClass?: string; resonance?: number }) => {
+  const response: any = await axios.put(API_URL + "/character/" + id, data, { withCredentials: true })
+    .then(r => r.data);
+  return response;
+};
+
 export const createCharacter: any = async (formData: any) => {
   try {
     const response: any = await axios.post(API_URL + "/character/create", formData, { withCredentials: true })
@@ -193,7 +199,7 @@ export const createClanCharacter: any = async (clanId: string, formData: { name:
   return response;
 };
 
-export const updateClanMember: any = async (clanId: string, characterId: string, data: { currentClass?: string; resonance?: number }) => {
+export const updateClanMember: any = async (clanId: string, characterId: string, data: { currentClass?: string; resonance?: number; memberStatus?: string }) => {
   const response: any = await axios.patch(
     API_URL + "/clan-management/clan/" + clanId + "/members/" + characterId,
     data,
@@ -221,6 +227,13 @@ export const sendClanInvitation: any = async (
     { withCredentials: true }
   ).then(r => r.data);
   return response;
+};
+
+export const cancelClanInvitation: any = async (clanId: string, invitationId: string) => {
+  await axios.delete(
+    API_URL + "/clan-management/clan/" + clanId + "/invitations/" + invitationId,
+    { withCredentials: true }
+  );
 };
 
 export const getClanInvitations: any = async () => {

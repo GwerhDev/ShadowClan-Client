@@ -17,14 +17,18 @@ const emit = defineEmits(['refresh']);
 const editionActive = ref(false);
 const deleteActive  = ref(false);
 
-const editClass     = ref('');
-const editResonance = ref<number | ''>('');
-const editRole      = ref<'officer' | 'member'>('member');
+const editClass        = ref('');
+const editResonance    = ref<number | ''>('');
+const editRole         = ref<'officer' | 'member'>('member');
+const editMemberStatus = ref('');
+
+const memberStatusOptions = ['activo', 'inactivo', 'retirado'];
 
 onMounted(() => {
-  editClass.value     = props.char.currentClass ?? '';
-  editResonance.value = props.char.resonance ?? '';
-  editRole.value      = props.role === 'leader' ? 'member' : props.role as 'officer' | 'member';
+  editClass.value        = props.char.currentClass ?? '';
+  editResonance.value    = props.char.resonance ?? '';
+  editRole.value         = props.role === 'leader' ? 'member' : props.role as 'officer' | 'member';
+  editMemberStatus.value = props.char.memberStatus ?? 'activo';
 });
 
 function getClassImage(value: string) {
@@ -32,6 +36,13 @@ function getClassImage(value: string) {
 }
 function getClassName(value: string) {
   return classes.find(c => c.value === value)?.name ?? value;
+}
+function styleStatus(s: string) {
+  if (s === 'activo')    return { backgroundColor: '#99d499' };
+  if (s === 'inactivo')  return { backgroundColor: '#b67f75' };
+  if (s === 'retirado')  return { backgroundColor: '#888888' };
+  if (s === 'pendiente') return { backgroundColor: '#eaec72' };
+  return { backgroundColor: '#888888' };
 }
 function roleLabel(r: string) {
   if (r === 'leader')  return 'Líder';
@@ -61,9 +72,10 @@ async function handleUpdate() {
 function handleCancel() {
   editionActive.value = false;
   deleteActive.value  = false;
-  editClass.value     = props.char.currentClass ?? '';
-  editResonance.value = props.char.resonance ?? '';
-  editRole.value      = props.role === 'leader' ? 'member' : props.role as 'officer' | 'member';
+  editClass.value        = props.char.currentClass ?? '';
+  editResonance.value    = props.char.resonance ?? '';
+  editRole.value         = props.role === 'leader' ? 'member' : props.role as 'officer' | 'member';
+  editMemberStatus.value = props.char.memberStatus ?? 'activo';
 }
 
 function handleDelete() {
@@ -79,10 +91,11 @@ async function handleConfirmDelete() {
 <template>
   <!-- Vista normal -->
   <div class="list-container" v-if="!editionActive && !deleteActive">
-    <span>
-      <i v-if="char.status === 'claimed'"      class="fas fa-link"           title="Vinculado"></i>
-      <i v-else-if="char.status === 'pending'" class="fas fa-hourglass-half" title="Pendiente"></i>
-      <i v-else                                class="fas fa-unlink"          title="Sin vincular"></i>
+    <span class="status-container">
+      <div class="status-image">
+        <img src="../../../../assets/svg/profile-icon.svg" alt="" />
+        <span class="status" :style="styleStatus(char.memberStatus ?? 'activo')"></span>
+      </div>
     </span>
     <span><p>{{ char.name }}</p></span>
     <span><span :class="['role-badge', role]">{{ roleLabel(role) }}</span></span>
@@ -98,11 +111,11 @@ async function handleConfirmDelete() {
     </span>
     <span><p>{{ char.resonance ?? '—' }}</p></span>
     <span>
-      <ul v-if="role !== 'leader'" class="buttons-container">
+      <ul class="buttons-container">
         <button v-if="isLeader || isOfficer" @click="handleEdit">
           <img src="../../../../assets/svg/edit-icon.svg" alt="Editar" width="18px" />
         </button>
-        <button @click="handleDelete">
+        <button v-if="role !== 'leader'" @click="handleDelete">
           <img src="../../../../assets/svg/delete-icon.svg" alt="Eliminar" width="22px" />
         </button>
       </ul>
@@ -111,14 +124,15 @@ async function handleConfirmDelete() {
 
   <!-- Vista edición -->
   <div class="list-container" v-if="editionActive && !deleteActive">
-    <span>
-      <i v-if="char.status === 'claimed'"      class="fas fa-link"></i>
-      <i v-else-if="char.status === 'pending'" class="fas fa-hourglass-half"></i>
-      <i v-else                                class="fas fa-unlink"></i>
+    <span class="status-container">
+      <div class="status-image">
+        <img src="../../../../assets/svg/profile-icon.svg" alt="" />
+        <span class="status" :style="styleStatus(char.memberStatus ?? 'activo')"></span>
+      </div>
     </span>
     <span><p>{{ char.name }}</p></span>
     <span>
-      <select v-if="isLeader" v-model="editRole">
+      <select v-if="isLeader && role !== 'leader'" v-model="editRole">
         <option value="officer">Oficial</option>
         <option value="member">Miembro</option>
       </select>
@@ -143,10 +157,11 @@ async function handleConfirmDelete() {
 
   <!-- Vista confirmar eliminación -->
   <div class="list-container red-bg" v-if="!editionActive && deleteActive">
-    <span>
-      <i v-if="char.status === 'claimed'"      class="fas fa-link"></i>
-      <i v-else-if="char.status === 'pending'" class="fas fa-hourglass-half"></i>
-      <i v-else                                class="fas fa-unlink"></i>
+    <span class="status-container">
+      <div class="status-image">
+        <img src="../../../../assets/svg/profile-icon.svg" alt="" />
+        <span class="status" :style="styleStatus(char.memberStatus ?? 'activo')"></span>
+      </div>
     </span>
     <span><p>{{ char.name }}</p></span>
     <span><span :class="['role-badge', role]">{{ roleLabel(role) }}</span></span>

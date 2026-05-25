@@ -6,6 +6,7 @@ import TableComponent from '../../Tables/TableComponent.vue';
 import CustomModal from '../../Modals/CustomModal.vue';
 import LabeledInput from '../../Inputs/LabeledInput.vue';
 import ClanMemberCard from './ClanMemberCard.vue';
+import PendingInvitationCard from './PendingInvitationCard.vue';
 import { classes } from '../../../../middlewares/misc/const';
 import {
   getClanMembers,
@@ -14,6 +15,8 @@ import {
   updateMemberRole,
   updateClanMember,
   sendClanInvitation,
+  getClanRequestsManagement,
+  reviewClanRequest,
 } from '../../../../middlewares/services';
 import { getCharacterByName } from '../../../../middlewares/services/characterService';
 
@@ -53,18 +56,56 @@ const allMembers = computed(() => {
   return result;
 });
 
-onMounted(loadClan);
+onMounted(() => { loadClan(); });
+
+const pendingInvitations = ref<any[]>([]);
 
 async function loadClan() {
   if (!clanId.value) return;
   loading.value = true;
   error.value   = null;
   try {
-    clan.value = await getClanMembers(clanId.value);
+    const data = await getClanMembers(clanId.value);
+    clan.value = data;
+    pendingInvitations.value = data.pendingInvitations ?? [];
   } catch {
     error.value = 'Error al cargar los miembros del clan.';
   } finally {
     loading.value = false;
+  }
+}
+
+// ── Incoming clan requests modal ──
+const showRequestsModal  = ref(false);
+const clanRequests       = ref<any[]>([]);
+const requestsLoading    = ref(false);
+const requestsError      = ref('');
+const reviewingId        = ref<string | null>(null);
+
+async function openRequestsModal() {
+  showRequestsModal.value = true;
+  requestsLoading.value   = true;
+  requestsError.value     = '';
+  try {
+    clanRequests.value = await getClanRequestsManagement();
+  } catch {
+    requestsError.value = 'Error al cargar las solicitudes.';
+  } finally {
+    requestsLoading.value = false;
+  }
+}
+
+async function handleReviewRequest(id: string, action: 'accept' | 'reject') {
+  reviewingId.value = id;
+  requestsError.value = '';
+  try {
+    await reviewClanRequest(id, action);
+    clanRequests.value = clanRequests.value.filter(r => r._id !== id);
+    await loadClan();
+  } catch {
+    requestsError.value = 'Error al procesar la solicitud.';
+  } finally {
+    reviewingId.value = null;
   }
 }
 
@@ -170,6 +211,7 @@ async function confirmSendInvitation() {
       proposedResonance: addEditResonance.value !== '' ? Number(addEditResonance.value) : undefined,
     });
     showAddModal.value = false;
+    await loadClan();
   } catch (e: any) {
     addError.value = e?.response?.data?.message ?? 'Error al enviar la invitación.';
   } finally {
@@ -213,10 +255,11 @@ function getClassName(value: string) {
   <div class="ul-container">
 
     <span class="button-list">
+      <button class="btn-secondary" @click="openRequestsModal">Ver solicitudes</button>
       <button @click="openAddModal">Agregar miembro</button>
     </span>
 
-    <ul v-if="!loading && allMembers.length">
+    <ul v-if="!loading && (allMembers.length || pendingInvitations.length)">
       <TableComponent :navItems="navItems">
         <ClanMemberCard
           v-for="{ char, role } in allMembers"
@@ -226,6 +269,13 @@ function getClassName(value: string) {
           :clanId="clanId"
           :isLeader="isLeader"
           :isOfficer="isOfficer"
+          @refresh="loadClan"
+        />
+        <PendingInvitationCard
+          v-for="inv in pendingInvitations"
+          :key="inv._id"
+          :inv="inv"
+          :clanId="clanId"
           @refresh="loadClan"
         />
       </TableComponent>
@@ -242,7 +292,42 @@ function getClassName(value: string) {
 
     <p v-else-if="error">{{ error }}</p>
     <p v-else>No hay miembros en el clan.</p>
+
   </div>
+
+  <!-- Modal: solicitudes de ingreso -->
+  <CustomModal v-if="showRequestsModal" title="Solicitudes de ingreso" @close="showRequestsModal = false">
+    <div class="modal-form">
+      <p v-if="requestsLoading" class="modal-hint">Cargando solicitudes...</p>
+      <p v-else-if="requestsError" class="modal-error">{{ requestsError }}</p>
+      <p v-else-if="!clanRequests.length" class="modal-hint">No hay solicitudes pendientes.</p>
+      <div v-for="req in clanRequests" :key="req._id" class="request-card">
+        <div class="inv-char">
+          <img v-if="req.character?.currentClass && getClassImage(req.character.currentClass)"
+            :src="getClassImage(req.character.currentClass)"
+            :alt="getClassName(req.character.currentClass)"
+            width="28" />
+          <i v-else class="fas fa-user-circle inv-placeholder"></i>
+          <div class="inv-info">
+            <strong>{{ req.character?.name ?? '—' }}</strong>
+            <small>{{ req.user?.battletag ?? '—' }} · {{ req.character?.currentClass ? getClassName(req.character.currentClass) : 'Sin clase' }} · {{ req.character?.resonance ?? '—' }} res.</small>
+          </div>
+        </div>
+        <div class="request-actions">
+          <button
+            class="btn-accept"
+            :disabled="reviewingId === req._id"
+            @click="handleReviewRequest(req._id, 'accept')"
+          ><i class="fas fa-check"></i></button>
+          <button
+            class="btn-reject"
+            :disabled="reviewingId === req._id"
+            @click="handleReviewRequest(req._id, 'reject')"
+          ><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+    </div>
+  </CustomModal>
 
   <!-- Modal: agregar miembro -->
   <CustomModal v-if="showAddModal" title="Agregar miembro" @close="closeAddModal">
