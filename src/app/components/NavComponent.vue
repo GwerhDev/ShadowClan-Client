@@ -67,80 +67,86 @@ function formatDate(iso: string) {
       <section class="logo-section">
         <LogoComponent />
       </section>
+      <div class="nav-sections">
+        <section class="spacer"></section>
 
-      <section class="router-section">
-        <section class="user-section">
+        <section class="router-section">
+          <router-link title="Inicio" to="/" class="nav-item">
+            <i class="fas fa-home"></i>
+            <small>Inicio</small>
+          </router-link>
+
+          <template v-if="!isWalker">
+            <router-link title="Guerra Sombría" to="/shadow-war" class="nav-item">
+              <i class="fas fa-khanda"></i>
+              <small>Guerra</small>
+            </router-link>
+            <router-link title="Torre Maldita" to="/accursed-tower" class="nav-item">
+              <i class="fas fa-chess-rook"></i>
+              <small>Torre</small>
+            </router-link>
+          </template>
+
+          <router-link v-if="hasCharacter" title="Mis Tareas" to="/tasks" class="nav-item">
+            <i class="fas fa-tasks"></i>
+            <small>Tareas</small>
+          </router-link>
+
+          <router-link
+            v-if="isLeaderOrOfficer"
+            title="Gestión de Clan"
+            to="/management"
+            class="nav-item"
+          >
+            <i class="fas fa-shield-halved"></i>
+            <small>Gestión</small>
+          </router-link>
         </section>
-        <router-link title="Inicio" to="/" class="nav-item">
-          <i class="fas fa-home"></i>
-          <small>Inicio</small>
-        </router-link>
 
-        <template v-if="!isWalker">
-          <router-link title="Guerra Sombría" to="/shadow-war" class="nav-item">
-            <i class="fas fa-khanda"></i>
-            <small>Guerra</small>
-          </router-link>
-          <router-link title="Torre Maldita" to="/accursed-tower" class="nav-item">
-            <i class="fas fa-chess-rook"></i>
-            <small>Torre</small>
-          </router-link>
-        </template>
+        <section class="user-section">
 
-        <router-link v-if="hasCharacter" title="Mis Tareas" to="/tasks" class="nav-item">
-          <i class="fas fa-tasks"></i>
-          <small>Tareas</small>
-        </router-link>
-
-        <router-link v-if="isAdmin" title="Dashboard" to="/a/dashboard" class="nav-item">
-          <i class="fas fa-lock"></i>
-          <small>Dashboard</small>
-        </router-link>
-      </section>
-
-      <section class="user-section">
-
-        <!-- Campana con dropdown -->
-        <div class="bell-wrapper" ref="bellWrapper" v-if="store.currentUser.logged">
-          <button class="bell-btn" @click="toggleDropdown" title="Notificaciones">
-            <i class="fas fa-bell"></i>
-            <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
-          </button>
+          <!-- Campana con dropdown -->
+          <div class="bell-wrapper" ref="bellWrapper" v-if="store.currentUser.logged">
+            <button class="bell-btn" @click="toggleDropdown" title="Notificaciones">
+              <i class="fas fa-bell"></i>
+              <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+            </button>
 
 
-          <div v-if="showDropdown" class="notif-dropdown">
-            <div class="notif-header">
-              <span>Notificaciones</span>
-              <button v-if="notifications.length" class="notif-clear" @click="store.clearNotifications()">
-                Limpiar
+            <div v-if="showDropdown" class="notif-dropdown">
+              <div class="notif-header">
+                <span>Notificaciones</span>
+                <button v-if="notifications.length" class="notif-clear" @click="store.clearNotifications()">
+                  Limpiar
+                </button>
+              </div>
+
+              <div v-if="!notifications.length" class="notif-empty">
+                Sin notificaciones
+              </div>
+
+              <ul v-else class="notif-list">
+                <li v-for="n in notifications" :key="n.id" :class="{ unread: !n.read }">
+                  <i class="fas fa-flag-checkered"></i>
+                  <div class="notif-body">
+                    <span><strong>{{ n.data.character?.name }}</strong> quiere unirse a <strong>{{ n.data.clan?.name
+                    }}</strong></span>
+                    <small>{{ formatDate(n.data.createdAt) }}</small>
+                  </div>
+                </li>
+              </ul>
+
+              <button v-if="isLeaderOrOfficer" class="notif-go" @click="goToRequests">
+                <i class="fas fa-list"></i> Ver solicitudes
               </button>
             </div>
-
-            <div v-if="!notifications.length" class="notif-empty">
-              Sin notificaciones
-            </div>
-
-            <ul v-else class="notif-list">
-              <li v-for="n in notifications" :key="n.id" :class="{ unread: !n.read }">
-                <i class="fas fa-flag-checkered"></i>
-                <div class="notif-body">
-                  <span><strong>{{ n.data.character?.name }}</strong> quiere unirse a <strong>{{ n.data.clan?.name
-                      }}</strong></span>
-                  <small>{{ formatDate(n.data.createdAt) }}</small>
-                </div>
-              </li>
-            </ul>
-
-            <button v-if="isLeaderOrOfficer" class="notif-go" @click="goToRequests">
-              <i class="fas fa-list"></i> Ver solicitudes
-            </button>
           </div>
-        </div>
 
-        <router-link to="/u/profile" title="Perfil">
-          <i class="fas fa-user"></i>
-        </router-link>
-      </section>
+          <router-link to="/u/profile" title="Perfil">
+            <i class="fas fa-user"></i>
+          </router-link>
+        </section>
+      </div>
     </nav>
   </div>
 </template>

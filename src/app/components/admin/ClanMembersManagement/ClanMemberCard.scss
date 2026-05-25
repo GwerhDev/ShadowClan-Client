@@ -1,0 +1,76 @@
+p {
+  margin: 0;
+}
+
+img {
+  padding: 1rem;
+}
+
+span {
+  width: 100%;
+  gap: 1rem;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.buttons-container {
+  max-width: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+
+  button {
+    background-color: var(--color-primary-bg);
+    width: 80px;
+  }
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  height: 30px;
+}
+
+input, select {
+  max-width: 100px;
+  height: 28px;
+}
+
+.list-container {
+  width: 100%;
+  display: grid;
+  padding-top: .5rem;
+  padding-bottom: .5rem;
+  grid-template-columns: repeat(6, 1fr);
+  border-radius: 9px;
+  background-color: var(--color-secondary-bg);
+  align-items: center;
+}
+
+.red-bg {
+  background-color: var(--color-red-action);
+}
+
+.role-badge {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+
+  &.leader  { background: rgba(200, 160, 60, 0.2);  color: #c8a03c; }
+  &.officer { background: rgba(100, 140, 220, 0.2); color: #7aa0e0; }
+  &.member  { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, .5); }
+}
+
+.no-class {
+  color: rgba(255, 255, 255, .3);
+}

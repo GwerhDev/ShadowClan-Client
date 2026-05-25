@@ -117,7 +117,7 @@ export const useStore = defineStore('store', {
           setStoredCharacter(userId, resolvedId).catch(() => {});
         }
       } catch (error: any) {
-        if (error?.response?.status === 401) {
+        if (error?.response?.status === 401 || !error?.response) {
           window.location.href = WEB_URL + '/login';
         } else {
           console.error(error);

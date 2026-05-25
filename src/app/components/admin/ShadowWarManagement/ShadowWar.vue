@@ -2,15 +2,12 @@
 import { ref, Ref } from 'vue';
 import CreateShadowWarForm from './CreateShadowWarForm.vue';
 
-defineProps({
-  openShareModal: {
-    type: Function,
-    required: true,
-  },
-  nextWarDate: {
-    type: String,
-    required: true,
-  },
+withDefaults(defineProps<{
+  openShareModal?: () => void;
+  nextWarDate?: string;
+}>(), {
+  openShareModal: () => {},
+  nextWarDate: '',
 });
 
 const error: Ref<string | null> = ref(null);

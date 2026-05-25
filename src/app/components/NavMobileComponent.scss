@@ -78,12 +78,15 @@
     border-top: solid 1px var(--element-color-primary-hover);
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
+    overflow: hidden;
 
     nav {
       .router-section {
         max-width: none;
+        justify-content: stretch;
 
         .nav-item {
+          flex: 1;
           padding-bottom: 2rem;
           border: none;
           border-top: 3px solid transparent;

@@ -1,9 +1,20 @@
 <style scoped lang="scss" src="./NavMobileComponent.scss" />
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useStore } from '../../middlewares/store';
 
 defineProps(["loading"]);
 const store: any = useStore();
+
+const isLeaderOrOfficer = computed(() => {
+  const chars  = store.currentUser?.userData?.character ?? [];
+  const active = chars.find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
+  if (!active?.clan) return false;
+  const clan   = active.clan;
+  const charId = String(active._id);
+  return String(clan.leader) === charId ||
+    (clan.officer ?? []).some((o: any) => String(o) === charId);
+});
 
 </script>
 
@@ -27,11 +38,11 @@ const store: any = useStore();
           <i class="fas fa-tasks"></i>
           <small>Tareas</small>
         </router-link>
-        <router-link title="Dashboard"
-          v-if="store.currentUser?.userData?.role === 'admin' || store.currentUser?.userData?.role === 'super_admin'"
-          to="/a/dashboard" class="nav-item">
-          <i class="fas fa-lock"></i>
-          <small>Dashboard</small>
+        <router-link title="Gestión de Clan"
+          v-if="isLeaderOrOfficer"
+          to="/management" class="nav-item">
+          <i class="fas fa-shield-halved"></i>
+          <small>Gestión</small>
         </router-link>
       </section>
     </nav>

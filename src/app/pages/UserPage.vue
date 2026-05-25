@@ -1,11 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
+import { useStore } from '../../middlewares/store';
 
-const tabs = [
-  { id: 'profile', name: 'Perfil', icon: 'fas fa-user', path: '/u/profile' },
-  { id: 'account', name: 'Cuenta', icon: 'fas fa-gear', path: '/u/account' },
-];
+const store: any = useStore();
 
+const tabs = computed(() => {
+  const role    = store.currentUser.userData?.role;
+  const isAdmin = role === 'admin' || role === 'super_admin';
+  return [
+    { id: 'profile',   name: 'Perfil',   icon: 'fas fa-user', path: '/u/profile' },
+    { id: 'account',   name: 'Cuenta',   icon: 'fas fa-gear', path: '/u/account' },
+    ...(isAdmin ? [{ id: 'dashboard', name: 'Dashboard', icon: 'fas fa-lock', path: '/a/dashboard' }] : []),
+  ];
+});
 </script>
 
 <template>

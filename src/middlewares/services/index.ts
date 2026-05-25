@@ -168,3 +168,72 @@ export const reviewClanRequest: any = async (id: string, action: 'accept' | 'rej
 export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, getShadowWars } from './shadowWarService';
 export { getClans, createClan, updateClan, deleteClan } from './clanService';
 export { getCharacterByName } from './characterService';
+
+export const getClanMembers: any = async (clanId: string) => {
+  const response: any = await axios.get(API_URL + "/clan-management/clan/" + clanId, { withCredentials: true })
+                                   .then(response => response.data);
+  return response;
+};
+
+export const addClanMember: any = async (clanId: string, characterId: string) => {
+  const response: any = await axios.post(API_URL + "/clan-management/clan/" + clanId + "/members", { characterId }, { withCredentials: true })
+                                   .then(response => response.data);
+  return response;
+};
+
+export const removeClanMember: any = async (clanId: string, characterId: string) => {
+  const response: any = await axios.delete(API_URL + "/clan-management/clan/" + clanId + "/members/" + characterId, { withCredentials: true })
+                                   .then(response => response.data);
+  return response;
+};
+
+export const createClanCharacter: any = async (clanId: string, formData: { name: string; resonance?: number; currentClass?: string }) => {
+  const response: any = await axios.post(API_URL + "/clan-management/clan/" + clanId + "/characters", formData, { withCredentials: true })
+                                   .then(response => response.data);
+  return response;
+};
+
+export const updateClanMember: any = async (clanId: string, characterId: string, data: { currentClass?: string; resonance?: number }) => {
+  const response: any = await axios.patch(
+    API_URL + "/clan-management/clan/" + clanId + "/members/" + characterId,
+    data,
+    { withCredentials: true }
+  ).then(response => response.data);
+  return response;
+};
+
+export const updateMemberRole: any = async (clanId: string, characterId: string, role: 'officer' | 'member') => {
+  const response: any = await axios.patch(
+    API_URL + "/clan-management/clan/" + clanId + "/members/" + characterId + "/role",
+    { role },
+    { withCredentials: true }
+  ).then(response => response.data);
+  return response;
+};
+
+export const sendClanInvitation: any = async (
+  clanId: string,
+  data: { characterId: string; role?: 'officer' | 'member'; proposedClass?: string; proposedResonance?: number }
+) => {
+  const response: any = await axios.post(
+    API_URL + "/clan-management/clan/" + clanId + "/invitations",
+    data,
+    { withCredentials: true }
+  ).then(r => r.data);
+  return response;
+};
+
+export const getClanInvitations: any = async () => {
+  const response: any = await axios.get(API_URL + "/clan-invitation", { withCredentials: true })
+    .then(r => r.data);
+  return response;
+};
+
+export const reviewClanInvitation: any = async (id: string, action: 'accept' | 'reject') => {
+  const response: any = await axios.patch(
+    API_URL + "/clan-invitation/" + id,
+    { action },
+    { withCredentials: true }
+  ).then(r => r.data);
+  return response;
+};

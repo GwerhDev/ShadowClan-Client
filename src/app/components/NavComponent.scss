@@ -14,10 +14,23 @@
     align-items: center;
     justify-content: space-between;
 
-    .logo-section,
-    .user-section {
+    .nav-sections {
+      width: 100%;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      padding-inline: 2rem;
+    }
+
+    .spacer {
+      width: 100%;
+      max-width: 140px;
+      height: 20px;
       padding-inline: 1rem;
     }
 
@@ -28,6 +41,12 @@
 
     .user-section {
       gap: 1rem;
+      width: 100%;
+      max-width: 140px;
+      padding-inline: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
 
       i {
         cursor: pointer;
@@ -52,7 +71,9 @@
       cursor: pointer;
       padding: 0;
 
-      &:hover i { color: #e3d2a8; }
+      &:hover i {
+        color: #e3d2a8;
+      }
     }
 
     .notif-badge {
@@ -81,7 +102,7 @@
       background: var(--element-color-primary);
       border: 1px solid rgba(227, 210, 168, .15);
       border-radius: 8px;
-      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
       z-index: 100;
       overflow: hidden;
 
@@ -90,28 +111,31 @@
         justify-content: space-between;
         align-items: center;
         padding: .7rem 1rem;
-        border-bottom: 1px solid rgba(255,255,255,.07);
+        border-bottom: 1px solid rgba(255, 255, 255, .07);
         font-size: .75rem;
         font-weight: 700;
         letter-spacing: .06em;
         text-transform: uppercase;
-        color: rgba(255,255,255,.5);
+        color: rgba(255, 255, 255, .5);
       }
 
       .notif-clear {
         background: transparent;
         border: none;
-        color: rgba(255,255,255,.35);
+        color: rgba(255, 255, 255, .35);
         font-size: .7rem;
         cursor: pointer;
-        &:hover { color: #e57373; }
+
+        &:hover {
+          color: #e57373;
+        }
       }
 
       .notif-empty {
         padding: 1.5rem 1rem;
         text-align: center;
         font-size: .82rem;
-        color: rgba(255,255,255,.3);
+        color: rgba(255, 255, 255, .3);
       }
 
       .notif-list {
@@ -126,14 +150,19 @@
           align-items: flex-start;
           gap: .75rem;
           padding: .75rem 1rem;
-          border-bottom: 1px solid rgba(255,255,255,.04);
+          border-bottom: 1px solid rgba(255, 255, 255, .04);
           transition: background .15s;
 
-          &.unread { background: rgba(227,210,168,.05); }
-          &:hover { background: rgba(255,255,255,.04); }
+          &.unread {
+            background: rgba(227, 210, 168, .05);
+          }
+
+          &:hover {
+            background: rgba(255, 255, 255, .04);
+          }
 
           i {
-            color: rgba(227,210,168,.6);
+            color: rgba(227, 210, 168, .6);
             margin-top: 2px;
             flex-shrink: 0;
             font-size: .85rem;
@@ -146,10 +175,13 @@
         flex-direction: column;
         gap: .2rem;
         font-size: .8rem;
-        color: rgba(255,255,255,.75);
+        color: rgba(255, 255, 255, .75);
         line-height: 1.4;
 
-        small { color: rgba(255,255,255,.35); font-size: .7rem; }
+        small {
+          color: rgba(255, 255, 255, .35);
+          font-size: .7rem;
+        }
       }
 
       .notif-go {
@@ -161,21 +193,23 @@
         padding: .65rem 1rem;
         background: transparent;
         border: none;
-        border-top: 1px solid rgba(255,255,255,.07);
-        color: rgba(227,210,168,.8);
+        border-top: 1px solid rgba(255, 255, 255, .07);
+        color: rgba(227, 210, 168, .8);
         font-size: .78rem;
         font-family: 'Cinzel', serif;
         letter-spacing: .05em;
         cursor: pointer;
         transition: background .15s;
 
-        &:hover { background: rgba(227,210,168,.06); color: #e3d2a8; }
+        &:hover {
+          background: rgba(227, 210, 168, .06);
+          color: #e3d2a8;
+        }
       }
     }
 
     .router-section {
       width: 100%;
-      max-width: 600px;
       border-radius: 7px;
       overflow: hidden;
       display: flex;

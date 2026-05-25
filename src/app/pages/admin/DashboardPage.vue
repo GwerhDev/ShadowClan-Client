@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import AppLayout from '../../layouts/AppLayout.vue';
 import DeniedAccess from '../../utils/DeniedAccess.vue';
@@ -18,14 +18,15 @@ const shareableMessage = ref('');
 
 const route = useRoute();
 
-const tabs = [
-  { id: 'shadow-war', name: 'Guerra', icon: 'fas fa-khanda', path: '/a/dashboard/shadow-war' },
-  { id: 'accursed-tower', name: 'Torre', icon: 'fas fa-chess-rook', path: '/a/dashboard/accursed-tower' },
-  { id: 'history', name: 'Historial', icon: 'fas fa-history', path: '/a/dashboard/history' },
-  { id: 'clans', name: 'Clanes', icon: 'fas fa-shield-alt', path: '/a/dashboard/clans' },
-  { id: 'characters', name: 'Personajes', icon: 'fas fa-user-group', path: '/a/dashboard/characters' },
-  { id: 'users', name: 'Usuarios', icon: 'fas fa-users', path: '/a/dashboard/users' },
-];
+const isSuperAdmin = computed(() => store.currentUser.userData?.role === 'super_admin');
+
+const tabs = computed(() => [
+  ...(isSuperAdmin.value ? [
+    { id: 'clans',      name: 'Clanes',     icon: 'fas fa-shield-alt',  path: '/a/dashboard/clans' },
+    { id: 'characters', name: 'Personajes', icon: 'fas fa-user-group',  path: '/a/dashboard/characters' },
+    { id: 'users',      name: 'Usuarios',   icon: 'fas fa-users',       path: '/a/dashboard/users' },
+  ] : []),
+]);
 
 const prepareShareableMessage = async () => {
   const warData = store.currentUser.shadowWarData as ShadowWarInterface;
