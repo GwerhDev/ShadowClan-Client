@@ -1,20 +1,15 @@
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
 import { useStore } from '../../middlewares/store';
-import DashboardPage from '../pages/admin/DashboardPage.vue';
 import ClanManagementPage from '../pages/admin/ClanManagementPage.vue';
-import UserManagement from '../components/admin/UserManagement/UserManagement.vue';
-import ClanManagement from '../components/admin/ClanManagement/ClanManagement.vue';
 import HistoryDetails from '../components/admin/HistoryManagement/HistoryDetails.vue';
 import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
 import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
-import CharacterManagement from '../components/admin/CharacterManagement/CharacterManagement.vue';
 import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
 import ClanMembersManagement from '../components/admin/ClanMembersManagement/ClanMembersManagement.vue';
 
 import UserPage from '../pages/UserPage.vue';
 import ClanComponent from '../components/Account/ClanComponent.vue';
 import ProfileComponent from '../components/Account/ProfileComponent.vue';
-import HistoryComponent from '../components/Account/HistoryComponent.vue';
 import SettingsComponent from '../components/Account/SettingsComponent.vue';
 import RequestsPage from '../pages/RequestsPage.vue';
 
@@ -30,7 +25,6 @@ import AccursedTower from '../components/AccursedTower/AccursedTower.vue';
 import TaskPage from '../pages/TaskPage.vue';
 import TasksComponent from '../components/Tasks/TasksComponent.vue';
 import HomePage from '../pages/HomePage.vue';
-import ClanRequestsPage from '../pages/ClanRequestsPage.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -78,45 +72,6 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Torre Maldita' },
       },
     ],
-  },
-  {
-    path: '/a',
-    name: 'Admin',
-    redirect: '/a/dashboard',
-    children: [
-      {
-        path: 'clan-requests',
-        name: 'ClanRequests',
-        component: ClanRequestsPage,
-        meta: { title: 'Solicitudes de Clan' },
-      },
-      {
-        path: 'dashboard',
-        name: 'Dashboard',
-        component: DashboardPage,
-        redirect: '/a/dashboard/clans',
-        children: [
-          {
-            path: 'clans',
-            name: 'DashboardClans',
-            component: ClanManagement,
-            meta: { title: 'Clanes', requiresSuperAdmin: true },
-          },
-          {
-            path: 'characters',
-            name: 'DashboardCharacters',
-            component: CharacterManagement,
-            meta: { title: 'Personajes', requiresSuperAdmin: true },
-          },
-          {
-            path: 'users',
-            name: 'DashboardUsers',
-            component: UserManagement,
-            meta: { title: 'Usuarios', requiresSuperAdmin: true },
-          },
-        ],
-      },
-    ]
   },
   {
     path: '/management',
@@ -180,7 +135,7 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
-    path: '/u/requests',
+    path: '/requests',
     name: 'Requests',
     component: RequestsPage,
     meta: { title: 'Misivas' },
@@ -236,10 +191,6 @@ router.beforeEach((to, _from, next) => {
   const role         = store.currentUser.userData?.role;
   const isSuperAdmin = role === 'super_admin';
   const isAdmin      = role === 'admin' || isSuperAdmin;
-
-  if (to.meta.requiresSuperAdmin && !isSuperAdmin) {
-    return next({ name: 'Home' });
-  }
 
   if (to.meta.requiresClanManagement) {
     const chars   = store.currentUser.userData?.character ?? [];

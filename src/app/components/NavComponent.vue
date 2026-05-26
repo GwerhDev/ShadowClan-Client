@@ -27,7 +27,7 @@ const unreadCount   = computed(() => store.pendingInboxCount);
 const requestsCount = computed(() => store.pendingRequestsCount);
 
 function goToRequests() {
-  router.push('/u/requests');
+  router.push('/requests');
 }
 </script>
 

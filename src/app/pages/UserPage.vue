@@ -5,6 +5,8 @@ import { useStore } from '../../middlewares/store';
 
 const store: any = useStore();
 
+const DASHBOARD_URL = import.meta.env.DEV ? 'http://localhost:5175' : 'https://dashboard.shadowclan.cl';
+
 onMounted(() => { store.handleUserData(); });
 
 const tabs = computed(() => {
@@ -13,7 +15,7 @@ const tabs = computed(() => {
   return [
     { id: 'profile', name: 'Perfil',  icon: 'fas fa-user', path: '/u/profile' },
     { id: 'account', name: 'Cuenta',  icon: 'fas fa-gear',  path: '/u/account' },
-    ...(isAdmin ? [{ id: 'dashboard', name: 'Dashboard', icon: 'fas fa-lock', path: '/a/dashboard' }] : []),
+    ...(isAdmin ? [{ id: 'dashboard', name: 'Dashboard', icon: 'fas fa-chart-line', path: DASHBOARD_URL }] : []),
   ];
 });
 </script>
