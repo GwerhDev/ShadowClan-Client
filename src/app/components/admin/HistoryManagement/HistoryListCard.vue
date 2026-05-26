@@ -13,7 +13,7 @@ const formatDate = (dateString: string) => {
 };
 
 const viewDetails = (id: string) => {
-  router.push(`/a/dashboard/history/${id}`);
+  router.push(`/management/history/${id}`);
 };
 </script>
 
