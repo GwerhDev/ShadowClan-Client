@@ -37,13 +37,11 @@ const navItems = ['status', 'name', 'resonance', 'class', 'clan', 'actions'];
     <span class="button-list">
       <button @click="handleAddMember">Agregar personaje</button>
     </span>
-    <ul v-if="!loading && store.admin.characters">
+    <div v-if="!loading && store.admin.characters">
       <TableComponent :navItems="navItems">
-        <li v-for="character in store.admin.characters" :key="character._id">
-          <CharacterListCard :character="character"></CharacterListCard>
-        </li>
+        <CharacterListCard v-for="character in store.admin.characters" :key="character._id" :character="character" />
       </TableComponent>
-    </ul>
+    </div>
     <div v-else-if="loading" class="skeleton-table-container">
       <div class="skeleton-table-header">
         <div class="skeleton-box skeleton-header-item"></div>

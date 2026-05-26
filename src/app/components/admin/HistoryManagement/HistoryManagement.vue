@@ -55,16 +55,14 @@ const navItems = ['fecha', 'enemigo', 'resultado', 'acciones'];
   <div class="ul-container">
     <router-view v-if="route.params.shadowwar_id" />
     <template v-else>
-      <ul v-if="!loading && store.admin.shadowWars">
+      <div v-if="!loading && store.admin.shadowWars">
         <TableComponent :navItems="navItems">
-          <li v-for="war in store.admin.shadowWars" :key="war._id">
-            <HistoryListCard :war="war"></HistoryListCard>
-          </li>
-          <li v-if="isFetching && hasMore" class="loading-indicator">
+          <HistoryListCard v-for="war in store.admin.shadowWars" :key="war._id" :war="war" />
+          <div v-if="isFetching && hasMore" class="loading-indicator">
             Cargando más historiales...
-          </li>
+          </div>
         </TableComponent>
-      </ul>
+      </div>
       <div v-if="hasMore && !loading && !isFetching" class="load-more-container">
         <button @click="loadMore" :disabled="isFetching">Cargar más</button>
       </div>

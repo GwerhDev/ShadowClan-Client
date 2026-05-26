@@ -73,6 +73,7 @@ function handleDelete() {
         </option>
       </select>
     </span>
+    <span></span>
     <span>
       <ul class="buttons-container">
         <button @click="handleUpdate(character._id)">
@@ -100,6 +101,12 @@ function handleDelete() {
       <ul class="class-container">
         <img :src="classes.find(cls => cls.value === character.currentClass)?.image" alt="" width="30">
       </ul>
+    </span>
+    <span>
+      <p v-if="character.clan?.name" class="clan-label">
+        <i class="fas fa-shield-halved"></i> {{ character.clan.name }}
+      </p>
+      <p v-else class="clan-label muted">Sin clan</p>
     </span>
     <span>
       <ul class="buttons-container">

@@ -20,19 +20,18 @@ const viewDetails = (id: string) => {
 <template>
   <div class="list-container">
     <span>
-      <p>{{ formatDate(war.date) }}</p>
+      <p class="date-text">{{ formatDate(war.date) }}</p>
     </span>
     <span>
-      <p>{{ war.enemyClan?.name || "No definido" }}</p>
+      <p class="enemy-text">{{ war.enemyClan?.name || "—" }}</p>
     </span>
     <span>
-      <p>{{ translateResult(war.result) }}</p>
+      <span :class="['result-chip', `result-${war.result}`]">{{ translateResult(war.result) }}</span>
     </span>
-    <span>
-      <ul class="buttons-container">
-        <i class="fas fa-eye icon-button" @click="viewDetails(war._id)">
-        </i>
-      </ul>
+    <span class="actions-col">
+      <div class="buttons-container">
+        <i class="fas fa-eye icon-button" @click="viewDetails(war._id)" title="Ver detalle"></i>
+      </div>
     </span>
   </div>
 </template>

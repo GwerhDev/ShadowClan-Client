@@ -83,6 +83,26 @@ span {
   border-radius: 9px;
   background-color: var(--color-secondary-bg);
   align-items: center;
+
+  & > span:nth-child(2) {
+    justify-content: flex-start;
+    overflow: hidden;
+
+    p {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+  }
+
+  & > span:last-child {
+    position: sticky;
+    right: 0;
+    background-color: var(--color-primary-bg);
+    padding-inline: .3rem;
+    z-index: 1;
+  }
 }
 
 .role-badge {

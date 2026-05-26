@@ -8,8 +8,6 @@ defineProps(["loading"]);
 const store: any = useStore();
 const router = useRouter();
 
-const role = computed(() => store.currentUser.userData?.role);
-const isAdmin = computed(() => role.value === 'admin' || role.value === 'super_admin');
 const hasCharacter = computed(() => (store.currentUser.userData?.character ?? []).length > 0);
 const activeChar = computed(() => {
   const chars = store.currentUser.userData?.character ?? [];

@@ -30,13 +30,11 @@ const navItems = ['status', 'name', 'leader', 'members', 'actions'];
     <span class="button-list">
       <button @click="handleAddClan">Agregar clan</button>
     </span>
-    <ul v-if="!loading && clans">
+    <div v-if="!loading && clans">
       <TableComponent :navItems="navItems">
-        <li v-for="clan in clans" :key="clan._id">
-          <ClanListCard :clan="clan"></ClanListCard>
-        </li>
+        <ClanListCard v-for="clan in clans" :key="clan._id" :clan="clan" />
       </TableComponent>
-    </ul>
+    </div>
     <div v-else-if="loading" class="skeleton-table-container">
       <div class="skeleton-table-header">
         <div class="skeleton-box skeleton-header-item"></div>

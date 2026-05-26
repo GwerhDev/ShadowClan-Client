@@ -45,6 +45,25 @@ input {
   padding-top: .5rem;
   padding-bottom: .5rem;
   grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+
+  & > span:nth-child(2) {
+    justify-content: flex-start;
+    overflow: hidden;
+
+    p {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+  }
+
+  & > span:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+  }
 }
 
 .class-container {

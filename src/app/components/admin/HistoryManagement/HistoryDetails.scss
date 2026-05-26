@@ -1,3 +1,25 @@
+.btn-back {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  align-self: flex-start;
+  gap: .5rem;
+  padding: .35rem .9rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  opacity: 0.7;
+  margin-bottom: 1rem;
+  background: transparent;
+  border: 1px solid var(--border-color-primary);
+  cursor: pointer;
+  transition: opacity 0.2s, background-color 0.2s;
+
+  &:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
 .icon-button {
   padding: .5rem;
   border-radius: .3rem;
@@ -82,7 +104,6 @@
     text-align: center;
   }
 }
-
 
 @media (max-width: 800px) {
   .blocks-section {

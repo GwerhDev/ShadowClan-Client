@@ -31,13 +31,11 @@ const navItems = ['status', 'battletag', 'role', 'claimed', 'actions'];
 
 <template>
   <div class="ul-container">
-    <ul v-if="!loading && store.admin.users">
+    <div v-if="!loading && store.admin.users">
       <TableComponent :navItems="navItems">
-        <li v-for="user in store.admin.users" :key="user._id">
-          <UserListCard :user="user"></UserListCard>
-        </li>
+        <UserListCard v-for="user in store.admin.users" :key="user._id" :user="user" />
       </TableComponent>
-    </ul>
+    </div>
     <div v-else-if="loading" class="skeleton-table-container">
       <div class="skeleton-table-header">
         <div class="skeleton-box skeleton-header-item"></div>

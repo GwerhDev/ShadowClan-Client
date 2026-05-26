@@ -263,7 +263,7 @@ function getClassName(value: string) {
       <button @click="openAddModal">Agregar miembro</button>
     </span>
 
-    <ul v-if="!loading && (allMembers.length || pendingInvitations.length)">
+    <div v-if="!loading && (allMembers.length || pendingInvitations.length)">
       <TableComponent :navItems="navItems">
         <ClanMemberCard
           v-for="{ char, role } in allMembers"
@@ -283,7 +283,7 @@ function getClassName(value: string) {
           @refresh="loadClan"
         />
       </TableComponent>
-    </ul>
+    </div>
 
     <div v-else-if="loading" class="skeleton-table-container">
       <div class="skeleton-table-header">

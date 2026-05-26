@@ -1,19 +1,16 @@
 .ul-container {
   padding: 1.1rem;
-  min-height: 100%;
   display: flex;
   position: relative;
   flex-direction: column;
 
-  ul {
-    padding-top: .3rem;
-    padding-bottom: .3rem;
+  > div {
+    flex: 1;
+    min-height: 0;
     display: flex;
-    width: 100%;
     flex-direction: column;
-    gap: .4rem;
-    list-style: none;
   }
+
 }
 
 .btn-with-badge {

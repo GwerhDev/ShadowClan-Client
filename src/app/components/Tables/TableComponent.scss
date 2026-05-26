@@ -1,7 +1,29 @@
+.table-scroll-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-color-primary);
+    border-radius: 4px;
+  }
+}
+
 .table-container {
-  gap: .1rem;
+  gap: .25rem;
   display: flex;
   flex-direction: column;
+  min-width: 480px;
 
   nav {
     display: grid;
@@ -10,9 +32,21 @@
     border-radius: 8px;
     font-weight: bolder;
     font-size: smaller;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    flex-shrink: 0;
 
     li {
       padding: .3rem;
+
+      &:last-child {
+        position: sticky;
+        right: 0;
+        background-color: var(--color-secondary-bg);
+        z-index: 1;
+        text-align: center;
+      }
 
       &:hover {
         background: none;

@@ -35,9 +35,8 @@ function openDashboard(path: string) {
 }
 
 function styleActive(path: string) {
-  if (route.path === path) {
-    return { backgroundColor: "var(--color-primary)" };
-  }
+  if (route.path === path) return { backgroundColor: "var(--color-primary)" };
+  if (path !== '/' && route.path.startsWith(path)) return { backgroundColor: "var(--color-primary)" };
   return {};
 }
 </script>

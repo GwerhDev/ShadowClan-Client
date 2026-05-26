@@ -1,5 +1,8 @@
 <template>
   <div>
+    <button class="btn-back" @click="router.push('/management/history')">
+      <i class="fas fa-arrow-left"></i> Volver al historial
+    </button>
     <h2>Detalles de la Guerra Sombría</h2>
     <div v-if="loading">
       Cargando...
@@ -71,7 +74,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { Match } from '../../../../interfaces';
 import { translateBattle, translateResult } from '../../../../helpers/lists';
 import MatchDetailsModal from './MatchDetailsModal.vue';
@@ -79,6 +82,7 @@ import ConfirmedMembersModal from './ConfirmedMembersModal.vue';
 import { useStore } from '../../../../middlewares/store';
 
 const route = useRoute();
+const router = useRouter();
 const store = useStore();
 const currentShadowWar = computed(() => store.admin.currentShadowWar);
 const loading = ref(true);
