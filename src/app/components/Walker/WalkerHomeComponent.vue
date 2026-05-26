@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import SearchSelector from '../Selectors/SearchSelector.vue';
 import LinkCharacterForm from './LinkCharacterForm.vue';
 import { Clan } from '../../../interfaces';
 import { API_URL } from '../../../middlewares/misc/const';
+import { getMyCharacterClaims, getMyCharacterCreationRequests } from '../../../middlewares/services';
+import { getSocket } from '../../../middlewares/socket';
 import axios from 'axios';
 
 const store: any = useStore();
@@ -15,6 +17,7 @@ const selectedClanId = ref('');
 const submitting = ref(false);
 const requestStatus = ref<'idle' | 'success' | 'conflict' | 'error'>('idle');
 const myRequests = ref<any[]>([]);
+const pendingCharacterRequests = ref<any[]>([]);
 
 const activeCharacter = computed(() => {
   const chars = store.currentUser.userData?.character;
@@ -22,15 +25,9 @@ const activeCharacter = computed(() => {
   return chars.find((c: any) => c._id === store.currentCharacter) ?? chars[0];
 });
 
-const hasPendingRequest = computed(() =>
-  myRequests.value.some((r: any) => r.status === 'pending')
+const pendingRequests = computed(() =>
+  myRequests.value.filter((r: any) => r.status === 'pending')
 );
-
-const statusLabel = (s: string) => {
-  if (s === 'pending')  return 'Pendiente';
-  if (s === 'accepted') return 'Aceptada';
-  return 'Rechazada';
-};
 
 async function fetchClans() {
   const res = await axios.get(API_URL + '/clan', { withCredentials: true });
@@ -57,7 +54,41 @@ async function sendRequest() {
   }
 }
 
-onMounted(() => Promise.all([fetchClans(), fetchMyRequests()]));
+function handleReviewed(data: any) {
+  if (data.action === 'reject') {
+    myRequests.value = myRequests.value.filter((r: any) => r._id !== data.id);
+  }
+}
+
+function handleCharacterReviewed(data: any) {
+  if (data.action === 'reject') {
+    pendingCharacterRequests.value = pendingCharacterRequests.value.filter((r: any) => r._id !== data.id);
+  }
+}
+
+async function fetchPendingCharacterRequests() {
+  const [claims, creations] = await Promise.all([
+    getMyCharacterClaims().catch(() => []),
+    getMyCharacterCreationRequests().catch(() => []),
+  ]);
+  pendingCharacterRequests.value = [
+    ...(claims as any[]).filter((r: any) => r.status === 'pending').map((r: any) => ({ ...r, _kind: 'claim' })),
+    ...(creations as any[]).filter((r: any) => r.status === 'pending').map((r: any) => ({ ...r, _kind: 'creation' })),
+  ];
+}
+
+onMounted(async () => {
+  await Promise.all([fetchClans(), fetchMyRequests(), fetchPendingCharacterRequests()]);
+  const socket = getSocket();
+  socket?.on('clan-request:reviewed', handleReviewed);
+  socket?.on('character-request:reviewed', handleCharacterReviewed);
+});
+
+onUnmounted(() => {
+  const socket = getSocket();
+  socket?.off('clan-request:reviewed', handleReviewed);
+  socket?.off('character-request:reviewed', handleCharacterReviewed);
+});
 </script>
 
 <template>
@@ -75,6 +106,23 @@ onMounted(() => Promise.all([fetchClans(), fetchMyRequests()]));
 
     <!-- Sin personaje vinculado -->
     <div v-if="!store.currentUser.userData?.character?.length" class="walker-card">
+
+      <!-- Solicitudes de personaje pendientes -->
+      <template v-if="pendingCharacterRequests.length && !linkingCharacter">
+        <div class="requests-section" style="align-self: stretch; text-align: left;">
+          <h4>solicitudes de personaje</h4>
+          <div class="request-row" v-for="req in pendingCharacterRequests" :key="req._id">
+            <span class="request-clan">{{ req.character?.name ?? req.name ?? '—' }}</span>
+            <span class="request-type">{{ req._kind === 'claim' ? 'Reclamación' : 'Creación' }}</span>
+            <span class="request-status pending">Pendiente</span>
+          </div>
+        </div>
+        <div class="pending-notice" style="align-self: stretch; text-align: left;">
+          <i class="fas fa-clock"></i>
+          <p>Tu solicitud de personaje está siendo revisada. Serás notificado cuando haya una respuesta.</p>
+        </div>
+      </template>
+
       <template v-if="!linkingCharacter">
         <div class="onboarding-icon-wrap">
           <i class="fas fa-khanda"></i>
@@ -106,7 +154,7 @@ onMounted(() => Promise.all([fetchClans(), fetchMyRequests()]));
       </template>
       <LinkCharacterForm
         v-else
-        @done="linkingCharacter = false"
+        @done="() => { linkingCharacter = false; fetchPendingCharacterRequests(); }"
         @cancel="linkingCharacter = false"
       />
     </div>
@@ -120,17 +168,17 @@ onMounted(() => Promise.all([fetchClans(), fetchMyRequests()]));
         <span>Personaje activo: <span class="featured-text">{{ activeCharacter?.name ?? '—' }}</span></span>
       </div>
 
-      <!-- Solicitudes enviadas -->
-      <div v-if="myRequests.length" class="requests-section">
+      <!-- Solicitudes enviadas (solo pendientes) -->
+      <div v-if="pendingRequests.length" class="requests-section">
         <h4>solicitudes enviadas</h4>
-        <div class="request-row" v-for="req in myRequests" :key="req._id">
+        <div class="request-row" v-for="req in pendingRequests" :key="req._id">
           <span class="request-clan">{{ req.clan?.name }}</span>
-          <span :class="['request-status', req.status]">{{ statusLabel(req.status) }}</span>
+          <span class="request-status pending">Pendiente</span>
         </div>
       </div>
 
       <!-- Pendiente: mensaje de espera -->
-      <div v-if="hasPendingRequest" class="pending-notice">
+      <div v-if="pendingRequests.length" class="pending-notice">
         <i class="fas fa-clock"></i>
         <p>Tu solicitud está siendo revisada. Serás notificado cuando haya una respuesta.</p>
       </div>
@@ -173,7 +221,6 @@ $gold-mid: rgba(227, 210, 168, .5);
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 2rem 1.5rem;
   max-width: 620px;
   width: 100%;
   margin: 0 auto;
@@ -317,6 +364,14 @@ $gold-mid: rgba(227, 210, 168, .5);
   }
 
   .request-clan { font-size: .88rem; }
+
+  .request-type {
+    font-size: .7rem;
+    color: rgba(255, 255, 255, .35);
+    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
 
   .request-status {
     font-size: .7rem;

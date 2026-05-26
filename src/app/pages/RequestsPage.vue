@@ -1,32 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from '../../middlewares/store';
-import { getClanInvitations, reviewClanInvitation, getClanRequestsManagement, reviewClanRequest } from '../../middlewares/services';
+import { getClanInvitations, reviewClanInvitation } from '../../middlewares/services';
 import { classes } from '../../middlewares/misc/const';
 import AppLayout from '../layouts/AppLayout.vue';
 
 const store: any = useStore();
 
 const invitations = ref<any[]>([]);
-const clanRequests = ref<any[]>([]);
 const loading = ref(true);
 const selected = ref<{ type: string; raw: any } | null>(null);
 const processingId = ref<string | null>(null);
 const actionError = ref('');
 const showDetail = ref(false);
-
-const activeChar = computed(() => {
-  const chars = store.currentUser.userData?.character ?? [];
-  return chars.find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
-});
-
-const isLeaderOrOfficer = computed(() => {
-  if (!activeChar.value?.clan) return false;
-  const clan = activeChar.value.clan;
-  const charId = String(activeChar.value._id);
-  return String(clan.leader) === charId ||
-    (clan.officer ?? []).some((o: any) => String(o._id ?? o) === charId);
-});
 
 const visibleInvitations = computed(() =>
   invitations.value.filter(inv =>
@@ -34,18 +20,30 @@ const visibleInvitations = computed(() =>
   )
 );
 
+const reviewedRequests = computed(() =>
+  (store.notifications as any[])
+    .filter((n: any) => n.type === 'clan-request-reviewed')
+    .map((n: any) => ({ type: 'clan-request-reviewed', raw: { ...n.data, _notifId: n.id } }))
+);
+
+const reviewedCharacterRequests = computed(() =>
+  (store.notifications as any[])
+    .filter((n: any) => n.type === 'character-request-reviewed')
+    .map((n: any) => ({ type: 'character-request-reviewed', raw: { ...n.data, _notifId: n.id } }))
+);
+
 const allItems = computed(() => [
   ...visibleInvitations.value.map(inv => ({ type: 'clan-invitation', raw: inv })),
-  ...clanRequests.value.map(req => ({ type: 'clan-request', raw: req })),
+  ...reviewedRequests.value,
+  ...reviewedCharacterRequests.value,
 ]);
 
 onMounted(async () => {
-  const [invs, reqs] = await Promise.allSettled([
-    getClanInvitations(),
-    isLeaderOrOfficer.value ? getClanRequestsManagement() : Promise.resolve([]),
-  ]);
-  invitations.value = invs.status === 'fulfilled' ? (invs.value ?? []) : [];
-  clanRequests.value = reqs.status === 'fulfilled' ? (reqs.value ?? []) : [];
+  try {
+    invitations.value = await getClanInvitations() ?? [];
+  } catch {
+    invitations.value = [];
+  }
   loading.value = false;
 });
 
@@ -78,22 +76,6 @@ async function reviewInvitation(id: string, action: 'accept' | 'reject') {
   }
 }
 
-async function reviewRequest(id: string, action: 'accept' | 'reject') {
-  processingId.value = id;
-  actionError.value = '';
-  try {
-    await reviewClanRequest(id, action);
-    clanRequests.value = clanRequests.value.filter(r => r._id !== id);
-    if (store.pendingRequestsCount > 0) store.pendingRequestsCount--;
-    selected.value = null;
-    showDetail.value = false;
-  } catch (e: any) {
-    actionError.value = e?.response?.data?.message ?? 'Error al procesar la solicitud.';
-  } finally {
-    processingId.value = null;
-  }
-}
-
 function getClassName(value: string) {
   return classes.find(c => c.value === value)?.name ?? value;
 }
@@ -104,12 +86,30 @@ function formatDate(iso: string) {
 
 function itemTitle(item: { type: string; raw: any }): string {
   if (item.type === 'clan-invitation') return item.raw.clan?.name ?? '—';
-  return item.raw.character?.name ?? '—';
+  if (item.type === 'clan-request-reviewed') return item.raw.clan?.name ?? '—';
+  if (item.type === 'character-request-reviewed') return item.raw.character?.name ?? '—';
+  return '—';
 }
 
 function itemSubtitle(item: { type: string; raw: any }): string {
   if (item.type === 'clan-invitation') return 'Invitación de clan';
-  return `Solicitud · ${item.raw.clan?.name ?? '—'}`;
+  if (item.type === 'clan-request-reviewed')
+    return item.raw.action === 'accept' ? 'Solicitud aceptada' : 'Solicitud rechazada';
+  if (item.type === 'character-request-reviewed') {
+    const label = item.raw.type === 'claim' ? 'Reclamación' : 'Creación';
+    return item.raw.action === 'accept' ? `${label} aprobada` : `${label} rechazada`;
+  }
+  return '—';
+}
+
+function dismissReviewedRequest(notifId: string) {
+  const notif = (store.notifications as any[]).find((n: any) => n.id === notifId);
+  if (notif && !notif.read) {
+    notif.read = true;
+    store.decrementPendingInboxCount();
+  }
+  selected.value = null;
+  showDetail.value = false;
 }
 </script>
 
@@ -142,7 +142,11 @@ function itemSubtitle(item: { type: string; raw: any }): string {
                 @click="selectItem(item)"
               >
                 <div class="req-item-icon-wrap" :class="item.type">
-                  <i :class="item.type === 'clan-invitation' ? 'fas fa-envelope' : 'fas fa-user-plus'"></i>
+                  <i :class="
+                    item.type === 'clan-invitation' ? 'fas fa-envelope'
+                    : item.type === 'clan-request-reviewed' ? (item.raw.action === 'accept' ? 'fas fa-check' : 'fas fa-times')
+                    : item.raw.action === 'accept' ? 'fas fa-user-check' : 'fas fa-user-times'
+                  "></i>
                 </div>
                 <div class="req-item-body">
                   <span class="req-item-title">{{ itemTitle(item) }}</span>
@@ -216,51 +220,70 @@ function itemSubtitle(item: { type: string; raw: any }): string {
               </div>
             </template>
 
-            <template v-else-if="selected.type === 'clan-request'">
+            <template v-else-if="selected.type === 'clan-request-reviewed'">
               <div class="req-detail-content">
                 <div class="req-detail-header">
-                  <div class="req-detail-type request">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Solicitud de ingreso</span>
+                  <div class="req-detail-type" :class="selected.raw.action === 'accept' ? 'accepted' : 'rejected'">
+                    <i :class="selected.raw.action === 'accept' ? 'fas fa-check' : 'fas fa-times'"></i>
+                    <span>{{ selected.raw.action === 'accept' ? 'Solicitud aceptada' : 'Solicitud rechazada' }}</span>
                   </div>
                   <span class="req-detail-date">{{ formatDate(selected.raw.createdAt) }}</span>
                 </div>
 
                 <div class="req-detail-clan">
-                  <i class="fas fa-user req-clan-icon"></i>
+                  <i class="fas fa-shield-halved req-clan-icon"></i>
                   <div>
-                    <h2 class="req-clan-name">{{ selected.raw.character?.name ?? '—' }}</h2>
-                    <p class="req-clan-sub">quiere unirse a {{ selected.raw.clan?.name ?? '—' }}</p>
+                    <h2 class="req-clan-name">{{ selected.raw.clan?.name ?? '—' }}</h2>
+                    <p class="req-clan-sub">
+                      {{ selected.raw.action === 'accept'
+                        ? 'ha aceptado tu solicitud de ingreso'
+                        : 'ha rechazado tu solicitud de ingreso' }}
+                    </p>
                   </div>
                 </div>
-
-                <div class="req-detail-grid">
-                  <div class="req-detail-item">
-                    <span class="req-detail-label">Jugador</span>
-                    <span class="req-detail-value">{{ selected.raw.user?.battletag ?? '—' }}</span>
-                  </div>
-                  <div v-if="selected.raw.character?.currentClass" class="req-detail-item">
-                    <span class="req-detail-label">Clase</span>
-                    <span class="req-detail-value">{{ getClassName(selected.raw.character.currentClass) }}</span>
-                  </div>
-                  <div v-if="selected.raw.character?.resonance" class="req-detail-item">
-                    <span class="req-detail-label">Resonancia</span>
-                    <span class="req-detail-value">{{ selected.raw.character.resonance }}</span>
-                  </div>
-                </div>
-
-                <p v-if="actionError" class="req-error">{{ actionError }}</p>
 
                 <div class="req-detail-actions">
-                  <button class="req-btn accept" :disabled="processingId === selected.raw._id" @click="reviewRequest(selected.raw._id, 'accept')">
-                    <i class="fas fa-check"></i> Aceptar
-                  </button>
-                  <button class="req-btn reject" :disabled="processingId === selected.raw._id" @click="reviewRequest(selected.raw._id, 'reject')">
-                    <i class="fas fa-times"></i> Rechazar
+                  <button class="req-btn ghost" @click="dismissReviewedRequest(selected.raw._notifId)">
+                    <i class="fas fa-check"></i> Entendido
                   </button>
                 </div>
               </div>
             </template>
+
+            <template v-else-if="selected.type === 'character-request-reviewed'">
+              <div class="req-detail-content">
+                <div class="req-detail-header">
+                  <div class="req-detail-type" :class="selected.raw.action === 'accept' ? 'accepted' : 'rejected'">
+                    <i :class="selected.raw.action === 'accept' ? 'fas fa-user-check' : 'fas fa-user-times'"></i>
+                    <span>
+                      {{ selected.raw.action === 'accept'
+                        ? (selected.raw.type === 'claim' ? 'Reclamación aprobada' : 'Creación aprobada')
+                        : (selected.raw.type === 'claim' ? 'Reclamación rechazada' : 'Creación rechazada') }}
+                    </span>
+                  </div>
+                  <span class="req-detail-date">{{ formatDate(selected.raw.createdAt) }}</span>
+                </div>
+
+                <div class="req-detail-clan">
+                  <i class="fas fa-khanda req-clan-icon"></i>
+                  <div>
+                    <h2 class="req-clan-name">{{ selected.raw.character?.name ?? '—' }}</h2>
+                    <p class="req-clan-sub">
+                      {{ selected.raw.action === 'accept'
+                        ? 'tu personaje ha sido vinculado a tu cuenta'
+                        : 'tu solicitud de personaje fue rechazada' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="req-detail-actions">
+                  <button class="req-btn ghost" @click="dismissReviewedRequest(selected.raw._notifId)">
+                    <i class="fas fa-check"></i> Entendido
+                  </button>
+                </div>
+              </div>
+            </template>
+
           </div>
 
         </div>
@@ -371,9 +394,14 @@ $border: rgba(255, 255, 255, .07);
     color: rgba(100, 180, 255, .9);
   }
 
-  &.clan-request {
-    background: $gold-dim;
-    color: $gold;
+  &.clan-request-reviewed {
+    background: rgba(129, 199, 132, .1);
+    color: #81c784;
+  }
+
+  &.character-request-reviewed {
+    background: rgba(129, 199, 132, .1);
+    color: #81c784;
   }
 }
 
@@ -482,6 +510,18 @@ $border: rgba(255, 255, 255, .07);
     border: 1px solid rgba(227, 210, 168, .25);
     color: rgba(227, 210, 168, .85);
   }
+
+  &.accepted {
+    background: rgba(129, 199, 132, .08);
+    border: 1px solid rgba(129, 199, 132, .3);
+    color: #81c784;
+  }
+
+  &.rejected {
+    background: rgba(229, 115, 115, .08);
+    border: 1px solid rgba(229, 115, 115, .3);
+    color: #e57373;
+  }
 }
 
 .req-detail-date {
@@ -584,6 +624,13 @@ $border: rgba(255, 255, 255, .07);
     border-color: rgba(229, 115, 115, .4);
     color: #e57373;
     &:hover:not(:disabled) { background: rgba(229, 115, 115, .08); border-color: #e57373; }
+  }
+
+  &.ghost {
+    background: transparent;
+    border-color: rgba(255, 255, 255, .15);
+    color: rgba(255, 255, 255, .5);
+    &:hover:not(:disabled) { border-color: rgba(255, 255, 255, .35); color: rgba(255, 255, 255, .8); }
   }
 }
 

@@ -173,6 +173,30 @@ export const reviewClanRequest: any = async (id: string, action: 'accept' | 'rej
 
 export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, getShadowWars } from './shadowWarService';
 export { getClans, createClan, updateClan, deleteClan } from './clanService';
+
+export const createCharacterClaim: any = async (characterId: string) => {
+  const response: any = await axios.post(API_URL + '/character-claim', { characterId }, { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
+
+export const getMyCharacterClaims: any = async () => {
+  const response: any = await axios.get(API_URL + '/character-claim', { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
+
+export const createCharacterCreationRequest: any = async (formData: { name: string; currentClass: string; resonance?: number }) => {
+  const response: any = await axios.post(API_URL + '/character-creation-request', formData, { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
+
+export const getMyCharacterCreationRequests: any = async () => {
+  const response: any = await axios.get(API_URL + '/character-creation-request', { withCredentials: true })
+    .then(response => response.data);
+  return response;
+};
 export { getCharacterByName } from './characterService';
 
 export const getClanMembers: any = async (clanId: string) => {

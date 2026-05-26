@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SplashComponent from './app/components/SplashComponent.vue';
+import ClanEventModal from './app/components/Walker/ClanEventModal.vue';
 import { useStore } from './middlewares/store/index';
 import { connectSocket } from './middlewares/socket';
 import { useRouter } from 'vue-router';
@@ -10,7 +11,7 @@ const router = useRouter();
 const loading: Ref = ref(false);
 const authDone: Ref = ref(false);
 
-const WALKER_ALLOWED = ['/', '/tasks', '/tasks/my-tasks', '/tasks/clan-tasks', '/u/profile', '/u/account'];
+const WALKER_ALLOWED = ['/', '/tasks', '/tasks/my-tasks', '/tasks/clan-tasks', '/u/profile', '/u/account', '/requests'];
 
 onMounted(async () => {
   loading.value = true;
@@ -33,14 +34,8 @@ onMounted(async () => {
       store.handleFetchPendingInbox();
       store.handleFetchPendingRequests();
       const socket = connectSocket();
-      socket.on('clan-request:new', (data: any) => {
-        store.addNotification({
-          id: data.id,
-          type: 'clan-request',
-          targetType: 'character',
-          targetId: data.targetCharacterId ?? null,
-          data,
-        });
+      socket.on('clan-request:new', () => {
+        store.pendingRequestsCount += 1;
       });
       socket.on('clan-invitation:new', (data: any) => {
         store.addNotification({
@@ -50,6 +45,37 @@ onMounted(async () => {
           targetId: data.character?._id ? String(data.character._id) : null,
           data,
         });
+      });
+      socket.on('clan-request:reviewed', (data: any) => {
+        store.addNotification({
+          id: `${data.id}:reviewed`,
+          type: 'clan-request-reviewed',
+          targetType: 'character',
+          targetId: data.character?._id ? String(data.character._id) : null,
+          data,
+        });
+        if (data.action === 'accept') {
+          store.handleUserData().then(() => {
+            store.clanEventModal = { type: 'accepted', clanName: data.clan?.name ?? '' };
+          });
+        }
+      });
+      socket.on('clan:member-removed', (data: any) => {
+        store.handleUserData().then(() => {
+          store.clanEventModal = { type: 'removed', clanName: data.clanName ?? '' };
+        });
+      });
+      socket.on('character-request:reviewed', (data: any) => {
+        store.addNotification({
+          id: `${data.id}:char-reviewed`,
+          type: 'character-request-reviewed',
+          targetType: 'user',
+          targetId: null,
+          data,
+        });
+        if (data.action === 'accept') {
+          store.handleUserData();
+        }
       });
     }
   } finally {
@@ -63,4 +89,10 @@ onMounted(async () => {
 <template>
   <SplashComponent v-if="loading" :done="authDone" />
   <router-view v-else />
+  <ClanEventModal
+    v-if="store.clanEventModal"
+    :type="store.clanEventModal.type"
+    :clan-name="store.clanEventModal.clanName"
+    @close="store.clanEventModal = null"
+  />
 </template>

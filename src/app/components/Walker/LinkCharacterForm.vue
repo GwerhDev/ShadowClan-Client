@@ -24,7 +24,9 @@ const formData = ref({
 
 const sliderContainer = ref<HTMLElement | null>(null);
 const submitError = ref('');
+const claimError = ref('');
 const submitted = ref(false);
+const isSubmittingClaim = ref(false);
 
 const isCharacterEmpty = computed(() => characterName.value.trim().length < 3);
 
@@ -52,7 +54,7 @@ const searchCharacter = async () => {
   if (isCharacterEmpty.value) { characters.value = []; return; }
   isLoading.value = true;
   const response = await getCharacterByName(characterName.value);
-  characters.value = response.found ? response.characters : [];
+  characters.value = response.found ? response.characters.filter((c: any) => c.status === 'unclaimed') : [];
   isLoading.value = false;
 };
 
@@ -75,19 +77,32 @@ const goToCreateNewCharacter = () => {
   step.value = 3;
 };
 
+async function claimCharacter() {
+  claimError.value = '';
+  isSubmittingClaim.value = true;
+  try {
+    await store.handleCreateCharacterClaim(selectedCharacter.value._id);
+    step.value = 4;
+  } catch (e: any) {
+    claimError.value = e?.response?.data?.message ?? 'Error al enviar la solicitud. Intenta de nuevo.';
+  } finally {
+    isSubmittingClaim.value = false;
+  }
+}
+
 async function handleSubmit() {
   submitted.value = true;
   if (!isFormValid.value) return;
   submitError.value = '';
   try {
-    const response = await store.handleCreateCharacter(formData.value);
-    if (response?.error) {
-      submitError.value = response.error;
-      return;
-    }
-    emit('done');
-  } catch {
-    submitError.value = 'Ocurrió un error al vincular el personaje. Intenta de nuevo.';
+    await store.handleCreateCharacterCreationRequest({
+      name: formData.value.name,
+      currentClass: formData.value.currentClass,
+      resonance: formData.value.resonance ?? undefined,
+    });
+    step.value = 4;
+  } catch (e: any) {
+    submitError.value = e?.response?.data?.message ?? 'Ocurrió un error al enviar la solicitud. Intenta de nuevo.';
   }
 }
 
@@ -123,15 +138,23 @@ function backToStep1() {
     <div v-if="step === 2" class="link-step">
       <h4 class="step-title">Confirmar personaje</h4>
       <CharacterCard :character="selectedCharacter" />
+      <p v-if="claimError" class="submit-error">{{ claimError }}</p>
       <div class="step-actions">
-        <button class="action-btn primary" @click="emit('done')">
-          <i class="fas fa-link"></i> Confirmar
+        <button type="button" class="action-btn primary" :disabled="isSubmittingClaim" @click="claimCharacter">
+          <i class="fas fa-link"></i> {{ isSubmittingClaim ? 'Enviando...' : 'Reclamar' }}
         </button>
-        <button class="action-btn ghost" @click="backToStep1">Volver</button>
+        <button type="button" class="action-btn ghost" :disabled="isSubmittingClaim" @click="backToStep1">Volver</button>
       </div>
     </div>
 
-    <!-- Step 3: Crear -->
+    <!-- Step 4: Éxito -->
+    <div v-if="step === 4" class="link-step link-success">
+      <i class="fas fa-check-circle"></i>
+      <p>Solicitud enviada. Un administrador revisará y te notificará.</p>
+      <button type="button" class="action-btn primary" @click="emit('done')">Cerrar</button>
+    </div>
+
+    <!-- Step 3: Solicitud de creación -->
     <form v-if="step === 3" class="link-step" @submit.prevent="handleSubmit">
       <h4 class="step-title">Datos del personaje</h4>
 
@@ -163,7 +186,7 @@ function backToStep1() {
 
       <div class="step-actions">
         <button type="submit" class="action-btn primary">
-          <i class="fas fa-link"></i> Vincular a tu cuenta
+          <i class="fas fa-paper-plane"></i> Enviar solicitud
         </button>
         <button type="button" class="action-btn ghost" @click="backToStep1">Volver</button>
       </div>
@@ -350,6 +373,22 @@ $gold-dim: rgba(227, 210, 168, .15);
   margin: 0;
   font-size: .75rem;
   color: #e57373;
+}
+
+.link-success {
+  align-items: center;
+  text-align: center;
+
+  i {
+    font-size: 2.5rem;
+    color: #81c784;
+  }
+
+  p {
+    margin: 0;
+    font-size: .88rem;
+    color: rgba(255, 255, 255, .6);
+  }
 }
 
 .submit-error {

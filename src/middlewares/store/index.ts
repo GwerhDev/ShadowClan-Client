@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest } from '../services';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
 import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
@@ -42,6 +42,7 @@ export const useStore = defineStore('store', {
     notifications: [],
     pendingInboxCount: 0,
     pendingRequestsCount: 0,
+    clanEventModal: null,
   }),
 
   actions: {
@@ -406,6 +407,14 @@ export const useStore = defineStore('store', {
 
     async handleReviewClanRequest(id: string, action: 'accept' | 'reject') {
       return await reviewClanRequest(id, action);
+    },
+
+    async handleCreateCharacterClaim(characterId: string) {
+      return await createCharacterClaim(characterId);
+    },
+
+    async handleCreateCharacterCreationRequest(formData: { name: string; currentClass: string; resonance?: number }) {
+      return await createCharacterCreationRequest(formData);
     },
 
     addNotification(notification: { id: string; type: string; targetType: 'user' | 'character'; targetId?: string | null; data: any }) {

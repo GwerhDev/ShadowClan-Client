@@ -37,4 +37,5 @@ export interface storeState {
   notifications: { id: string; type: string; targetType: 'user' | 'character'; targetId: string | null; data: any; read: boolean }[],
   pendingInboxCount: number,
   pendingRequestsCount: number,
+  clanEventModal: { type: 'accepted' | 'removed'; clanName: string } | null,
 }
