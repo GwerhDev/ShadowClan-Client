@@ -104,12 +104,7 @@ function backToStep1() {
     <!-- Step 1: Buscar -->
     <div v-if="step === 1" class="link-step">
       <h4 class="step-title">Buscar personaje</h4>
-      <LabeledInput
-        label="Nombre del personaje"
-        id="charName"
-        v-model="characterName"
-        @input="handleNameInput"
-      />
+      <LabeledInput label="Nombre del personaje" id="charName" v-model="characterName" @input="handleNameInput" />
       <p v-if="isLoading" class="searching">Buscando...</p>
       <ul v-if="characters.length" class="char-results">
         <li v-for="char in characters" :key="char.id" @click="selectCharacterToClaim(char)">
@@ -117,11 +112,7 @@ function backToStep1() {
         </li>
       </ul>
       <div class="step-actions">
-        <button
-          class="action-btn primary"
-          :disabled="isCharacterEmpty"
-          @click="goToCreateNewCharacter"
-        >
+        <button class="action-btn primary" :disabled="isCharacterEmpty" @click="goToCreateNewCharacter">
           <i class="fas fa-plus"></i> Crear nuevo personaje
         </button>
         <button class="action-btn ghost" @click="emit('cancel')">Cancelar</button>
@@ -147,13 +138,8 @@ function backToStep1() {
       <LabeledInput label="Nombre" id="name" v-model="formData.name" disabled />
 
       <div class="field-group">
-        <LabeledInput
-          label="Resonancia *"
-          id="resonance"
-          v-model.number="formData.resonance"
-          type="number"
-          :class="{ 'input-error': errors.resonance }"
-        />
+        <LabeledInput label="Resonancia *" id="resonance" v-model.number="formData.resonance" type="number"
+          :class="{ 'input-error': errors.resonance }" />
         <p v-if="errors.resonance" class="field-error">La resonancia es obligatoria.</p>
       </div>
 
@@ -162,13 +148,8 @@ function backToStep1() {
         <div class="class-selector" :class="{ 'input-error': errors.currentClass }">
           <button type="button" class="slider-arrow" @click="scrollLeft">&#8249;</button>
           <div class="class-scroll" ref="sliderContainer">
-            <button
-              type="button"
-              v-for="cls in classes"
-              :key="cls.value"
-              :class="{ 'selected': formData.currentClass === cls.value }"
-              @click="handleClassSelection(cls.value)"
-            >
+            <button type="button" v-for="cls in classes" :key="cls.value"
+              :class="{ 'selected': formData.currentClass === cls.value }" @click="handleClassSelection(cls.value)">
               <img :src="cls.image" :alt="cls.name" width="46" height="46" />
               <small>{{ cls.name }}</small>
             </button>
@@ -204,19 +185,20 @@ $gold-dim: rgba(227, 210, 168, .15);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  padding-inline: 1rem;
 }
 
 .step-title {
   font-size: .65rem;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.4);
+  color: rgba(255, 255, 255, .4);
   margin: 0;
 }
 
 .searching {
   font-size: .85rem;
-  color: rgba(255,255,255,.5);
+  color: rgba(255, 255, 255, .5);
   margin: 0;
 }
 
@@ -230,7 +212,13 @@ $gold-dim: rgba(227, 210, 168, .15);
   max-height: 200px;
   overflow-y: auto;
 
-  li { cursor: pointer; &:hover { opacity: .85; } }
+  li {
+    cursor: pointer;
+
+    &:hover {
+      opacity: .85;
+    }
+  }
 }
 
 .step-actions {
@@ -255,15 +243,27 @@ $gold-dim: rgba(227, 210, 168, .15);
     background: transparent;
     border: 1px solid $gold-mid;
     color: $gold;
-    &:hover { background: rgba(227,210,168,.08); border-color: $gold; }
-    &:disabled { opacity: .35; cursor: not-allowed; }
+
+    &:hover {
+      background: rgba(227, 210, 168, .08);
+      border-color: $gold;
+    }
+
+    &:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
   }
 
   &.ghost {
     background: transparent;
-    border: 1px solid rgba(255,255,255,.15);
-    color: rgba(255,255,255,.5);
-    &:hover { border-color: rgba(255,255,255,.35); color: rgba(255,255,255,.8); }
+    border: 1px solid rgba(255, 255, 255, .15);
+    color: rgba(255, 255, 255, .5);
+
+    &:hover {
+      border-color: rgba(255, 255, 255, .35);
+      color: rgba(255, 255, 255, .8);
+    }
   }
 }
 
@@ -279,7 +279,9 @@ $gold-dim: rgba(227, 210, 168, .15);
   letter-spacing: .04em;
 }
 
-.required-mark { color: #e57373; }
+.required-mark {
+  color: #e57373;
+}
 
 .class-selector {
   display: flex;
@@ -289,18 +291,23 @@ $gold-dim: rgba(227, 210, 168, .15);
   border-radius: .3rem;
   padding: .25rem;
 
-  &.input-error { box-shadow: 0 0 0 1px #e57373; }
+  &.input-error {
+    box-shadow: 0 0 0 1px #e57373;
+  }
 }
 
 .slider-arrow {
   background: transparent;
   border: none;
-  color: rgba(255,255,255,.6);
+  color: rgba(255, 255, 255, .6);
   font-size: 1.4rem;
   padding: 0 .25rem;
   cursor: pointer;
   flex-shrink: 0;
-  &:hover { color: $gold; }
+
+  &:hover {
+    color: $gold;
+  }
 }
 
 .class-scroll {
@@ -323,15 +330,18 @@ $gold-dim: rgba(227, 210, 168, .15);
     gap: .3rem;
     width: 72px;
     font-size: .65rem;
-    color: rgba(255,255,255,.7);
+    color: rgba(255, 255, 255, .7);
     cursor: pointer;
     transition: border-color .2s, background .2s;
 
-    &:hover { border-color: rgba(227,210,168,.4); }
+    &:hover {
+      border-color: rgba(227, 210, 168, .4);
+    }
+
     &.selected {
       border-color: $gold-mid;
-      background: rgba(227,210,168,.08);
-      box-shadow: 0 0 6px rgba(227,210,168,.2);
+      background: rgba(227, 210, 168, .08);
+      box-shadow: 0 0 6px rgba(227, 210, 168, .2);
     }
   }
 }
@@ -347,8 +357,8 @@ $gold-dim: rgba(227, 210, 168, .15);
   font-size: .82rem;
   color: #e57373;
   padding: .5rem .75rem;
-  background: rgba(229,115,115,.08);
-  border: 1px solid rgba(229,115,115,.3);
+  background: rgba(229, 115, 115, .08);
+  border: 1px solid rgba(229, 115, 115, .3);
   border-radius: 6px;
 }
 </style>

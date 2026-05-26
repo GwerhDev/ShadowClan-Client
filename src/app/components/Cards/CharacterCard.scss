@@ -3,13 +3,12 @@
   position: relative;
   border: 1px solid var(--primary-border-color);
   border-radius: 8px;
-  padding: 0.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 60px; // Reduced min-height
+  height: 60px;
   background-color: var(--element-color-primary);
 
   &:hover {
