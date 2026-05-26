@@ -15,9 +15,7 @@ watch(() => store.currentUser.logged, async (isLoggedIn) => {
     // Always set loading to true when we start fetching or re-evaluating data
     loading.value = true;
     // Only fetch if characters data is not already present or if it's explicitly null/undefined
-    if (!store.admin.characters) {
-      await store.handleGetAdminCharacters();
-    }
+    await store.handleGetAdminCharacters();
     loading.value = false; // Set loading to false after data is processed
   } else {
     // If not logged in, clear data and set loading to false
@@ -30,7 +28,7 @@ function handleAddMember() {
   showModal.value = true;
 };
 
-const navItems = ['status', 'name', 'resonance', 'class', 'actions'];
+const navItems = ['status', 'name', 'resonance', 'class', 'clan', 'actions'];
 
 </script>
 

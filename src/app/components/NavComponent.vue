@@ -1,6 +1,6 @@
 <style scoped lang="scss" src="./NavComponent.scss" />
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue';
+import { computed } from 'vue';
 import { useStore } from '../../middlewares/store';
 import { useRouter } from 'vue-router';
 import LogoComponent from './LogoComponent.vue';
@@ -15,7 +15,7 @@ const activeChar = computed(() => {
   const chars = store.currentUser.userData?.character ?? [];
   return chars.find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
 });
-const isWalker = computed(() => !isAdmin.value && !activeChar.value?.clan);
+const isWalker = computed(() => !activeChar.value?.clan);
 
 const isLeaderOrOfficer = computed(() => {
   if (!activeChar.value?.clan) return false;
@@ -25,39 +25,11 @@ const isLeaderOrOfficer = computed(() => {
     (clan.officer ?? []).some((o: any) => String(o) === charId);
 });
 
-const notifications = computed(() => store.notifications);
-const unreadCount = computed(() => notifications.value.filter((n: any) => !n.read).length);
-
-const showDropdown = ref(false);
-const bellWrapper = ref<HTMLElement | null>(null);
-
-function onOutsideClick(e: MouseEvent) {
-  if (!bellWrapper.value?.contains(e.target as Node)) {
-    showDropdown.value = false;
-  }
-}
-
-watch(showDropdown, (val) => {
-  if (val) nextTick(() => document.addEventListener('click', onOutsideClick));
-  else document.removeEventListener('click', onOutsideClick);
-});
-
-function toggleDropdown() {
-  showDropdown.value = !showDropdown.value;
-  if (showDropdown.value) store.markNotificationsRead();
-}
-
-function closeDropdown() {
-  showDropdown.value = false;
-}
+const unreadCount   = computed(() => store.pendingInboxCount);
+const requestsCount = computed(() => store.pendingRequestsCount);
 
 function goToRequests() {
-  closeDropdown();
-  router.push('/a/clan-requests');
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' });
+  router.push('/u/requests');
 }
 </script>
 
@@ -98,48 +70,21 @@ function formatDate(iso: string) {
             to="/management"
             class="nav-item"
           >
-            <i class="fas fa-shield-halved"></i>
+            <span class="icon-wrap">
+              <i class="fas fa-shield-halved"></i>
+              <span v-if="requestsCount > 0" class="notif-badge">{{ requestsCount }}</span>
+            </span>
             <small>Gestión</small>
           </router-link>
         </section>
 
         <section class="user-section">
 
-          <!-- Campana con dropdown -->
-          <div class="bell-wrapper" ref="bellWrapper" v-if="store.currentUser.logged">
-            <button class="bell-btn" @click="toggleDropdown" title="Notificaciones">
+          <div class="bell-wrapper" v-if="store.currentUser.logged">
+            <button class="bell-btn" @click="goToRequests" title="Misivas">
               <i class="fas fa-bell"></i>
               <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
             </button>
-
-
-            <div v-if="showDropdown" class="notif-dropdown">
-              <div class="notif-header">
-                <span>Notificaciones</span>
-                <button v-if="notifications.length" class="notif-clear" @click="store.clearNotifications()">
-                  Limpiar
-                </button>
-              </div>
-
-              <div v-if="!notifications.length" class="notif-empty">
-                Sin notificaciones
-              </div>
-
-              <ul v-else class="notif-list">
-                <li v-for="n in notifications" :key="n.id" :class="{ unread: !n.read }">
-                  <i class="fas fa-flag-checkered"></i>
-                  <div class="notif-body">
-                    <span><strong>{{ n.data.character?.name }}</strong> quiere unirse a <strong>{{ n.data.clan?.name
-                    }}</strong></span>
-                    <small>{{ formatDate(n.data.createdAt) }}</small>
-                  </div>
-                </li>
-              </ul>
-
-              <button v-if="isLeaderOrOfficer" class="notif-go" @click="goToRequests">
-                <i class="fas fa-list"></i> Ver solicitudes
-              </button>
-            </div>
           </div>
 
           <router-link to="/u/profile" title="Perfil">

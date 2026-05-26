@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations } from '../services';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
 import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
@@ -40,6 +40,8 @@ export const useStore = defineStore('store', {
     currentCharacter: "",
     warbands: null,
     notifications: [],
+    pendingInboxCount: 0,
+    pendingRequestsCount: 0,
   }),
 
   actions: {
@@ -374,6 +376,7 @@ export const useStore = defineStore('store', {
       if (id && userId) {
         setStoredCharacter(userId, id).catch(() => {});
       }
+      this.handleFetchPendingInbox();
     },
 
     async handleGetClanRequests() {
@@ -405,9 +408,41 @@ export const useStore = defineStore('store', {
       return await reviewClanRequest(id, action);
     },
 
-    addNotification(notification: { id: string; type: string; data: any }) {
+    addNotification(notification: { id: string; type: string; targetType: 'user' | 'character'; targetId?: string | null; data: any }) {
       if (this.notifications.some(n => n.id === notification.id)) return;
-      this.notifications.unshift({ ...notification, read: false });
+      this.notifications.unshift({ ...notification, targetId: notification.targetId ?? null, read: false });
+      const isForActiveChar =
+        notification.targetType === 'user' ||
+        (notification.targetType === 'character' && notification.targetId === this.currentCharacter);
+      if (isForActiveChar) this.pendingInboxCount += 1;
+    },
+
+    setPendingInboxCount(n: number) {
+      this.pendingInboxCount = n;
+    },
+
+    decrementPendingInboxCount() {
+      if (this.pendingInboxCount > 0) this.pendingInboxCount -= 1;
+    },
+
+    async handleFetchPendingRequests() {
+      try {
+        const requests = await getClanRequestsManagement() ?? [];
+        this.pendingRequestsCount = (requests as any[]).filter((r: any) => r.status === 'pending').length;
+      } catch {
+        // silently ignore
+      }
+    },
+
+    async handleFetchPendingInbox() {
+      try {
+        const invs = await getClanInvitations() ?? [];
+        this.pendingInboxCount = invs.filter(
+          (inv: any) => String(inv.character?._id) === String(this.currentCharacter)
+        ).length;
+      } catch {
+        // silently ignore — badge stays at 0
+      }
     },
 
     markNotificationsRead() {

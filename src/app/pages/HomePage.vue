@@ -5,14 +5,13 @@ import WalkerHomeComponent from '../components/Walker/WalkerHomeComponent.vue';
 import { useStore } from '../../middlewares/store';
 
 const store: any = useStore();
-const role     = computed(() => store.currentUser.userData?.role);
-const isAdmin  = computed(() => role.value === 'admin' || role.value === 'super_admin');
+
 const activeChar = computed(() => {
   const chars = store.currentUser.userData?.character ?? [];
   return chars.find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
 });
 const hasCharacter = computed(() => (store.currentUser.userData?.character ?? []).length > 0);
-const isWalker     = computed(() => !isAdmin.value && !activeChar.value?.clan);
+const isWalker     = computed(() => hasCharacter.value && !activeChar.value?.clan);
 
 const tabs = computed(() => {
   if (!hasCharacter.value) return [
@@ -22,9 +21,8 @@ const tabs = computed(() => {
     { id: 'home', name: 'Inicio', icon: 'fas fa-home', path: '/' },
   ];
   return [
-    { id: 'home',    name: 'Inicio',    icon: 'fas fa-home',       path: '/' },
-    { id: 'clan',    name: 'Clan',      icon: 'fas fa-shield-alt', path: '/c/clan' },
-    { id: 'history', name: 'Historial', icon: 'fas fa-history',    path: '/c/history' },
+    { id: 'feed', name: 'Feed', icon: 'fas fa-newspaper', path: '/' },
+    { id: 'clan', name: 'Clan', icon: 'fas fa-shield-halved', path: '/my-clan' },
   ];
 });
 </script>
@@ -32,8 +30,8 @@ const tabs = computed(() => {
 <template>
   <main class="red-shadow-fx">
     <div class="div-container">
-      <AppLayout :tabs="tabs" :hide-title="isWalker">
-        <WalkerHomeComponent v-if="isWalker" />
+      <AppLayout :tabs="tabs" :hide-title="!hasCharacter || isWalker">
+        <WalkerHomeComponent v-if="!hasCharacter || isWalker" />
         <router-view v-else />
       </AppLayout>
     </div>

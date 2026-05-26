@@ -95,6 +95,12 @@ function getClassName(value: string) {
 function getClassImage(value: string) {
   return classes.find(c => c.value === value)?.image ?? '';
 }
+
+function charHasUnreadNotifications(char: any): boolean {
+  return store.notifications.some((n: any) =>
+    !n.read && n.targetType === 'character' && n.targetId === String(char._id)
+  );
+}
 </script>
 
 <template>
@@ -143,10 +149,12 @@ function getClassImage(value: string) {
                 @click="showCharSwitcher = true"
               >
                 <i v-if="switchLoading" class="fas fa-spinner fa-spin"></i>
-                <i v-else class="fas fa-arrows-rotate"></i>
+                <i v-else class="fas fa-right-left"></i>
+                <span>Cambiar</span>
               </button>
               <button v-if="!editing" class="char-switch-btn" title="Editar personaje" @click="startEdit">
                 <i class="fas fa-pen"></i>
+                <span>Editar</span>
               </button>
               <button v-else class="char-switch-btn char-switch-btn--save" title="Guardar" :disabled="editSaving" @click="saveEdit">
                 <i v-if="editSaving" class="fas fa-spinner fa-spin"></i>
@@ -232,6 +240,10 @@ function getClassImage(value: string) {
           <div class="char-sw-info">
             <strong>{{ char.name }}</strong>
             <small>{{ char.currentClass ? getClassName(char.currentClass) : 'Sin clase' }} · {{ char.resonance ?? '—' }} res.</small>
+          </div>
+          <div class="char-sw-indicators">
+            <i v-if="char.clan" class="fas fa-shield-halved char-sw-clan-icon" title="En clan"></i>
+            <i v-if="charHasUnreadNotifications(char)" class="fas fa-bell char-sw-notif-icon" title="Notificaciones pendientes"></i>
           </div>
           <i v-if="char._id === store.currentCharacter" class="fas fa-check char-sw-active-icon"></i>
         </li>

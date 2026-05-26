@@ -34,5 +34,7 @@ export interface storeState {
   },
   currentCharacter: string | null,
   warbands: any,
-  notifications: { id: string; type: string; data: any; read: boolean }[],
+  notifications: { id: string; type: string; targetType: 'user' | 'character'; targetId: string | null; data: any; read: boolean }[],
+  pendingInboxCount: number,
+  pendingRequestsCount: number,
 }

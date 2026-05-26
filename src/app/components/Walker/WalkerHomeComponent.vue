@@ -81,28 +81,21 @@ onMounted(() => Promise.all([fetchClans(), fetchMyRequests()]));
         </div>
         <h2>Tu aventura comienza aquí</h2>
         <p class="muted">
-          Vincula tu personaje de Diablo Immortal para acceder a todas las funciones de gestión de clan.
+          Vincula tu personaje de Diablo Immortal para comenzar. Una vez vinculado, podrás acceder a tus tareas personales y solicitar unirte a un clan.
         </p>
         <div class="onboarding-features">
           <div class="onboarding-feature">
-            <i class="fas fa-khanda"></i>
-            <div>
-              <strong>Guerra Sombría</strong>
-              <span>Registra tus batallas y sigue el progreso de tu clan en cada guerra.</span>
-            </div>
-          </div>
-          <div class="onboarding-feature">
-            <i class="fas fa-chess-rook"></i>
-            <div>
-              <strong>Torre Maldita</strong>
-              <span>Coordina asaltos de conquista territorial con tu clan y aliados.</span>
-            </div>
-          </div>
-          <div class="onboarding-feature">
             <i class="fas fa-tasks"></i>
             <div>
-              <strong>Tareas del Clan</strong>
-              <span>Gestiona y completa las tareas diarias asignadas a tu personaje.</span>
+              <strong>Tareas personales</strong>
+              <span>Con tu personaje vinculado puedes gestionar y completar tus tareas diarias.</span>
+            </div>
+          </div>
+          <div class="onboarding-feature">
+            <i class="fas fa-shield-halved"></i>
+            <div>
+              <strong>Únete a un clan</strong>
+              <span>Al formar parte de un clan desbloqueas la Guerra Sombría, la Torre Maldita y las tareas del clan.</span>
             </div>
           </div>
         </div>

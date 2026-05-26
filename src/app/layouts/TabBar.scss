@@ -142,6 +142,25 @@
           z-index: 9;
         }
 
+        .tab-badge {
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          background: var(--color-primary);
+          color: #fff;
+          font-size: .55rem;
+          font-weight: 700;
+          min-width: 14px;
+          height: 14px;
+          border-radius: 7px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 3px;
+          pointer-events: none;
+          z-index: 9;
+        }
+
         .first {
           border: none;
           border-top-left-radius: 8px;

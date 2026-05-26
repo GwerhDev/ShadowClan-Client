@@ -101,6 +101,7 @@ async function handleReviewRequest(id: string, action: 'accept' | 'reject') {
   try {
     await reviewClanRequest(id, action);
     clanRequests.value = clanRequests.value.filter(r => r._id !== id);
+    if (store.pendingRequestsCount > 0) store.pendingRequestsCount--;
     await loadClan();
   } catch {
     requestsError.value = 'Error al procesar la solicitud.';
@@ -255,7 +256,10 @@ function getClassName(value: string) {
   <div class="ul-container">
 
     <span class="button-list">
-      <button class="btn-secondary" @click="openRequestsModal">Ver solicitudes</button>
+      <button class="btn-secondary btn-with-badge" @click="openRequestsModal">
+        Ver solicitudes
+        <span v-if="store.pendingRequestsCount > 0" class="btn-badge">{{ store.pendingRequestsCount }}</span>
+      </button>
       <button @click="openAddModal">Agregar miembro</button>
     </span>
 

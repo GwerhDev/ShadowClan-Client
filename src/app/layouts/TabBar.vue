@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
     length?: number;
     path: string;
     disabled?: boolean;
+    badge?: number;
   }>,
 }>(), {
   tabs: () => []
@@ -112,7 +113,8 @@ function styleActive(path: string) {
         >
           <i :class="tab.icon"></i>
           <span>{{ tab.name }}</span>
-          <small v-if="store.currentUser.userBattleInfo.some(b => b.category === tab.id)"><i class="fas fa-user-shield user-battle-indicator"></i></small>
+          <span v-if="tab.badge" class="tab-badge">{{ tab.badge }}</span>
+          <small v-else-if="store.currentUser.userBattleInfo.some(b => b.category === tab.id)"><i class="fas fa-user-shield user-battle-indicator"></i></small>
         </button>
       </li>
     </ul>

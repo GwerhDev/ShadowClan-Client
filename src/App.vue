@@ -30,9 +30,26 @@ onMounted(async () => {
       }
     }
     if (store.currentUser.logged) {
+      store.handleFetchPendingInbox();
+      store.handleFetchPendingRequests();
       const socket = connectSocket();
       socket.on('clan-request:new', (data: any) => {
-        store.addNotification({ id: data.id, type: 'clan-request', data });
+        store.addNotification({
+          id: data.id,
+          type: 'clan-request',
+          targetType: 'character',
+          targetId: data.targetCharacterId ?? null,
+          data,
+        });
+      });
+      socket.on('clan-invitation:new', (data: any) => {
+        store.addNotification({
+          id: data.id,
+          type: 'clan-invitation',
+          targetType: 'character',
+          targetId: data.character?._id ? String(data.character._id) : null,
+          data,
+        });
       });
     }
   } finally {

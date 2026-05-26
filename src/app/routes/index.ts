@@ -16,6 +16,7 @@ import ClanComponent from '../components/Account/ClanComponent.vue';
 import ProfileComponent from '../components/Account/ProfileComponent.vue';
 import HistoryComponent from '../components/Account/HistoryComponent.vue';
 import SettingsComponent from '../components/Account/SettingsComponent.vue';
+import RequestsPage from '../pages/RequestsPage.vue';
 
 import ShadowWarPage from '../pages/ShadowWarPage.vue';
 import FamedShadowWar from '../components/ShadowWar/FamedShadowWar.vue';
@@ -175,8 +176,14 @@ const routes: RouteRecordRaw[] = [
         name: 'Account',
         component: SettingsComponent,
         meta: { title: 'Cuenta' },
-      }
+      },
     ]
+  },
+  {
+    path: '/u/requests',
+    name: 'Requests',
+    component: RequestsPage,
+    meta: { title: 'Misivas' },
   },
   {
     path: '/',
@@ -185,16 +192,10 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Inicio' },
     children: [
       {
-        path: '/c/clan',
+        path: '/my-clan',
         name: 'Clan',
         component: ClanComponent,
         meta: { title: 'Clan' },
-      },
-      {
-        path: '/c/history',
-        name: 'History',
-        component: HistoryComponent,
-        meta: { title: 'Historial' },
       },
     ]
   },
@@ -225,7 +226,7 @@ const router = createRouter({
   routes
 });
 
-const WALKER_ALLOWED: string[] = ['Home', 'TaskPage', 'MyTasks', 'ClanTasks', 'UserPage', 'Profile', 'Account'];
+const WALKER_ALLOWED: string[] = ['Home', 'TaskPage', 'MyTasks', 'ClanTasks', 'UserPage', 'Profile', 'Account', 'Requests'];
 
 router.beforeEach((to, _from, next) => {
   const store = useStore();

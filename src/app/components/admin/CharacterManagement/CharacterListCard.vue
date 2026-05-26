@@ -131,6 +131,12 @@ function handleDelete() {
       </ul>
     </span>
     <span>
+      <p v-if="character.clan?.name" class="clan-label">
+        <i class="fas fa-shield-halved"></i> {{ character.clan.name }}
+      </p>
+      <p v-else class="clan-label muted">Sin clan</p>
+    </span>
+    <span>
       <ul class="buttons-container">
         <button @click="handleEdit">
           <img src="../../../../assets/svg/edit-icon.svg" alt="" width="18px">

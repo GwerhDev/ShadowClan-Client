@@ -27,6 +27,7 @@ defineProps({
     icon: string;
     length?: number;
     path: string;
+    badge?: number;
   }>,
 });
 
