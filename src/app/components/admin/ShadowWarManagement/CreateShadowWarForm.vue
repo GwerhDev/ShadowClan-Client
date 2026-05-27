@@ -200,6 +200,66 @@ const unassignMember = (categoryName: keyof typeof battleCategories.value, group
   updateShadowWarData();
 };
 
+// ── Drag & Drop ──────────────────────────────────────────────────────────────
+
+interface SlotRef {
+  category: keyof typeof battleCategories.value;
+  matchIndex: number;
+  group: 'group1' | 'group2';
+  memberIndex: number;
+}
+
+const dragSource   = ref<SlotRef | null>(null);
+const dragOverKey  = ref<string | null>(null);
+
+function slotKey(s: SlotRef) {
+  return `${s.category}-${s.matchIndex}-${s.group}-${s.memberIndex}`;
+}
+
+function getSlotChar(s: SlotRef) {
+  return battleCategories.value[s.category][s.matchIndex][s.group].character[s.memberIndex];
+}
+
+function setSlotChar(s: SlotRef, char: any) {
+  battleCategories.value[s.category][s.matchIndex][s.group].character[s.memberIndex] = char;
+}
+
+function onDragStart(e: DragEvent, slot: SlotRef) {
+  if (!getSlotChar(slot)) { e.preventDefault(); return; }
+  dragSource.value = slot;
+  e.dataTransfer!.effectAllowed = 'move';
+}
+
+function onDragOver(e: DragEvent, slot: SlotRef) {
+  e.preventDefault();
+  e.dataTransfer!.dropEffect = 'move';
+  dragOverKey.value = slotKey(slot);
+}
+
+function onDragLeave() {
+  dragOverKey.value = null;
+}
+
+function onDrop(slot: SlotRef) {
+  dragOverKey.value = null;
+  if (!dragSource.value) return;
+  const src = dragSource.value;
+  if (slotKey(src) === slotKey(slot)) { dragSource.value = null; return; }
+
+  const srcChar = getSlotChar(src);
+  const tgtChar = getSlotChar(slot);
+  setSlotChar(src, tgtChar);
+  setSlotChar(slot, srcChar);
+
+  dragSource.value = null;
+  updateShadowWarData();
+}
+
+function onDragEnd() {
+  dragSource.value = null;
+  dragOverKey.value = null;
+}
+
 </script>
 
 <template>
@@ -233,33 +293,36 @@ const unassignMember = (categoryName: keyof typeof battleCategories.value, group
       <div v-for="(match, matchIndex) in category" :key="matchIndex">
         <h5>Partida {{ matchIndex + 1 }}</h5>
         <div class="match-groups">
-          <div class="group">
-            <label><h5>Grupo 1</h5></label>
+          <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="group">
+            <label><h5>{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }}</h5></label>
             <div class="character-cards-grid">
               <template v-if="loading">
                 <div v-for="n in 4" :key="n" class="card-skeleton" />
               </template>
               <template v-else>
-                <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group1.character[n - 1]"
-                  :show-unassign-button="!!match.group1.character[n - 1]"
-                  :confirmed-ids="confirmedIds"
-                  @click="openMemberSelection(categoryName, 'group1', matchIndex, n - 1)"
-                  @unassign="unassignMember(categoryName, 'group1', matchIndex, n - 1)" />
-              </template>
-            </div>
-          </div>
-          <div class="group">
-            <label><h5>Grupo 2</h5></label>
-            <div class="character-cards-grid">
-              <template v-if="loading">
-                <div v-for="n in 4" :key="n" class="card-skeleton" />
-              </template>
-              <template v-else>
-                <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group2.character[n - 1]"
-                  :show-unassign-button="!!match.group2.character[n - 1]"
-                  :confirmed-ids="confirmedIds"
-                  @click="openMemberSelection(categoryName, 'group2', matchIndex, n - 1)"
-                  @unassign="unassignMember(categoryName, 'group2', matchIndex, n - 1)" />
+                <div
+                  v-for="n in 4"
+                  :key="n"
+                  class="drag-slot"
+                  :class="{
+                    'is-dragging': dragSource && slotKey(dragSource) === slotKey({ category: categoryName, matchIndex, group: grp, memberIndex: n - 1 }),
+                    'drag-over':   dragOverKey === slotKey({ category: categoryName, matchIndex, group: grp, memberIndex: n - 1 })
+                  }"
+                  :draggable="!!match[grp].character[n - 1]"
+                  @dragstart="onDragStart($event, { category: categoryName, matchIndex, group: grp, memberIndex: n - 1 })"
+                  @dragover.prevent="onDragOver($event, { category: categoryName, matchIndex, group: grp, memberIndex: n - 1 })"
+                  @dragleave="onDragLeave"
+                  @drop="onDrop({ category: categoryName, matchIndex, group: grp, memberIndex: n - 1 })"
+                  @dragend="onDragEnd"
+                >
+                  <ShadowWarMemberCard
+                    :character="match[grp].character[n - 1]"
+                    :show-unassign-button="!!match[grp].character[n - 1]"
+                    :confirmed-ids="confirmedIds"
+                    @click="openMemberSelection(categoryName, grp, matchIndex, n - 1)"
+                    @unassign="unassignMember(categoryName, grp, matchIndex, n - 1)"
+                  />
+                </div>
               </template>
             </div>
           </div>
