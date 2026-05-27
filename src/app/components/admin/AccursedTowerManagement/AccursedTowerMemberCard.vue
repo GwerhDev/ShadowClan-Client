@@ -23,18 +23,16 @@ const getClassImage = (className: string | undefined) => {
 <template>
   <div class="character-card" @click="$emit('click')">
     <div v-if="character" class="character-info">
-      <div class="class-details">
-        <button v-if="showUnassignButton" class="unassign-button" @click.stop="$emit('unassign')">×</button>
-        <img :src="getClassImage(character.currentClass)" :alt="character.currentClass" class="class-image" />
-      </div>
+      <button v-if="showUnassignButton" class="unassign-button" @click.stop="$emit('unassign')">×</button>
+      <img :src="getClassImage(character.currentClass)" :alt="character.currentClass" class="class-image" />
       <div class="character-details">
         <span class="character-name">{{ character.name }}</span>
-        <small><span class="resonance">{{ character.resonance }}</span></small>
+        <span class="resonance">{{ character.resonance }}</span>
       </div>
     </div>
     <div v-else class="empty-card">
       <span>+</span>
-      <span>Asignar Miembro</span>
+      <span>Asignar</span>
     </div>
   </div>
 </template>

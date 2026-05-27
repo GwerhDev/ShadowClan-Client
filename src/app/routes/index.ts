@@ -2,13 +2,13 @@ import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
 import { useStore } from '../../middlewares/store';
 import ClanManagementPage from '../pages/admin/ClanManagementPage.vue';
 import HistoryDetails from '../components/admin/HistoryManagement/HistoryDetails.vue';
+import AccursedTowerHistoryDetails from '../components/admin/HistoryManagement/AccursedTowerHistoryDetails.vue';
 import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
 import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
 import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
 import ClanMembersManagement from '../components/admin/ClanMembersManagement/ClanMembersManagement.vue';
 
 import UserPage from '../pages/UserPage.vue';
-import ClanComponent from '../components/Account/ClanComponent.vue';
 import ProfileComponent from '../components/Account/ProfileComponent.vue';
 import SettingsComponent from '../components/Account/SettingsComponent.vue';
 import RequestsPage from '../pages/RequestsPage.vue';
@@ -32,7 +32,7 @@ const routes: RouteRecordRaw[] = [
     path: '/shadow-war',
     name: 'ShadowWar',
     component: ShadowWarPage,
-    redirect: '/shadow-war/exalted',
+    meta: { title: 'Guerra Sombría' },
     children: [
       {
         path: 'exalted',
@@ -64,7 +64,7 @@ const routes: RouteRecordRaw[] = [
     path: '/accursed-tower',
     name: 'AccursedTower',
     component: AccursedTowerPage,
-    redirect: '/accursed-tower/1',
+    meta: { title: 'Torre Maldita' },
     children: [
       {
         path: ':accursedtower_id',
@@ -104,6 +104,12 @@ const routes: RouteRecordRaw[] = [
         component: HistoryManagement,
         meta: { title: 'Historial', requiresClanManagement: true },
         children: [
+          {
+            path: 'tower/:tower_id',
+            name: 'ManagementHistoryTowerDetails',
+            component: AccursedTowerHistoryDetails,
+            meta: { title: 'Historial Torre', requiresClanManagement: true },
+          },
           {
             path: ':shadowwar_id',
             name: 'ManagementHistoryDetails',
@@ -152,12 +158,6 @@ const routes: RouteRecordRaw[] = [
         name: 'Feed',
         component: ClanFeed,
         meta: { title: 'Feed' },
-      },
-      {
-        path: '/my-clan',
-        name: 'Clan',
-        component: ClanComponent,
-        meta: { title: 'Clan' },
       },
     ]
   },

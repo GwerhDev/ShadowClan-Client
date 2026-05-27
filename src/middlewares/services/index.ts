@@ -171,9 +171,11 @@ export const reviewClanRequest: any = async (id: string, action: 'accept' | 'rej
   return response;
 };
 
-export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, updateShadowWarClan, getShadowWars, confirmShadowWar } from './shadowWarService';
+export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, updateShadowWarClan, getShadowWars, confirmShadowWar, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement } from './shadowWarService';
 export { getClanPosts, createClanPost, updateClanPost, deleteClanPost } from './clanPostService';
 export { getClans, createClan, updateClan, deleteClan } from './clanService';
+export { getAccursedTowers, getActiveAccursedTower, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower } from './towerWarService';
+export { getHistory, getAccursedTowerById } from './historyService';
 
 export const createCharacterClaim: any = async (characterId: string) => {
   const response: any = await axios.post(API_URL + '/character-claim', { characterId }, { withCredentials: true })

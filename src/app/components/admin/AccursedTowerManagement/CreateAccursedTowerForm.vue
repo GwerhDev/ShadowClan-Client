@@ -1,218 +1,499 @@
 <script setup lang="ts">
-import { ref, onMounted, Ref, computed } from 'vue';
-import { updateShadowWar, getClans, getAdminCharacters } from '../../../../middlewares/services';
-import { Clan, Character, Match } from '../../../../interfaces';
-import ShadowWarMemberCard from './AccursedTowerMemberCard.vue';
+import { ref, computed, onMounted, Ref } from 'vue';
+import { useStore } from '../../../../middlewares/store';
+import { getClanMembers, getClans, getAccursedTowers, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower } from '../../../../middlewares/services';
+import { Character, Clan } from '../../../../interfaces';
+import AccursedTowerMemberCard from './AccursedTowerMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
-import ConfirmedSelectionModal from './ConfirmedSelectionModal.vue';
-import { useStore } from '../../../../middlewares/store';
+import AccursedTowerShareModal from './AccursedTowerShareModal.vue';
+import AccursedTowerPublishModal from './AccursedTowerPublishModal.vue';
 
 const store: any = useStore();
 
+// ── State ─────────────────────────────────────────────────────────────────────
+
+const loading      = ref(true);
+const saving       = ref(false);
+const towerWars    = ref<any[]>([]);
+const clanMembers  = ref<Character[]>([]);
 const clans: Ref<Clan[]> = ref([]);
-const characters: Ref<Character[]> = ref([]);
-const shadowWarData = computed(() => store.currentUser.shadowWarData);
-const enemyClan = ref('');
-const showMemberSelectionModal = ref(false);
-const currentSelectionContext = ref<{
-  categoryName: keyof typeof battleCategories.value;
-  group: 'group1' | 'group2';
-  matchIndex: number;
-  memberIndex: number;
-} | null>(null);
 
-const confirmedCharacters: Ref<Character[]> = ref([]);
-const showConfirmedMemberSelectionModal = ref(false);
+// Create form
+const newTowerNumber  = ref<number | null>(null);
+const newDate         = ref('');
+const newEnemyClan    = ref('');
 
-const battleCategoryTranslations: Record<string, string> = {
-  exalted: 'sublime',
-  eminent: 'eminente',
-  famed: 'célebre',
-  proud: 'imponente',
+// Modals per instance
+const shareModalTower   = ref<any>(null);
+const publishModalTower = ref<any>(null);
+
+// Context menu & edit mode
+const showContextMenuId = ref<string | null>(null);
+const ctxMenuPos        = ref({ top: 0, left: 0 });
+const editingId         = ref<string | null>(null);
+const editValues        = ref({ towerNumber: null as number | null, date: '', enemyClan: '' });
+
+function toggleContextMenu(e: MouseEvent, id: string) {
+  if (showContextMenuId.value === id) {
+    showContextMenuId.value = null;
+    return;
+  }
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  ctxMenuPos.value = { top: rect.bottom + 4, left: rect.right };
+  showContextMenuId.value = id;
+}
+
+const toInputDate = (isoStr: string): string => {
+  if (!isoStr) return '';
+  return new Date(isoStr).toISOString().slice(0, 10);
 };
 
-const battleCategories = ref<{
-  exalted: Match[];
-  eminent: Match[];
-  famed: Match[];
-  proud: Match[];
-}>({
-  exalted: Array(3).fill(null).map(() => ({ group1: { character: Array(4).fill(undefined) }, group2: { character: Array(4).fill(undefined) }, result: 'pending' })),
-  eminent: Array(3).fill(null).map(() => ({ group1: { character: Array(4).fill(undefined) }, group2: { character: Array(4).fill(undefined) }, result: 'pending' })),
-  famed: Array(3).fill(null).map(() => ({ group1: { character: Array(4).fill(undefined) }, group2: { character: Array(4).fill(undefined) }, result: 'pending' })),
-  proud: Array(3).fill(null).map(() => ({ group1: { character: Array(4).fill(undefined) }, group2: { character: Array(4).fill(undefined) }, result: 'pending' })),
+function openEdit(instance: any) {
+  editValues.value = {
+    towerNumber: instance.towerNumber,
+    date:        toInputDate(instance.date),
+    enemyClan:   instance.enemyClan?._id ?? '',
+  };
+  editingId.value = instance._id;
+  showContextMenuId.value = null;
+}
+
+function cancelEdit() {
+  editingId.value = null;
+}
+
+async function saveEdit(instance: any) {
+  saving.value = true;
+  try {
+    const updated = await updateAccursedTower(instance._id, {
+      towerNumber: editValues.value.towerNumber ?? undefined,
+      date:        editValues.value.date || undefined,
+      enemyClan:   editValues.value.enemyClan || null,
+    });
+    const idx = towerWars.value.findIndex(tw => tw._id === instance._id);
+    if (idx !== -1) towerWars.value[idx] = updated;
+    editingId.value = null;
+  } finally {
+    saving.value = false;
+  }
+}
+
+// Expanded instance
+const expandedId   = ref<string | null>(null);
+const localRoster  = ref<{ group1: (Character|undefined)[]; group2: (Character|undefined)[]; group3: (Character|undefined)[] }>({
+  group1: Array(4).fill(undefined),
+  group2: Array(4).fill(undefined),
+  group3: Array(2).fill(undefined),
 });
 
-const translatedCategoryName = computed(() => (categoryName: string) => {
-  return battleCategoryTranslations[categoryName] || categoryName;
-});
+// Modal
+const showModal        = ref(false);
+const selectionContext = ref<{ group: 'group1'|'group2'|'group3'; index: number } | null>(null);
 
-const assignedMemberIds = computed(() => {
+// Drag & drop
+const dragSource  = ref<{ group: 'group1'|'group2'|'group3'; index: number } | null>(null);
+const dragOverKey = ref<string|null>(null);
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const chars  = computed(() => store.currentUser.userData?.character ?? []);
+const active = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
+const clanId = computed(() => active.value?.clan?._id ?? active.value?.clan ?? null);
+
+const groupSizes: Record<'group1'|'group2'|'group3', number> = {
+  group1: 4, group2: 4, group3: 2,
+};
+
+function padGroup(arr: any[], size: number): (Character|undefined)[] {
+  const result = [...(arr ?? [])];
+  while (result.length < size) result.push(undefined);
+  return result;
+}
+
+function slotKey(group: string, index: number) { return `${group}-${index}`; }
+
+function getSlot(group: 'group1'|'group2'|'group3', index: number) {
+  return localRoster.value[group][index];
+}
+
+function setSlot(group: 'group1'|'group2'|'group3', index: number, char: Character|undefined) {
+  localRoster.value[group][index] = char;
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+const assignedIds = computed(() => {
   const ids = new Set<string>();
-  for (const category of Object.values(battleCategories.value)) {
-    for (const match of category) {
-      for (const character of match.group1.character) {
-        if (character?._id) ids.add(character._id);
-      }
-      for (const character of match.group2.character) {
-        if (character?._id) ids.add(character._id);
-      }
-    }
+  for (const grp of ['group1', 'group2', 'group3'] as const) {
+    for (const c of localRoster.value[grp]) { if (c?._id) ids.add(c._id); }
   }
   return Array.from(ids);
 });
 
-const confirmedMemberIds = computed(() => {
-  return confirmedCharacters.value.map(character => character._id);
-});
+// ── Load ──────────────────────────────────────────────────────────────────────
 
 onMounted(async () => {
-  clans.value = await getClans();
-  const fetchedMembers = await getAdminCharacters();
-  characters.value = fetchedMembers;
+  loading.value = true;
+  try {
+    const [wars, clanData, fetchedClans] = await Promise.all([
+      getAccursedTowers(),
+      clanId.value ? getClanMembers(clanId.value) : null,
+      getClans(),
+    ]);
+    clans.value = fetchedClans ?? [];
 
-  if (shadowWarData.value) {
-    if (shadowWarData.value.battle) {
-      const { exalted, eminent, famed, proud } = shadowWarData.value.battle;
-      battleCategories.value.exalted = exalted || battleCategories.value.exalted;
-      battleCategories.value.eminent = eminent || battleCategories.value.eminent;
-      battleCategories.value.famed = famed || battleCategories.value.famed;
-      battleCategories.value.proud = proud || battleCategories.value.proud;
-    }
+    towerWars.value = wars ?? [];
 
-    if (shadowWarData.value.enemyClan) {
-      enemyClan.value = shadowWarData.value.enemyClan._id;
+    if (clanData) {
+      clanMembers.value = [
+        ...(clanData.leader  ? [clanData.leader]  : []),
+        ...(clanData.officer ?? []),
+        ...(clanData.member  ?? []),
+      ];
     }
-    if (shadowWarData.value.confirmed) {
-      confirmedCharacters.value = shadowWarData.value.confirmed;
-    }
+  } finally {
+    loading.value = false;
   }
 });
 
-const updateShadowWarData = async () => {
-  const battleData = JSON.parse(JSON.stringify(battleCategories.value));
-  const formData = {
-    enemyClan: enemyClan.value,
-    battle: battleData,
-    confirmed: confirmedCharacters.value.filter(character => character && character._id).map(character => character._id), // Include confirmed characters
+// ── Create ────────────────────────────────────────────────────────────────────
+
+async function createInstance() {
+  if (!newTowerNumber.value || !newDate.value) return;
+  saving.value = true;
+  try {
+    const created = await createAccursedTower(newTowerNumber.value, newDate.value, newEnemyClan.value || null);
+    towerWars.value.push(created);
+    towerWars.value.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    newTowerNumber.value = null;
+    newDate.value        = '';
+    newEnemyClan.value   = '';
+  } finally {
+    saving.value = false;
+  }
+}
+
+// ── Deactivate ────────────────────────────────────────────────────────────────
+
+async function deactivate(id: string) {
+  saving.value = true;
+  try {
+    await deactivateAccursedTower(id);
+    towerWars.value = towerWars.value.filter(tw => tw._id !== id);
+    if (expandedId.value === id) expandedId.value = null;
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function complete(id: string) {
+  saving.value = true;
+  try {
+    await completeAccursedTower(id);
+    towerWars.value = towerWars.value.filter(tw => tw._id !== id);
+    if (expandedId.value === id) expandedId.value = null;
+  } finally {
+    saving.value = false;
+  }
+}
+
+// ── Expand / Collapse ─────────────────────────────────────────────────────────
+
+function toggleExpand(instance: any) {
+  if (expandedId.value === instance._id) {
+    expandedId.value = null;
+    return;
+  }
+  expandedId.value = instance._id;
+  localRoster.value = {
+    group1: padGroup(instance.roster?.group1, 4),
+    group2: padGroup(instance.roster?.group2, 4),
+    group3: padGroup(instance.roster?.group3, 2),
   };
-  await updateShadowWar(store.currentUser.shadowWarData._id, formData);
-};
+  dragSource.value  = null;
+  dragOverKey.value = null;
+}
 
-const openMemberSelection = (categoryName: keyof typeof battleCategories.value, group: 'group1' | 'group2', matchIndex: number, memberIndex: number) => {
-  currentSelectionContext.value = { categoryName, group, matchIndex, memberIndex };
-  showMemberSelectionModal.value = true;
-};
+// ── Roster update ─────────────────────────────────────────────────────────────
 
-const handleMemberSelected = (selectedMember: Character) => {
-  if (currentSelectionContext.value) {
-    const { categoryName, group, matchIndex, memberIndex } = currentSelectionContext.value;
-    battleCategories.value[categoryName][matchIndex][group].character[memberIndex] = selectedMember;
-    updateShadowWarData();
-  }
-  showMemberSelectionModal.value = false;
-};
+async function saveRoster() {
+  if (!expandedId.value) return;
+  const toIds = (arr: (Character|undefined)[]) =>
+    arr.map(c => c?._id ?? null).filter(Boolean);
+  const updated = await updateAccursedTower(expandedId.value, {
+    roster: {
+      group1: toIds(localRoster.value.group1),
+      group2: toIds(localRoster.value.group2),
+      group3: toIds(localRoster.value.group3),
+    },
+  });
+  // Sync back into list
+  const idx = towerWars.value.findIndex(tw => tw._id === expandedId.value);
+  if (idx !== -1) towerWars.value[idx] = updated;
+}
 
-const unassignMember = (categoryName: keyof typeof battleCategories.value, group: 'group1' | 'group2', matchIndex: number, memberIndex: number) => {
-  battleCategories.value[categoryName][matchIndex][group].character[memberIndex] = undefined;
-  updateShadowWarData();
-};
+// ── Member selection ──────────────────────────────────────────────────────────
 
-const openConfirmedMembersSelection = () => {
-  showConfirmedMemberSelectionModal.value = true;
-};
+function openModal(group: 'group1'|'group2'|'group3', index: number) {
+  selectionContext.value = { group, index };
+  showModal.value = true;
+}
 
-const handleConfirmedMembersUpdate = (selectedMemberIds: string[]) => {
-  const oldConfirmedMemberIds = new Set(confirmedCharacters.value.map(character => character._id));
-  confirmedCharacters.value = characters.value.filter(character => character && selectedMemberIds.includes(character._id));
-  const newConfirmedMemberIds = new Set(confirmedCharacters.value.map(character => character._id));
-  const removedMemberIds = [...oldConfirmedMemberIds].filter(id => !newConfirmedMemberIds.has(id));
+function handleMemberSelected(character: Character) {
+  if (!selectionContext.value) return;
+  const { group, index } = selectionContext.value;
+  setSlot(group, index, character);
+  showModal.value = false;
+  saveRoster();
+}
 
-  // Unassign removed characters from battle groups
-  if (removedMemberIds.length > 0) {
-    for (const categoryName in battleCategories.value) {
-      // Ensure categoryName is a valid key
-      if (Object.prototype.hasOwnProperty.call(battleCategories.value, categoryName)) {
-        const category = battleCategories.value[categoryName as keyof typeof battleCategories.value];
-        for (let matchIndex = 0; matchIndex < category.length; matchIndex++) {
-          const match = category[matchIndex];
+function unassign(group: 'group1'|'group2'|'group3', index: number) {
+  setSlot(group, index, undefined);
+  saveRoster();
+}
 
-          // Check group1
-          for (let memberIndex = 0; memberIndex < match.group1.character.length; memberIndex++) {
-            const character = match.group1.character[memberIndex];
-            if (character && removedMemberIds.includes(character._id)) {
-              match.group1.character[memberIndex] = undefined;
-            }
-          }
+// ── Drag & Drop ───────────────────────────────────────────────────────────────
 
-          // Check group2
-          for (let memberIndex = 0; memberIndex < match.group2.character.length; memberIndex++) {
-            const character = match.group2.character[memberIndex];
-            if (character && removedMemberIds.includes(character._id)) {
-              match.group2.character[memberIndex] = undefined;
-            }
-          }
-        }
-      }
-    }
-  }
+function onDragStart(e: DragEvent, group: 'group1'|'group2'|'group3', index: number) {
+  if (!getSlot(group, index)) { e.preventDefault(); return; }
+  dragSource.value = { group, index };
+  e.dataTransfer!.effectAllowed = 'move';
+}
 
-  updateShadowWarData();
-};
+function onDragOver(e: DragEvent, group: 'group1'|'group2'|'group3', index: number) {
+  e.preventDefault();
+  e.dataTransfer!.dropEffect = 'move';
+  dragOverKey.value = slotKey(group, index);
+}
 
+function onDragLeave() { dragOverKey.value = null; }
+
+function onDrop(group: 'group1'|'group2'|'group3', index: number) {
+  dragOverKey.value = null;
+  if (!dragSource.value) return;
+  const src = dragSource.value;
+  if (slotKey(src.group, src.index) === slotKey(group, index)) { dragSource.value = null; return; }
+
+  const srcChar = getSlot(src.group, src.index);
+  const tgtChar = getSlot(group, index);
+  setSlot(src.group, src.index, tgtChar);
+  setSlot(group, index, srcChar);
+
+  dragSource.value = null;
+  saveRoster();
+}
+
+function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
 </script>
 
 <template>
-  <div class="create-shadow-war-form">
-    <div class="clan-selector-container">
-      <div class="clan-selection-area">
-        <SearchSelector v-model="enemyClan" :options="clans" label="Clan Enemigo:"
-          placeholder="Buscar o seleccionar clan" @select="updateShadowWarData" />
-        <div class="action-buttons">
-          <button type="button" @click="openConfirmedMembersSelection">
-            <i class="fas fa-users"></i>Nómina de Confirmados
-          </button>
+  <div class="tower-form">
+
+    <!-- ── Create panel (always visible) ── -->
+    <div class="create-panel">
+      <h5 class="create-title">Nueva instancia</h5>
+      <div class="create-row">
+        <div class="field-col">
+          <label>N° de Torre</label>
+          <input class="tower-number-input" type="number" v-model="newTowerNumber" min="1" placeholder="Ej. 12" />
         </div>
+        <div class="field-col">
+          <label>Fecha</label>
+          <input type="date" v-model="newDate" />
+        </div>
+        <div class="field-col field-col--grow">
+          <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
+          <SearchSelector v-model="newEnemyClan" :options="clans" placeholder="Sin clan enemigo" />
+        </div>
+        <button class="btn-create" :disabled="!newTowerNumber || !newDate || saving" @click="createInstance">
+          <i class="fas fa-plus"></i> Crear
+        </button>
       </div>
     </div>
 
-    <MemberSelectionModal v-if="showMemberSelectionModal" :characters="confirmedCharacters"
-      :assigned-character-ids="assignedMemberIds" @close="showMemberSelectionModal = false"
-      @character-selected="handleMemberSelected" />
-    <ConfirmedSelectionModal v-if="showConfirmedMemberSelectionModal" :characters="characters"
-      :initial-selected-character-ids="confirmedMemberIds" @close="showConfirmedMemberSelectionModal = false"
-      @update-selection="handleConfirmedMembersUpdate" />
-    <div v-for="(category, categoryName) in battleCategories" :key="categoryName">
-      <h2>Batalla {{ translatedCategoryName(categoryName) }}</h2>
-      <div v-for="(match, matchIndex) in category" :key="matchIndex">
-        <h5>Partida {{ matchIndex + 1 }}</h5>
-        <div class="match-groups">
-          <div class="group">
-            <label>
-              <h5>Grupo 1</h5>
-            </label>
-            <div class="character-cards-grid">
-              <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group1.character[n - 1]"
-                :show-unassign-button="!!match.group1.character[n - 1]"
-                @click="openMemberSelection(categoryName, 'group1', matchIndex, n - 1)"
-                @unassign="unassignMember(categoryName, 'group1', matchIndex, n - 1)" />
-            </div>
-          </div>
-          <div class="group">
-            <label>
-              <h5>Grupo 2</h5>
-            </label>
-            <div class="character-cards-grid">
-              <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group2.character[n - 1]"
-                :show-unassign-button="!!match.group2.character[n - 1]"
-                @click="openMemberSelection(categoryName, 'group2', matchIndex, n - 1)"
-                @unassign="unassignMember(categoryName, 'group2', matchIndex, n - 1)" />
-            </div>
-          </div>
-        </div>
+    <!-- ── Loading ── -->
+    <div v-if="loading" class="instances-list">
+      <div v-for="n in 2" :key="n" class="instance-card">
+        <div class="instance-header-skeleton" />
       </div>
     </div>
+
+    <!-- ── Instances list ── -->
+    <div v-else class="instances-list">
+
+      <p v-if="!towerWars.length" class="no-instances">
+        No hay instancias activas creadas.
+      </p>
+
+      <div v-for="instance in towerWars" :key="instance._id" class="instance-card">
+
+        <!-- Instance header (always visible) -->
+        <div class="instance-header" @click="editingId !== instance._id && toggleExpand(instance)">
+
+          <!-- Edit mode -->
+          <template v-if="editingId === instance._id">
+            <div class="instance-edit-row" @click.stop>
+              <div class="field-col">
+                <label>N° de Torre</label>
+                <input class="tower-number-input" type="number" v-model="editValues.towerNumber" min="1" />
+              </div>
+              <div class="field-col">
+                <label>Fecha</label>
+                <input type="date" v-model="editValues.date" />
+              </div>
+              <div class="field-col field-col--grow">
+                <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
+                <SearchSelector v-model="editValues.enemyClan" :options="clans" placeholder="Sin clan enemigo" />
+              </div>
+              <div class="instance-actions">
+                <button class="btn-save" :disabled="saving" @click="saveEdit(instance)">
+                  <i class="fas fa-check"></i> Guardar
+                </button>
+                <button class="btn-cancel" :disabled="saving" @click="cancelEdit">
+                  <i class="fas fa-times"></i> Cancelar
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- Read-only mode -->
+          <template v-else>
+            <div class="instance-meta">
+              <i class="fas fa-chess-rook"></i>
+              <span class="instance-tower-name">Torre {{ instance.towerNumber }}</span>
+              <span class="instance-date">{{ formatDate(instance.date) }}</span>
+              <span v-if="instance.enemyClan" class="instance-enemy">vs {{ instance.enemyClan.name }}</span>
+            </div>
+            <div class="instance-actions" @click.stop>
+              <button class="btn-share-trigger" @click="shareModalTower = instance">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+              </button>
+              <button class="btn-publish-trigger" @click="publishModalTower = instance">
+                <i class="fas fa-paper-plane"></i> Publicar
+              </button>
+              <button class="btn-complete" :disabled="saving" title="Completar" @click="complete(instance._id)">
+                <i class="fas fa-flag-checkered"></i>
+              </button>
+              <button class="btn-expand" @click="toggleExpand(instance)">
+                <i :class="expandedId === instance._id ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+              </button>
+              <!-- Context menu (Teleport to body to escape overflow:hidden) -->
+              <div class="context-menu-wrapper">
+                <button class="btn-dots" @click.stop="toggleContextMenu($event, instance._id)">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <Teleport to="body">
+                  <template v-if="showContextMenuId === instance._id">
+                    <div class="context-overlay" @click="showContextMenuId = null" />
+                    <div class="context-menu context-menu--fixed"
+                         :style="{ top: ctxMenuPos.top + 'px', left: ctxMenuPos.left + 'px', transform: 'translateX(-100%)' }">
+                      <button class="ctx-item" @click="openEdit(instance); showContextMenuId = null">
+                        <i class="fas fa-pen"></i> Editar
+                      </button>
+                      <button class="ctx-item ctx-item--danger" :disabled="saving" @click="deactivate(instance._id); showContextMenuId = null">
+                        <i class="fas fa-trash"></i> Eliminar
+                      </button>
+                    </div>
+                  </template>
+                </Teleport>
+              </div>
+            </div>
+          </template>
+
+        </div>
+
+        <!-- Roster (expanded) -->
+        <div v-if="expandedId === instance._id" class="roster-section">
+          <div class="groups-layout">
+
+            <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="group-section">
+              <h5>{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }} <span class="size-badge">×4</span></h5>
+              <div class="cards-grid">
+                <div
+                  v-for="n in groupSizes[grp]"
+                  :key="n"
+                  class="drag-slot"
+                  :class="{
+                    'is-dragging': dragSource && slotKey(dragSource.group, dragSource.index) === slotKey(grp, n-1),
+                    'drag-over':   dragOverKey === slotKey(grp, n-1)
+                  }"
+                  :draggable="!!localRoster[grp][n-1]"
+                  @dragstart="onDragStart($event, grp, n-1)"
+                  @dragover.prevent="onDragOver($event, grp, n-1)"
+                  @dragleave="onDragLeave"
+                  @drop="onDrop(grp, n-1)"
+                  @dragend="onDragEnd"
+                >
+                  <AccursedTowerMemberCard
+                    :character="localRoster[grp][n-1]"
+                    :show-unassign-button="!!localRoster[grp][n-1]"
+                    @click="openModal(grp, n-1)"
+                    @unassign="unassign(grp, n-1)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="group-section group3-section">
+              <h5>Grupo 3 <span class="size-badge">×2</span></h5>
+              <div class="cards-grid cards-grid--2">
+                <div
+                  v-for="n in groupSizes.group3"
+                  :key="n"
+                  class="drag-slot"
+                  :class="{
+                    'is-dragging': dragSource && slotKey(dragSource.group, dragSource.index) === slotKey('group3', n-1),
+                    'drag-over':   dragOverKey === slotKey('group3', n-1)
+                  }"
+                  :draggable="!!localRoster.group3[n-1]"
+                  @dragstart="onDragStart($event, 'group3', n-1)"
+                  @dragover.prevent="onDragOver($event, 'group3', n-1)"
+                  @dragleave="onDragLeave"
+                  @drop="onDrop('group3', n-1)"
+                  @dragend="onDragEnd"
+                >
+                  <AccursedTowerMemberCard
+                    :character="localRoster.group3[n-1]"
+                    :show-unassign-button="!!localRoster.group3[n-1]"
+                    @click="openModal('group3', n-1)"
+                    @unassign="unassign('group3', n-1)"
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Share / Publish modals -->
+    <AccursedTowerShareModal
+      v-if="shareModalTower"
+      :tower="shareModalTower"
+      @close="shareModalTower = null"
+    />
+    <AccursedTowerPublishModal
+      v-if="publishModalTower"
+      :tower="publishModalTower"
+      @close="publishModalTower = null"
+    />
+
+    <!-- Member modal -->
+    <MemberSelectionModal
+      v-if="showModal"
+      :characters="clanMembers"
+      :assigned-member-ids="assignedIds"
+      @close="showModal = false"
+      @character-selected="handleMemberSelected"
+    />
+
   </div>
 </template>
 

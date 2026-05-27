@@ -25,7 +25,8 @@ const getClassImage = (className: string | undefined) => {
     <div v-if="character" class="character-info">
       <img :src="getClassImage(character!.currentClass)" :alt="character!.currentClass" class="class-image" />
       <div class="character-details">
-        <span class="character-name">{{ character!.currentClass }}</span>
+        <span class="character-name">{{ character!.name }}</span>
+        <span class="resonance">{{ character!.resonance }}</span>
       </div>
     </div>
     <div v-else class="empty-card">

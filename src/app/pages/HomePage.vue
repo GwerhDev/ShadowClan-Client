@@ -23,10 +23,7 @@ const tabs = computed(() => {
   if (isWalker.value) return [
     { id: 'home', name: 'Inicio', icon: 'fas fa-home', path: '/' },
   ];
-  return [
-    { id: 'feed', name: 'Feed', icon: 'fas fa-newspaper', path: '/' },
-    { id: 'clan', name: 'Clan', icon: 'fas fa-shield-halved', path: '/my-clan' },
-  ];
+  return [];
 });
 </script>
 

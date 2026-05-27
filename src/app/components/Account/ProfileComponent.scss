@@ -481,6 +481,27 @@
   }
 }
 
+.link-character-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem 1.2rem;
+  background: transparent;
+  border: 1px solid rgba(227, 210, 168, .5);
+  border-radius: 6px;
+  color: rgb(227, 210, 168);
+  font-family: 'Cinzel', serif;
+  font-size: .8rem;
+  letter-spacing: .05em;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+
+  &:hover {
+    background: rgba(227, 210, 168, .08);
+    border-color: rgb(227, 210, 168);
+  }
+}
+
 .no-char-icon {
   font-size: 2rem;
   color: rgb(227, 210, 168);

@@ -9,10 +9,15 @@ export const getClanPosts: any = async (characterId: string, page = 1) => {
   return response;
 };
 
-export const createClanPost: any = async (characterId: string, content: string, source: 'general' | 'shadow_war' = 'general') => {
+export const createClanPost: any = async (
+  characterId: string,
+  content: string,
+  source: 'general' | 'shadow_war' | 'accursed_tower' = 'general',
+  referenceId?: string | null,
+) => {
   const response: any = await axios.post(
     API_URL + "/clan-post",
-    { characterId, content, source },
+    { characterId, content, source, referenceId: referenceId ?? null },
     { withCredentials: true }
   ).then(r => r.data);
   return response;

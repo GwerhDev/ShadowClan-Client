@@ -6,81 +6,105 @@ import { useRoute } from 'vue-router';
 import TableComponent from '../../Tables/TableComponent.vue';
 import HistoryListCard from './HistoryListCard.vue';
 
+type HistoryFilter = 'all' | 'shadow_war' | 'accursed_tower';
+
 const currentPage = ref(1);
-const hasMore = ref(true);
-const isFetching = ref(false);
+const hasMore     = ref(true);
+const isFetching  = ref(false);
+const filter      = ref<HistoryFilter>('all');
 
 const store: any = useStore();
-const loading = ref(true);
-const route = useRoute();
+const loading    = ref(true);
+const route      = useRoute();
 
 const loadMore = async () => {
   isFetching.value = true;
   currentPage.value++;
-  const fetchedMore = await store.handleGetShadowWars(currentPage.value, true);
-  hasMore.value = fetchedMore;
-  isFetching.value = false;
+  const fetchedMore = await store.handleGetHistory(currentPage.value, filter.value, true);
+  hasMore.value     = fetchedMore;
+  isFetching.value  = false;
 };
 
-const fetchShadowWars = async () => {
-  loading.value = true;
+const fetchHistory = async () => {
+  loading.value     = true;
   currentPage.value = 1;
-  hasMore.value = true;
-  isFetching.value = false;
-  const fetchedInitial = await store.handleGetShadowWars(currentPage.value, false);
-  hasMore.value = fetchedInitial;
-  loading.value = false;
+  hasMore.value     = true;
+  isFetching.value  = false;
+  const fetchedInitial = await store.handleGetHistory(1, filter.value, false);
+  hasMore.value        = fetchedInitial;
+  loading.value        = false;
 };
 
 watch(() => store.currentUser.logged, async (isLoggedIn) => {
   if (isLoggedIn) {
-    fetchShadowWars();
+    fetchHistory();
   } else {
-    store.admin.shadowWars = null;
+    store.admin.history = [];
     loading.value = false;
   }
 }, { immediate: true });
 
 watch(() => route.name, (newName) => {
-  if (newName === 'DashboardHistory') {
-    fetchShadowWars();
-  }
+  if (newName === 'ManagementHistory') fetchHistory();
 });
 
-const navItems = ['fecha', 'enemigo', 'resultado', 'acciones'];
-
+const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
 </script>
 
 <template>
   <div class="ul-container">
-    <router-view v-if="route.params.shadowwar_id" />
+    <router-view v-if="route.params.shadowwar_id || route.params.tower_id" />
     <template v-else>
-      <div v-if="!loading && store.admin.shadowWars">
+
+      <div v-if="!loading && store.admin.history?.length">
         <TableComponent :navItems="navItems">
-          <HistoryListCard v-for="war in store.admin.shadowWars" :key="war._id" :war="war" />
+          <template #header>
+            <li class="th-cell">
+              <select v-model="filter" @change="fetchHistory" class="type-filter-select" :class="{ active: filter !== 'all' }">
+                <option value="all">Todas</option>
+                <option value="shadow_war">Guerras Sombrías</option>
+                <option value="accursed_tower">Torres Malditas</option>
+              </select>
+            </li>
+            <li class="th-cell">fecha</li>
+            <li class="th-cell">enemigo</li>
+            <li class="th-cell">resultado</li>
+            <li class="th-cell th-cell--last">acciones</li>
+          </template>
+          <HistoryListCard
+            v-for="item in store.admin.history"
+            :key="item._id"
+            :war="item"
+          />
           <div v-if="isFetching && hasMore" class="loading-indicator">
             Cargando más historiales...
           </div>
         </TableComponent>
       </div>
+
       <div v-if="hasMore && !loading && !isFetching" class="load-more-container">
         <button @click="loadMore" :disabled="isFetching">Cargar más</button>
       </div>
+
       <div v-else-if="loading" class="skeleton-table-container">
-        <div class="skeleton-table-header">
+        <div class="skeleton-table-header skeleton-cols-5">
+          <div class="skeleton-box skeleton-header-item"></div>
           <div class="skeleton-box skeleton-header-item"></div>
           <div class="skeleton-box skeleton-header-item"></div>
           <div class="skeleton-box skeleton-header-item"></div>
           <div class="skeleton-box skeleton-header-item"></div>
         </div>
-        <div class="skeleton-table-row" v-for="n in 5" :key="n">
+        <div class="skeleton-table-row skeleton-cols-5" v-for="n in 5" :key="n">
+          <div class="skeleton-box skeleton-cell"></div>
           <div class="skeleton-box skeleton-cell"></div>
           <div class="skeleton-box skeleton-cell"></div>
           <div class="skeleton-box skeleton-cell"></div>
           <div class="skeleton-box skeleton-cell"></div>
         </div>
       </div>
-      <p v-else>No hay historiales disponibles.</p>
+
+      <p v-else-if="!loading && !store.admin.history?.length">No hay historiales disponibles.</p>
+
     </template>
   </div>
 </template>

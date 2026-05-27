@@ -1,46 +1,59 @@
 <script setup lang="ts">
-import { PropType } from 'vue';
+import { PropType, ref, computed } from 'vue';
 import { Character } from '../../../../interfaces';
-import ShadowWarMemberCard from './AccursedTowerMemberCard.vue';
+import AccursedTowerMemberCard from './AccursedTowerMemberCard.vue';
 import CustomModal from '../../Modals/CustomModal.vue';
 
 const props = defineProps({
   characters: {
     type: Array as PropType<Character[]>,
-    required: true
+    required: true,
   },
   assignedMemberIds: {
     type: Array as PropType<string[]>,
-    default: () => []
-  }
+    default: () => [],
+  },
 });
 
-const emit = defineEmits(['close', 'member-selected']);
+const emit = defineEmits(['close', 'character-selected']);
 
-const handleCardClick = (member: Character) => {
-  if (props.assignedMemberIds.includes(member._id)) {
-    return; // Do nothing if member is already assigned
-  }
-  emit('member-selected', member);
+const search = ref('');
+
+const filteredCharacters = computed(() => {
+  const q = search.value.trim().toLowerCase();
+  if (!q) return props.characters;
+  return props.characters.filter(c => c.name?.toLowerCase().includes(q));
+});
+
+const isAssigned = (id: string) => props.assignedMemberIds.includes(id);
+
+const handleCardClick = (character: Character) => {
+  if (isAssigned(character._id)) return;
+  emit('character-selected', character);
   emit('close');
-};
-
-const isAssigned = (memberId: string) => {
-  return props.assignedMemberIds.includes(memberId);
 };
 </script>
 
 <template>
   <CustomModal title="Seleccionar Miembro" @close="$emit('close')">
-    <div v-if="characters.length" class="member-selection-grid">
-      <ShadowWarMemberCard v-for="member in characters" :key="member._id" :member="member" @click="handleCardClick(member)"
-        :class="{ 'is-assigned': isAssigned(member._id) }" />
+    <div class="member-search-bar">
+      <i class="fas fa-search"></i>
+      <input v-model="search" type="text" placeholder="Buscar miembro..." />
     </div>
+
+    <div v-if="filteredCharacters.length" class="member-selection-grid">
+      <AccursedTowerMemberCard
+        v-for="character in filteredCharacters"
+        :key="character._id"
+        :character="character"
+        :class="{ 'is-assigned': isAssigned(character._id) }"
+        @click="handleCardClick(character)"
+      />
+    </div>
+
     <div class="no-member" v-else>
-      <h1><i class="fas fa-ban"></i></h1>
-      <h4>
-        No hay miembros confirmados
-      </h4>
+      <i class="fas fa-ban"></i>
+      <span>Sin resultados</span>
     </div>
   </CustomModal>
 </template>

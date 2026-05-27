@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router';
 import { optionTodoList } from "../../../helpers/lists";
 import TasksCard from "./TasksCard.vue";
 import DeniedAccess from "../../utils/DeniedAccess.vue";
-import LoaderComponent from "../../utils/LoaderComponent.vue";
+import EmptyState from "../common/EmptyState.vue";
 
 const store: any = useStore();
 const route = useRoute();
@@ -93,8 +93,18 @@ async function createTask() {
         <ul v-if="store.currentUser.task?.length && !store.currentUser.taskloading">
           <TasksCard v-for="(item, index) in store.currentUser.task" :key="index" :todo="item" />
         </ul>
-        <ul v-if="!store.currentUser.task?.length">{{ message }}</ul>
-        <LoaderComponent v-if="(!store.currentUser.task?.length && !message.length) || store.currentUser.taskloading" />
+        <EmptyState
+          v-else-if="!store.currentUser.task?.length && message && !store.currentUser.taskloading"
+          icon="fas fa-scroll"
+          :message="message"
+          :compact="true"
+        />
+        <EmptyState
+          v-else-if="(!store.currentUser.task?.length && !message.length) || store.currentUser.taskloading"
+          icon="fas fa-spinner fa-spin"
+          message="Cargando tareas..."
+          :compact="true"
+        />
       </section>
       <section v-else class="justify-content-center align-items-center d-flex g-1 w-100">
         <DeniedAccess />

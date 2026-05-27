@@ -15,7 +15,9 @@ const gridColumns = computed(() => {
   <div class="table-scroll-wrapper">
     <div class="table-container">
       <nav :style="gridColumns">
-        <li v-for="(item, index) in navItems" :key="index">{{ item }}</li>
+        <slot name="header">
+          <li v-for="(item, index) in navItems" :key="index">{{ item }}</li>
+        </slot>
       </nav>
       <slot></slot>
     </div>

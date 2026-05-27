@@ -12,6 +12,8 @@ export interface storeState {
     chatbotmodel: string,
     shadowWarData: ShadowWar | null;
     shadowWarError: string | null;
+    towerWarList: any[];
+    towerWarError: string | null;
   },
   layout: {
     tab: { value: string; label: string; };
@@ -26,6 +28,8 @@ export interface storeState {
     characters: any,
     clans: any,
     currentShadowWar: ShadowWar | null;
+    history: any[];
+    currentAccursedTower: any;
   },
   currentCharacter: string | null,
   warbands: any,

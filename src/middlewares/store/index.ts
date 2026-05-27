@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById } from '../services';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
 import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
@@ -19,6 +19,8 @@ export const useStore = defineStore('store', {
       chatbotmodel: '',
       shadowWarData: null,
       shadowWarError: null,
+      towerWarList: [] as any[],
+      towerWarError: null as string | null,
     },
 
     layout: {
@@ -35,6 +37,8 @@ export const useStore = defineStore('store', {
       clans: null,
       shadowWars: null,
       currentShadowWar: null,
+      history: [],
+      currentAccursedTower: null,
     },
     currentCharacter: "",
     warbands: null,
@@ -112,6 +116,23 @@ export const useStore = defineStore('store', {
         this.setShadowWarData(response);
       } catch (error: any) {
         this.setShadowWarError(error.message);
+      }
+    },
+
+    setTowerWarList(list: any[]) {
+      this.currentUser.towerWarList = list;
+    },
+
+    setTowerWarError(error: string | null) {
+      this.currentUser.towerWarError = error;
+    },
+
+    async handleGetActiveTowerWar() {
+      try {
+        const response = await getActiveAccursedTower();
+        this.setTowerWarList(Array.isArray(response) ? response : response ? [response] : []);
+      } catch (error: any) {
+        this.setTowerWarError(error.message);
       }
     },
 
@@ -355,6 +376,33 @@ export const useStore = defineStore('store', {
         return newShadowWars.length > 0; // Return true if more data was fetched, false otherwise
       }
       return false;
+    },
+
+    async handleGetHistory(page: number = 1, type: 'all' | 'shadow_war' | 'accursed_tower' = 'all', append: boolean = false) {
+      try {
+        const res = await getHistory(page, type);
+        const items: any[] = res.data ?? [];
+        if (append) {
+          this.admin.history = [...(this.admin.history ?? []), ...items];
+        } else {
+          this.admin.history = items;
+        }
+        return items.length > 0;
+      } catch {
+        this.admin.history = [];
+        return false;
+      }
+    },
+
+    async handleGetAccursedTowerDetails(id: string) {
+      try {
+        const response = await getAccursedTowerById(id);
+        this.admin.currentAccursedTower = response;
+        return response;
+      } catch (error) {
+        console.error('Error fetching accursed tower:', error);
+        throw error;
+      }
     },
 
     async handleGetShadowWar(id: string) {

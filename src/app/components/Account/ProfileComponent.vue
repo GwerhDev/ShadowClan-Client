@@ -112,7 +112,7 @@ function charHasUnreadNotifications(char: any): boolean {
         <i class="fa-solid fa-user-slash no-char-icon"></i>
         <h2>Sin personaje vinculado</h2>
         <p class="no-char-desc">Necesitas vincular al menos un personaje para acceder a las funciones del clan.</p>
-        <button @click="linkingCharacter = true">
+        <button class="link-character-btn" @click="linkingCharacter = true">
           <i class="fas fa-plus"></i>
           Vincular personaje
         </button>

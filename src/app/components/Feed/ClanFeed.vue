@@ -3,7 +3,8 @@ import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import { getClanPosts, deleteClanPost, updateClanPost } from '../../../middlewares/services';
 import { classes } from '../../../middlewares/misc/const';
-import shadowWarBanner from '../../../assets/png/shadow-war-banner.png';
+import shadowWarBanner      from '../../../assets/png/shadow-war-banner.png';
+import accursedTowerBanner  from '../../../assets/png/accursed-tower-banner.png';
 
 const store: any = useStore();
 const posts   = ref<any[]>([]);
@@ -193,6 +194,15 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
           <img :src="shadowWarBanner" class="feed-sw-banner" alt="Shadow War" />
           <button class="feed-sw-cta" @click="$router.push('/shadow-war')">
             <i class="fas fa-swords"></i>
+            Ver nómina
+          </button>
+        </div>
+
+        <!-- ── accursed tower banner ── -->
+        <div v-if="post.source === 'accursed_tower'" class="feed-sw-wrap">
+          <img :src="accursedTowerBanner" class="feed-sw-banner" alt="Torre Maldita" />
+          <button class="feed-sw-cta" @click="$router.push(post.referenceId ? `/accursed-tower/${post.referenceId}` : '/accursed-tower')">
+            <i class="fas fa-chess-rook"></i>
             Ver nómina
           </button>
         </div>
