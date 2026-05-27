@@ -13,9 +13,6 @@ const error   = ref<string | null>(null);
 
 const tower = computed(() => store.admin.currentAccursedTower);
 
-const formatDate = (d: string) =>
-  new Date(d).toLocaleString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
 const groupSizes = { group1: 4, group2: 4, group3: 2 } as const;
 
 function padGroup(arr: any[] | undefined, size: number): (any | undefined)[] {

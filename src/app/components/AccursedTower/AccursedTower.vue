@@ -18,7 +18,6 @@ const towerWar = computed(() => {
 });
 
 const groupSizes = { group1: 4, group2: 4, group3: 2 } as const;
-type GroupKey = 'group1' | 'group2' | 'group3';
 
 function padGroup(arr: any[] | undefined, size: number): (any | undefined)[] {
   const result = [...(arr ?? [])];
