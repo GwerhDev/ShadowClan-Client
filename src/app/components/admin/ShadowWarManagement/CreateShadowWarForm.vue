@@ -5,8 +5,11 @@ import { Clan, Character, Match } from '../../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
+import ShareModal from './ShareModal.vue';
 import { useStore } from '../../../../middlewares/store';
 
+const emit = defineEmits(['publish']);
+const showShareModal = ref(false);
 const store: any = useStore();
 
 const clans: Ref<Clan[]> = ref([]);
@@ -19,6 +22,7 @@ const clanId = computed(() => active.value?.clan?._id ?? active.value?.clan ?? n
 
 const shadowWarId = ref<string | null>(null);
 const enemyClan = ref('');
+const loading = ref(true);
 const showMemberSelectionModal = ref(false);
 const currentSelectionContext = ref<{
   categoryName: keyof typeof battleCategories.value;
@@ -70,37 +74,85 @@ const assignedMemberIds = computed(() => {
   return Array.from(ids);
 });
 
+const categoryLabels: Record<string, string> = {
+  exalted: 'Sublime',
+  eminent: 'Eminente',
+  famed: 'Célebre',
+  proud: 'Imponente',
+};
+
+interface AssignedDetail {
+  label: string;
+  category: keyof typeof battleCategories.value;
+  matchIndex: number;
+  group: 'group1' | 'group2';
+  memberIndex: number;
+}
+
+const assignedMemberDetails = computed(() => {
+  const details: Record<string, AssignedDetail> = {};
+  for (const [cat, matches] of Object.entries(battleCategories.value)) {
+    for (let i = 0; i < (matches as any[]).length; i++) {
+      const match = (matches as any[])[i];
+      const base = (categoryLabels[cat] ?? cat) + ' · P' + (i + 1);
+      match.group1.character.forEach((character: any, memberIndex: number) => {
+        if (character?._id) details[character._id] = { label: base + ' · G1', category: cat as any, matchIndex: i, group: 'group1', memberIndex };
+      });
+      match.group2.character.forEach((character: any, memberIndex: number) => {
+        if (character?._id) details[character._id] = { label: base + ' · G2', category: cat as any, matchIndex: i, group: 'group2', memberIndex };
+      });
+    }
+  }
+  return details;
+});
+
+const handleMemberUnassigned = (characterId: string) => {
+  const detail = assignedMemberDetails.value[characterId];
+  if (!detail) return;
+  const { category, matchIndex, group, memberIndex } = detail;
+  battleCategories.value[category][matchIndex][group].character[memberIndex] = undefined;
+  updateShadowWarData();
+};
+
 onMounted(async () => {
-  if (!shadowWarData.value) {
-    await store.handleGetNextShadowWar();
-  }
-
-  const fetchedClans = await getClans();
-  clans.value = fetchedClans;
-
-  if (clanId.value) {
-    const clanData = await getClanMembers(clanId.value);
-    clanMembers.value = [
-      ...(clanData.leader ? [clanData.leader] : []),
-      ...(clanData.officer ?? []),
-      ...(clanData.member ?? []),
-    ];
-  }
-
-  if (shadowWarData.value) {
-    shadowWarId.value = shadowWarData.value._id ?? null;
-
-    if (shadowWarData.value.battle) {
-      const { exalted, eminent, famed, proud } = shadowWarData.value.battle;
-      battleCategories.value.exalted = exalted || battleCategories.value.exalted;
-      battleCategories.value.eminent = eminent || battleCategories.value.eminent;
-      battleCategories.value.famed = famed || battleCategories.value.famed;
-      battleCategories.value.proud = proud || battleCategories.value.proud;
+  loading.value = true;
+  try {
+    if (!shadowWarData.value) {
+      await store.handleGetNextShadowWar();
     }
 
-    if (shadowWarData.value.enemyClan) {
-      enemyClan.value = shadowWarData.value.enemyClan._id;
+    const [fetchedClans, clanData] = await Promise.all([
+      getClans(),
+      clanId.value ? getClanMembers(clanId.value) : Promise.resolve(null),
+    ]);
+
+    clans.value = fetchedClans;
+
+    if (clanData) {
+      clanMembers.value = [
+        ...(clanData.leader ? [clanData.leader] : []),
+        ...(clanData.officer ?? []),
+        ...(clanData.member ?? []),
+      ];
     }
+
+    if (shadowWarData.value) {
+      shadowWarId.value = shadowWarData.value._id ?? null;
+
+      if (shadowWarData.value.battle) {
+        const { exalted, eminent, famed, proud } = shadowWarData.value.battle;
+        battleCategories.value.exalted = exalted || battleCategories.value.exalted;
+        battleCategories.value.eminent = eminent || battleCategories.value.eminent;
+        battleCategories.value.famed = famed || battleCategories.value.famed;
+        battleCategories.value.proud = proud || battleCategories.value.proud;
+      }
+
+      if (shadowWarData.value.enemyClan) {
+        enemyClan.value = shadowWarData.value.enemyClan._id;
+      }
+    }
+  } finally {
+    loading.value = false;
   }
 });
 
@@ -153,15 +205,28 @@ const unassignMember = (categoryName: keyof typeof battleCategories.value, group
 <template>
   <div class="create-shadow-war-form">
     <div class="clan-selector-container">
-      <div class="clan-selection-area">
-        <SearchSelector v-model="enemyClan" :options="clans" label="Clan Enemigo:"
-          placeholder="Buscar o seleccionar clan" @select="updateShadowWarData" @clear="updateShadowWarData" />
+      <SearchSelector v-model="enemyClan" :options="clans" label="Clan Enemigo:"
+        placeholder="Buscar o seleccionar clan" @select="updateShadowWarData" @clear="updateShadowWarData" />
+      <div class="form-actions">
+        <button class="btn-share-trigger" @click="showShareModal = true">
+          <i class="fab fa-whatsapp"></i>
+          Compartir
+        </button>
+        <button class="btn-publish-trigger" @click="emit('publish')">
+          <i class="fas fa-paper-plane"></i>
+          Publicar
+        </button>
       </div>
     </div>
 
+    <ShareModal v-if="showShareModal" @close="showShareModal = false" />
+
     <MemberSelectionModal v-if="showMemberSelectionModal" :characters="clanMembers"
-      :assigned-character-ids="assignedMemberIds" :confirmed-ids="confirmedIds"
-      @close="showMemberSelectionModal = false" @character-selected="handleMemberSelected" />
+      :assigned-member-ids="assignedMemberIds" :confirmed-ids="confirmedIds"
+      :assigned-details="assignedMemberDetails"
+      @close="showMemberSelectionModal = false"
+      @character-selected="handleMemberSelected"
+      @character-unassigned="handleMemberUnassigned" />
 
     <div v-for="(category, categoryName) in battleCategories" :key="categoryName">
       <h2>Batalla {{ translatedCategoryName(categoryName) }}</h2>
@@ -169,27 +234,33 @@ const unassignMember = (categoryName: keyof typeof battleCategories.value, group
         <h5>Partida {{ matchIndex + 1 }}</h5>
         <div class="match-groups">
           <div class="group">
-            <label>
-              <h5>Grupo 1</h5>
-            </label>
+            <label><h5>Grupo 1</h5></label>
             <div class="character-cards-grid">
-              <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group1.character[n - 1]"
-                :show-unassign-button="!!match.group1.character[n - 1]"
-                :confirmed-ids="confirmedIds"
-                @click="openMemberSelection(categoryName, 'group1', matchIndex, n - 1)"
-                @unassign="unassignMember(categoryName, 'group1', matchIndex, n - 1)" />
+              <template v-if="loading">
+                <div v-for="n in 4" :key="n" class="card-skeleton" />
+              </template>
+              <template v-else>
+                <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group1.character[n - 1]"
+                  :show-unassign-button="!!match.group1.character[n - 1]"
+                  :confirmed-ids="confirmedIds"
+                  @click="openMemberSelection(categoryName, 'group1', matchIndex, n - 1)"
+                  @unassign="unassignMember(categoryName, 'group1', matchIndex, n - 1)" />
+              </template>
             </div>
           </div>
           <div class="group">
-            <label>
-              <h5>Grupo 2</h5>
-            </label>
+            <label><h5>Grupo 2</h5></label>
             <div class="character-cards-grid">
-              <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group2.character[n - 1]"
-                :show-unassign-button="!!match.group2.character[n - 1]"
-                :confirmed-ids="confirmedIds"
-                @click="openMemberSelection(categoryName, 'group2', matchIndex, n - 1)"
-                @unassign="unassignMember(categoryName, 'group2', matchIndex, n - 1)" />
+              <template v-if="loading">
+                <div v-for="n in 4" :key="n" class="card-skeleton" />
+              </template>
+              <template v-else>
+                <ShadowWarMemberCard v-for="n in 4" :key="n" :character="match.group2.character[n - 1]"
+                  :show-unassign-button="!!match.group2.character[n - 1]"
+                  :confirmed-ids="confirmedIds"
+                  @click="openMemberSelection(categoryName, 'group2', matchIndex, n - 1)"
+                  @unassign="unassignMember(categoryName, 'group2', matchIndex, n - 1)" />
+              </template>
             </div>
           </div>
         </div>

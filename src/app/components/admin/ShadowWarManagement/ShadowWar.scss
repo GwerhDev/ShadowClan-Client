@@ -14,29 +14,6 @@
     
   }
 
-  .btn-publish-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: .4rem;
-    padding: .35rem .9rem;
-    border-radius: 6px;
-    font-size: .78rem;
-    cursor: pointer;
-    background: transparent;
-    border: 1px solid rgba(227, 210, 168, .35);
-    color: rgb(227, 210, 168);
-    transition: background .2s, border-color .2s;
-    font-family: 'Cinzel', serif;
-    letter-spacing: .04em;
-
-    &:hover {
-      background: rgba(227, 210, 168, .08);
-      border-color: rgba(227, 210, 168, .6);
-    }
-
-    i { font-size: .75rem; }
-  }
-
   .info-text {
     display: flex;
     flex-direction: column;

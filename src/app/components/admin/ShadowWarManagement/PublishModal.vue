@@ -3,7 +3,6 @@ import { ref, computed } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import { createClanPost } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
-import { classes } from '../../../../middlewares/misc/const';
 
 const store: any = useStore();
 const emit = defineEmits(['close']);
@@ -11,80 +10,9 @@ const emit = defineEmits(['close']);
 const content = ref('');
 const posting = ref(false);
 const error = ref('');
-const copied = ref(false);
 
 const shadowWarData = computed(() => store.currentUser.shadowWarData);
 const currentCharacter = computed(() => store.currentCharacter);
-
-const categoryLabels: Record<string, string> = {
-  exalted: 'Sublime',
-  eminent: 'Eminente',
-  famed:   'Célebre',
-  proud:   'Imponente',
-};
-
-function getClassName(value: string | undefined) {
-  return classes.find(c => c.value === value)?.name ?? value ?? '';
-}
-
-function formatWhatsApp(): string {
-  const data = shadowWarData.value;
-  if (!data) return '';
-
-  const date = data.date
-    ? new Date(data.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
-    : '—';
-  const enemy = data.enemyClan?.name ?? 'Por definir';
-
-  const lines: string[] = [
-    `🗡️ *GUERRA SOMBRÍA*`,
-    `📅 ${date}  ⚔️ vs *${enemy}*`,
-    '',
-  ];
-
-  const battle = data.battle ?? {};
-  for (const [cat, matches] of Object.entries(battle) as [string, any[]][]) {
-    if (!matches?.length) continue;
-    lines.push(`*═══ BATALLA ${categoryLabels[cat]?.toUpperCase() ?? cat.toUpperCase()} ═══*`);
-    matches.forEach((match: any, i: number) => {
-      const g1 = (match.group1?.character ?? [])
-        .filter(Boolean)
-        .map((c: any) => c.name ?? '—')
-        .join(', ') || '—';
-      const g2 = (match.group2?.character ?? [])
-        .filter(Boolean)
-        .map((c: any) => c.name ?? '—')
-        .join(', ') || '—';
-      lines.push(`*Partida ${i + 1}*`);
-      lines.push(`👥 Grupo 1: ${g1}`);
-      lines.push(`👥 Grupo 2: ${g2}`);
-      if (i < matches.length - 1) lines.push('');
-    });
-    lines.push('');
-  }
-
-  return lines.join('\n').trimEnd();
-}
-
-async function copyWhatsApp() {
-  const text = formatWhatsApp();
-  if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-    copied.value = true;
-    setTimeout(() => { copied.value = false; }, 2000);
-  } catch {
-    // fallback
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    copied.value = true;
-    setTimeout(() => { copied.value = false; }, 2000);
-  }
-}
 
 async function publish() {
   if (!content.value.trim() && !shadowWarData.value) return;
@@ -118,10 +46,6 @@ async function publish() {
       <p v-if="error" class="publish-error">{{ error }}</p>
 
       <div class="publish-actions">
-        <button class="btn-whatsapp" @click="copyWhatsApp" :disabled="!shadowWarData">
-          <i :class="copied ? 'fas fa-check' : 'fab fa-whatsapp'"></i>
-          {{ copied ? 'Copiado' : 'Copiar formación (WhatsApp)' }}
-        </button>
         <button class="btn-publish" @click="publish" :disabled="(!content.trim() && !shadowWarData) || posting">
           <i class="fas fa-paper-plane"></i>
           {{ posting ? 'Publicando...' : 'Publicar' }}
@@ -195,17 +119,6 @@ async function publish() {
     transition: background .2s, border-color .2s, opacity .15s;
 
     &:disabled { opacity: .4; cursor: not-allowed; }
-  }
-}
-
-.btn-whatsapp {
-  background: transparent;
-  border-color: rgba(37, 211, 102, .35);
-  color: rgb(37, 211, 102);
-
-  &:hover:not(:disabled) {
-    background: rgba(37, 211, 102, .08);
-    border-color: rgba(37, 211, 102, .6);
   }
 }
 

@@ -30,7 +30,9 @@ const viewDetails = (id: string) => {
     </span>
     <span class="actions-col">
       <div class="buttons-container">
-        <i class="fas fa-eye icon-button" @click="viewDetails(war._id)" title="Ver detalle"></i>
+        <button class="icon-button" @click="viewDetails(war._id)" title="Ver detalle">
+          <i class="fas fa-eye"></i>
+        </button>
       </div>
     </span>
   </div>

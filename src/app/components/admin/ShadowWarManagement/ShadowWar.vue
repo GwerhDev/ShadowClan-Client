@@ -15,16 +15,12 @@ defineProps<{
     <span class="info-text">
       <span class="title">
         <h2>Próxima Batalla</h2>
-        <button class="btn-publish-trigger" @click="showPublishModal = true">
-          <i class="fas fa-paper-plane"></i>
-          Publicar
-        </button>
       </span>
       <p>La próxima <b>Guerra Sombría</b> es el <i>{{ nextWarDate }} a las
           19:30h (hora del servidor)</i>.</p>
     </span>
 
-    <CreateShadowWarForm />
+    <CreateShadowWarForm @publish="showPublishModal = true" />
 
     <PublishModal v-if="showPublishModal" @close="showPublishModal = false" />
   </div>

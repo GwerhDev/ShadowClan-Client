@@ -58,7 +58,7 @@ const isMemberLinked = (character: MemberOrId) => {
             <div v-else>
               <div class="matches-row-container">
                 <div v-for="(match, matchIndex) in category" :key="matchIndex" class="match">
-                  <h4>Partida {{ matchIndex + 1 }}</h4>
+                  <h4>Partida {{ Number(matchIndex) + 1 }}</h4>
                   <div class="match-groups">
                     <div class="group">
                       <h5>Grupo 1</h5>

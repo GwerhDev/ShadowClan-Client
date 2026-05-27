@@ -64,8 +64,6 @@ function getClassName(value: string) {
 <style scoped lang="scss">
 p { margin: 0; }
 
-img { padding: 1rem; }
-
 span {
   width: 100%;
   gap: 1rem;

@@ -63,20 +63,25 @@ span {
 }
 
 .icon-button {
-  padding: .4rem .5rem;
-  border-radius: .3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 28px;
+  padding: 0 .5rem;
+  border-radius: 6px;
   background: transparent;
-  border: 1px solid transparent;
-  transition: color .2s, filter .2s, background .2s, border-color .2s;
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .5);
+  font-size: 0.78rem;
   cursor: pointer;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, .45);
+  transition: color .15s, background .15s, border-color .15s, filter .15s;
 
   &:hover {
     color: rgb(227, 210, 168);
     background: rgba(255, 255, 255, .05);
-    border-color: rgba(255, 255, 255, .1);
-    filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.245));
+    border-color: rgba(227, 210, 168, .35);
+    filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.2));
   }
 }
 

@@ -106,30 +106,40 @@ input[type=text]:active:read-only {
 }
 
 select {
-  height: 30px;
+  height: auto;
   font-family: 'Cinzel', serif;
-  background-color: #15171E;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  font-size: 20px;
+  font-size: .9rem;
+  background-color: var(--color-primary-bg);
+  padding: .3rem .75rem;
   border-radius: 8px;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-app-white);
+  border: 1px solid rgba(255, 255, 255, .1);
+  color: rgba(255, 255, 255, .7);
+  cursor: pointer;
+  transition: border-color .15s;
 
   &:focus {
     outline: none;
+    border-color: rgba(227, 210, 168, .4);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, .2);
   }
 }
 
 select:disabled {
   background-color: transparent;
+  border-color: transparent;
+  opacity: .5;
+  cursor: default;
 }
 
 option {
-  font-size: 15px;
+  font-family: 'Cinzel', serif;
+  font-size: .9rem;
+  background-color: var(--color-primary-bg);
+  color: rgba(255, 255, 255, .7);
+  padding: .5rem .75rem;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
