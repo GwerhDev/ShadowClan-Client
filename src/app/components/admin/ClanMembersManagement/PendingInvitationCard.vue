@@ -80,8 +80,9 @@ span {
   padding-top: .5rem;
   padding-bottom: .5rem;
   grid-template-columns: repeat(6, 1fr);
-  border-radius: 9px;
-  background-color: var(--color-secondary-bg);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .07);
   align-items: center;
 
   & > span:nth-child(2) {
@@ -99,7 +100,7 @@ span {
   & > span:last-child {
     position: sticky;
     right: 0;
-    background-color: var(--color-primary-bg);
+    background: rgba(255, 255, 255, .03);
     padding-inline: .3rem;
     z-index: 1;
   }
@@ -127,13 +128,27 @@ span {
   gap: .5rem;
 
   button {
-    background-color: var(--color-primary-bg);
-    width: 80px;
+    background: transparent;
+    border: 1px solid rgba(229, 115, 115, .35);
+    color: #e57373;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 30px;
-    padding-inline: 1rem;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+
+    &:hover:not(:disabled) {
+      background: rgba(229, 115, 115, .08);
+      border-color: rgba(229, 115, 115, .6);
+    }
+
+    &:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
   }
 }
 

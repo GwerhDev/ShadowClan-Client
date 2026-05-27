@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--nav-color-primary);
-  border-bottom: solid 1px var(--element-color-primary-hover);
+  border-bottom: solid 1px rgba(255, 255, 255, .07);
   backdrop-filter: blur(10px);
   z-index: 9;
 

@@ -7,27 +7,33 @@
   padding: .35rem .9rem;
   border-radius: 6px;
   font-size: 0.82rem;
-  opacity: 0.7;
   margin-bottom: 1rem;
   background: transparent;
-  border: 1px solid var(--border-color-primary);
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .5);
   cursor: pointer;
-  transition: opacity 0.2s, background-color 0.2s;
+  transition: background .15s, border-color .15s, color .15s;
 
   &:hover {
-    opacity: 1;
-    background-color: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, .06);
+    border-color: rgba(255, 255, 255, .25);
+    color: rgba(255, 255, 255, .85);
   }
 }
 
 .icon-button {
-  padding: .5rem;
+  padding: .45rem .5rem;
   border-radius: .3rem;
-  transition-duration: .4s;
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
+  color: rgba(255, 255, 255, .45);
+  transition: color .2s, background .2s, border-color .2s;
 
   &:hover {
     color: rgb(227, 210, 168);
+    background: rgba(255, 255, 255, .05);
+    border-color: rgba(255, 255, 255, .1);
     filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.245));
   }
 }
@@ -35,26 +41,26 @@
 .battle-section {
   margin-bottom: 2rem;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .match-summary-section {
   margin-top: 1rem;
-  padding: 0.8rem;
-  border: 1px solid #555;
-  border-radius: 5px;
-  background-color: var(--element-color-primary);
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .03);
   display: flex;
   justify-content: space-between;
   align-items: center;
 
   h5 {
-    color: #e0e0e0;
+    color: rgba(255, 255, 255, .8);
     margin: 0;
   }
 
   p {
-    color: #b0b0b0;
+    color: rgba(255, 255, 255, .5);
     margin: 0;
   }
 }
@@ -72,8 +78,9 @@
     width: 100%;
     height: 100%;
     padding: 1rem;
-    border-radius: 1rem;
-    background-color: var(--element-color-primary);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid rgba(255, 255, 255, .07);
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -81,9 +88,10 @@
   }
 
   select {
-    border-radius: 0.3rem;
-    color: var(--text-color-primary);
-    border: 1px solid var(--border-color-primary);
+    border-radius: 6px;
+    color: var(--color-app-white);
+    border: 1px solid rgba(255, 255, 255, .12);
+    background: rgba(255, 255, 255, .04);
   }
 }
 

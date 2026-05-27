@@ -14,7 +14,7 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--border-color-primary);
+    background: rgba(255, 255, 255, .1);
     border-radius: 4px;
   }
 }
@@ -27,23 +27,27 @@
 
   nav {
     display: grid;
-    background-color: var(--color-secondary-bg);
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .07);
     justify-content: space-between;
     border-radius: 8px;
-    font-weight: bolder;
-    font-size: smaller;
+    font-weight: 600;
+    font-size: .72rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .4);
     position: sticky;
     top: 0;
     z-index: 2;
     flex-shrink: 0;
 
     li {
-      padding: .3rem;
+      padding: .45rem .3rem;
 
       &:last-child {
         position: sticky;
         right: 0;
-        background-color: var(--color-secondary-bg);
+        background: rgba(255, 255, 255, .05);
         z-index: 1;
         text-align: center;
       }

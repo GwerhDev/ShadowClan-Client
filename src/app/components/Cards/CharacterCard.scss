@@ -1,24 +1,24 @@
 .character-card {
   width: 100%;
   position: relative;
-  border: 1px solid var(--primary-border-color);
+  border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color .15s, background .15s;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 60px;
-  background-color: var(--element-color-primary);
+  background: rgba(255, 255, 255, .04);
 
   &:hover {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 10px var(--accent-color);
-    background-color: var(--element-color-primary-hover);
+    border-color: rgba(255, 255, 255, .22);
+    background: rgba(255, 255, 255, .07);
   }
 
   &.linked-member {
-    border: solid 1px var(--color-primary);
+    border-color: rgba(0, 116, 224, .4);
+    background: rgba(0, 116, 224, .06);
   }
 
   .unassign-button {
@@ -28,21 +28,23 @@
     right: -5px;
     width: 20px;
     height: 20px;
-    border: none;
-    color: var(--color-app-white);
+    border: 1px solid rgba(229, 115, 115, .4);
+    color: #e57373;
     line-height: 20px;
     border-radius: 100%;
     text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.3s ease;
-    background-color: var(--element-color-primary-hover);
+    transition: background .15s, border-color .15s;
+    background: rgba(229, 115, 115, .1);
     cursor: pointer;
     z-index: 1;
+    font-size: .65rem;
 
     &:hover {
-      background-color: var(--color-red-action-hover);
+      background: rgba(229, 115, 115, .25);
+      border-color: rgba(229, 115, 115, .7);
     }
   }
 
@@ -55,8 +57,8 @@
     padding-inline: 1rem;
 
     .class-image {
-      width: 30px; // Reduced size
-      height: 30px; // Reduced size
+      width: 30px;
+      height: 30px;
     }
 
     .member-details {
@@ -66,15 +68,15 @@
 
       .character-name {
         font-weight: bold;
-        font-size: 0.9rem; // Slightly smaller font
+        font-size: 0.9rem;
       }
 
       .resonance {
         margin: 0;
         padding: 0;
-        color: var(--text-secondary-color);
-        font-weight: 800;
-        font-size: 0.7rem; // Slightly smaller font
+        color: rgba(255, 255, 255, .4);
+        font-weight: 600;
+        font-size: 0.75rem;
       }
     }
   }
@@ -84,6 +86,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: .75rem;
+    color: rgba(255, 255, 255, .45);
   }
 
   .empty-card {
@@ -92,15 +96,10 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    color: var(--text-secondary-color);
+    color: rgba(255, 255, 255, .25);
     width: 100%;
     height: 100%;
-    opacity: 20%;
     cursor: default;
-
-    &:hover {
-      background-color: var(--element-color-primary);
-    }
 
     span:first-child {
       font-size: 2rem;

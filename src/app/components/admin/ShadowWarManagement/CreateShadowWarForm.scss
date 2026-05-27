@@ -8,12 +8,12 @@
   width: 100%;
   display: flex;
   justify-content: center;
-}
 
-.clan-selector-container div {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+  div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .match-groups {
@@ -29,47 +29,39 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-
 }
 
-/* Styles for elements within the TableComponent slot */
 .table-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  /* Match the 3 columns of the TableComponent header */
   align-items: center;
-  /* Vertically align items in the grid row */
   margin-bottom: 0.5rem;
+
+  span {
+    white-space: nowrap;
+  }
+
+  select {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, .12);
+    background: rgba(255, 255, 255, .04);
+    color: var(--color-app-white);
+  }
 }
 
-.table-row span {
-  white-space: nowrap;
-  /* Prevent text from wrapping */
-}
-
-/* Specific styling for select elements within table rows */
-.table-row select {
-  width: 100%;
-  /* Ensure it fills the grid cell */
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: #333;
-  color: var(--color-app-white);
-}
-
-/* General button styling */
 button[type="button"],
 button[type="submit"] {
-  border-radius: 4px;
-  border: none;
-  background-color: #007bff;
+  border-radius: 6px;
+  background: var(--color-primary);
+  border: 1px solid transparent;
   color: var(--color-app-white);
   cursor: pointer;
-}
+  transition: background .15s, border-color .15s;
 
-button[type="button"]:hover,
-button[type="submit"]:hover {
-  background-color: #0056b3;
+  &:hover {
+    background: var(--color-primary-light);
+  }
 }
 
 .character-cards-grid {
@@ -78,10 +70,9 @@ button[type="submit"]:hover {
   flex-direction: column;
 }
 
-
 .clan-selection-area {
   position: relative;
-  margin-bottom: 1rem; // Revert to 1rem for consistency
+  margin-bottom: 1rem;
   max-width: 500px;
   padding: 1rem;
   display: flex;
@@ -91,34 +82,37 @@ button[type="submit"]:hover {
 
   .action-buttons {
     display: flex;
-    gap: 1rem;
+    gap: .75rem;
     flex-wrap: wrap;
     width: 100%;
   }
 
   button {
-    padding: 0.5rem 1rem; // Revert to 0.5rem padding, 1rem for horizontal
-    border-radius: 4px; // Revert to 4px border-radius
-    font-size: 0.95rem; // Keep 0.95rem font size
-    transition: background-color 0.3s ease; // Simpler transition
+    padding: .5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background .15s, border-color .15s;
     display: flex;
     align-items: center;
-    flex-direction: column;
+    gap: .4rem;
   }
 
   .btn-create-clan {
-    background-color: #007bff; // Use existing primary blue
+    background: var(--color-primary);
+    border: 1px solid transparent;
+    color: var(--color-app-white);
 
-    &:hover {
-      background-color: #0056b3; // Use existing darker blue
-    }
+    &:hover { background: var(--color-primary-light); }
   }
 
   .btn-not-defined {
-    background-color: #6c757d; // Keeping this grey as it's a common neutral and no direct equivalent exists
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .15);
+    color: rgba(255, 255, 255, .6);
 
     &:hover {
-      background-color: darken(#6c757d, 10%); // Darken for hover
+      background: rgba(255, 255, 255, .07);
+      border-color: rgba(255, 255, 255, .3);
     }
   }
 }
@@ -129,7 +123,5 @@ button[type="submit"]:hover {
   align-items: center;
   margin-bottom: 1rem;
 
-  h3 {
-    margin: 0;
-  }
+  h3 { margin: 0; }
 }

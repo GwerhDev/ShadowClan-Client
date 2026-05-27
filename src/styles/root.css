@@ -204,16 +204,15 @@ h2 {
 button,
 .button {
   padding: .5rem;
-  border-radius: 5px;
+  border-radius: 6px;
   border: 1px solid transparent;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
   background-color: var(--color-primary);
-  border: solid 2px transparent;
   color: var(--color-app-white);
   cursor: pointer;
-  transition: all .4s;
+  transition: background .15s, border-color .15s, opacity .15s;
   display: flex;
   text-align: center;
   align-items: center;
@@ -222,7 +221,6 @@ button,
 
 button:hover,
 .button:hover {
-  border: solid 2px;
   border-color: var(--color-primary-light);
 }
 
@@ -234,7 +232,7 @@ button:active,
 }
 
 button:disabled {
-  opacity: .5;
+  opacity: .45;
   border: none;
   outline: none;
   cursor: default;

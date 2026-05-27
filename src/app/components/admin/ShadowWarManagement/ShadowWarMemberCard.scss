@@ -1,20 +1,19 @@
 .character-card {
   position: relative;
-  border: 1px solid var(--primary-border-color);
+  border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 8px;
   padding-inline: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color .15s, background .15s;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 80px;
-  background-color: var(--element-color-primary);
+  background: rgba(255, 255, 255, .04);
 
   &:hover {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 10px var(--accent-color);
-    background-color: var(--element-color-primary-hover);
+    border-color: rgba(255, 255, 255, .22);
+    background: rgba(255, 255, 255, .07);
   }
 
   .unassign-button {
@@ -26,19 +25,21 @@
     height: 20px;
     line-height: 20px;
     border-radius: 100%;
-    border: none;
-    color: var(--color-app-white);
+    border: 1px solid rgba(229, 115, 115, .4);
+    color: #e57373;
     text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.3s ease;
-    background-color: var(--element-color-primary-hover);
+    transition: background .15s, border-color .15s;
+    background: rgba(229, 115, 115, .1);
     cursor: pointer;
     z-index: 1;
+    font-size: .65rem;
 
     &:hover {
-      background-color: var(--color-red-action-hover);
+      background: rgba(229, 115, 115, .25);
+      border-color: rgba(229, 115, 115, .7);
     }
   }
 
@@ -71,7 +72,7 @@
       }
 
       .resonance {
-        color: var(--text-secondary-color);
+        color: rgba(255, 255, 255, .4);
       }
     }
   }
@@ -81,7 +82,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    color: var(--text-secondary-color);
+    color: rgba(255, 255, 255, .25);
 
     span:first-child {
       font-size: 2rem;

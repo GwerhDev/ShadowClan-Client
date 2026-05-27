@@ -9,21 +9,29 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  border-radius: .3rem;
-  background-color: var(--element-color-primary);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .1);
+  overflow: visible;
+  transition: border-color .15s;
+
+  &:focus-within {
+    border-color: rgba(227, 210, 168, .4);
+  }
 
   label {
     margin: 0;
-    padding: 0;
-    padding-inline: .5rem;
+    padding: .3rem .75rem 0;
     text-align: start;
-    font-size: smaller;
-    font-weight: 800;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .4);
   }
 
   .input-wrapper {
     width: 100%;
-    min-width: none;
     display: flex;
     position: relative;
     align-items: center;
@@ -31,26 +39,32 @@
 
   input[type="text"] {
     width: 100%;
-    background-color: transparent;
-    transition: .4s;
-    padding-inline: .5rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: .3rem .75rem .45rem;
+    color: var(--color-app-white);
+    font-family: 'Cinzel', serif;
+    font-size: .9rem;
+    outline: none;
+    transition: none;
   }
 
   .clear-button {
-    background-color: transparent;
+    background: transparent;
     border: none;
-    color: #ccc;
+    color: rgba(255, 255, 255, .4);
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1rem;
     padding: 0 0.5rem;
     position: absolute;
     right: 0.5rem;
     top: 50%;
     transform: translateY(-50%);
-    transition: color 0.2s ease;
+    transition: color .15s;
 
     &:hover {
-      color: var(--color-app-white);
+      color: rgba(255, 255, 255, .8);
     }
   }
 }
@@ -60,23 +74,26 @@
   top: 100%;
   left: 0;
   right: 0;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-radius: 0 0 8px 8px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  font-size: 1.1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+  font-size: .9rem;
   font-family: 'Cinzel', serif;
-  background-color: #15171E;
+  background: var(--color-primary-bg);
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-top: none;
 }
 
 .suggestion-item {
-  padding: 0.5rem 1rem;
+  padding: .5rem .75rem;
   cursor: pointer;
-  color: var(--color-app-white);
+  color: rgba(255, 255, 255, .7);
+  transition: background .12s, color .12s;
 
   &:hover {
-    background-color: #007bff;
+    background: rgba(255, 255, 255, .07);
+    color: var(--color-app-white);
   }
 }

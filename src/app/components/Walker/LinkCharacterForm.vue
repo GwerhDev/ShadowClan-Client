@@ -310,7 +310,8 @@ $gold-dim: rgba(227, 210, 168, .15);
   display: flex;
   align-items: center;
   gap: .4rem;
-  background: var(--element-color-primary);
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .1);
   border-radius: .3rem;
   padding: .25rem;
 

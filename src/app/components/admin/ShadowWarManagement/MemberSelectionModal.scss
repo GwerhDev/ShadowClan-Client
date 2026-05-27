@@ -1,20 +1,23 @@
 .characters-selection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  gap: .75rem;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
 }
 
 .is-assigned {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
 }
 
 .no-characters {
   padding: 1rem;
-  border-radius: 1rem;
-    background-color: var(--element-color-primary-hover);
-  font-size: larger;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .08);
+  font-size: .9rem;
+  text-align: center;
+  color: rgba(255, 255, 255, .4);
 }
