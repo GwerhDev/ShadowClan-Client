@@ -2,11 +2,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useStore } from '../../middlewares/store';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import LogoComponent from './LogoComponent.vue';
 defineProps(["loading"]);
 const store: any = useStore();
 const router = useRouter();
+const route = useRoute();
+
+const isRequestsActive = computed(() => route.path === '/requests');
 
 const hasCharacter = computed(() => (store.currentUser.userData?.character ?? []).length > 0);
 const activeChar = computed(() => {
@@ -79,7 +82,7 @@ function goToRequests() {
         <section class="user-section">
 
           <div class="bell-wrapper" v-if="store.currentUser.logged">
-            <button class="bell-btn" @click="goToRequests" title="Misivas">
+            <button class="bell-btn" :class="{ 'user-active': isRequestsActive }" @click="goToRequests" title="Misivas">
               <i class="fas fa-bell"></i>
               <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
             </button>

@@ -55,6 +55,12 @@
           color: #e3d2a8;
         }
       }
+
+      a.router-link-active,
+      .user-active {
+        color: #e3d2a8;
+        filter: drop-shadow(0 0 4px #ff00003e);
+      }
     }
 
     .bell-wrapper {

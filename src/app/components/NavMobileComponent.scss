@@ -1,54 +1,46 @@
 .nav-container {
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--nav-color-primary);
-  border-bottom: solid 1px var(--element-color-primary-hover);
-  backdrop-filter: blur(10px);
-  z-index: 9;
   display: none;
+  width: 100%;
+  background-color: var(--nav-color-primary);
+  backdrop-filter: blur(10px);
+  z-index: 99;
 
   nav {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    
-    .logo-section {
-      padding-inline: 2rem;
-    }
 
     .router-section {
       width: 100%;
-      max-width: 600px;
-      border-radius: 7px;
-      overflow: hidden;
       display: flex;
-      align-items: center;
+      align-items: stretch;
       justify-content: space-around;
 
-      .nav-menu-container {
-        width: 100%;
-      }
-
-      .nav-item {
-        gap: 5px;
-        width: 100%;
-        padding: .5rem;
-        padding-top: 1rem;
-        font-size: .7rem;
+      .nav-item,
+      .nav-btn {
+        gap: 4px;
+        flex: 1;
+        padding: .6rem .25rem .25rem;
+        font-size: .65rem;
         display: flex;
         color: var(--color-app-white);
         align-items: center;
         flex-direction: column;
         text-decoration: none;
-        justify-content: center;
-        border-bottom: 3px solid transparent;
-        transition: all 0.3s ease-in-out;
+        justify-content: flex-start;
+        border-top: 3px solid transparent;
+        transition: color 0.2s ease, border-color 0.2s ease;
+        background: transparent;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        cursor: pointer;
+        font-family: inherit;
+
 
         i {
-          font-size: 1.2rem;
+          font-size: 1.15rem;
         }
 
         &:hover {
@@ -59,13 +51,35 @@
       .router-link-active {
         color: #e3d2a8;
         filter: drop-shadow(0 0 4px #ff00003e);
-        border-bottom: 3px solid var(--color-primary);
+        border-top: 3px solid var(--color-primary);
       }
     }
 
-    .user-section {
-      padding-inline: 2rem;
+    .icon-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
+      i { font-size: 1.15rem; }
+    }
+
+    .notif-badge {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: .6rem;
+      font-weight: 700;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      pointer-events: none;
     }
   }
 }
@@ -75,6 +89,8 @@
     display: block;
     position: fixed;
     bottom: 0;
+    left: 0;
+    right: 0;
     border-top: solid 1px var(--element-color-primary-hover);
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
@@ -82,20 +98,9 @@
 
     nav {
       .router-section {
-        max-width: none;
-        justify-content: stretch;
-
-        .nav-item {
-          flex: 1;
+        .nav-item,
+        .nav-btn {
           padding-bottom: 2rem;
-          border: none;
-          border-top: 3px solid transparent;
-        }
-
-        .router-link-active {
-          color: #e3d2a8;
-          filter: drop-shadow(0 0 4px #ff00003e);
-          border-top: 3px solid var(--color-primary);
         }
       }
     }
