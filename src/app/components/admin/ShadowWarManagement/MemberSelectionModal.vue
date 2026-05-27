@@ -38,7 +38,7 @@ const search = ref('');
 const filteredCharacters = computed(() => {
   const q = search.value.trim().toLowerCase();
   if (!q) return props.characters;
-  return props.characters.filter(c => c.name.toLowerCase().includes(q));
+  return props.characters.filter(c => c.name?.toLowerCase().includes(q));
 });
 
 const isAssigned = (memberId: string) => props.assignedMemberIds.includes(memberId);

@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import CustomModal from '../../Modals/CustomModal.vue';
-import { classes } from '../../../../middlewares/misc/const';
 
 const store: any = useStore();
 const emit = defineEmits(['close']);
@@ -18,9 +17,6 @@ const categoryLabels: Record<string, string> = {
   proud:   'Imponente',
 };
 
-function getClassName(value: string | undefined) {
-  return classes.find(c => c.value === value)?.name ?? value ?? '';
-}
 
 const formattedText = computed(() => {
   const data = shadowWarData.value;
