@@ -33,6 +33,7 @@ onMounted(async () => {
     if (store.currentUser.logged) {
       store.handleFetchPendingInbox();
       store.handleFetchPendingRequests();
+      store.handleGetNextShadowWar();
       const socket = connectSocket();
       socket.on('clan-request:new', () => {
         store.pendingRequestsCount += 1;
@@ -76,6 +77,16 @@ onMounted(async () => {
         if (data.action === 'accept') {
           store.handleUserData();
         }
+      });
+      socket.on('shadowwar:assigned', (data: any) => {
+        store.addNotification({
+          id: data.id,
+          type: 'shadowwar-assignment',
+          targetType: 'character',
+          targetId: data.characterId ? String(data.characterId) : null,
+          data,
+        });
+        store.pendingInboxCount += 1;
       });
     }
   } finally {

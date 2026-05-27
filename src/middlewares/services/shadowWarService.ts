@@ -19,14 +19,28 @@ export const getShadowWarById: any = async (id: string) => {
   return response;
 };
 
+// Admin-scoped update (requires admin/super_admin)
 export const updateShadowWar: any = async (id: string, formData: any) => {
   const response: any = await axios.patch(API_URL + `/admin/shadow-wars/${id}`, formData, { withCredentials: true })
     .then(response => response.data)
   return response;
 };
 
+// Clan-management-scoped update (leader/officer)
+export const updateShadowWarClan: any = async (id: string, formData: any) => {
+  const response: any = await axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, formData, { withCredentials: true })
+    .then(response => response.data)
+  return response;
+};
+
 export const getNextShadowWar: any = async () => {
   const response: any = await axios.get(API_URL + "/shadow-war/next", { withCredentials: true })
+    .then(response => response.data)
+  return response;
+};
+
+export const confirmShadowWar: any = async (shadowWarId: string) => {
+  const response: any = await axios.patch(API_URL + `/shadow-war/${shadowWarId}/confirm`, {}, { withCredentials: true })
     .then(response => response.data)
   return response;
 };

@@ -25,6 +25,7 @@ import AccursedTower from '../components/AccursedTower/AccursedTower.vue';
 import TaskPage from '../pages/TaskPage.vue';
 import TasksComponent from '../components/Tasks/TasksComponent.vue';
 import HomePage from '../pages/HomePage.vue';
+import ClanFeed from '../components/Feed/ClanFeed.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -146,6 +147,12 @@ const routes: RouteRecordRaw[] = [
     component: HomePage,
     meta: { title: 'Inicio' },
     children: [
+      {
+        path: '',
+        name: 'Feed',
+        component: ClanFeed,
+        meta: { title: 'Feed' },
+      },
       {
         path: '/my-clan',
         name: 'Clan',

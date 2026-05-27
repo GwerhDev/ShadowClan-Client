@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import AppLayout from '../layouts/AppLayout.vue';
 import WalkerHomeComponent from '../components/Walker/WalkerHomeComponent.vue';
 import { useStore } from '../../middlewares/store';
 
 const store: any = useStore();
+const route = useRoute();
 
 const activeChar = computed(() => {
   const chars = store.currentUser.userData?.character ?? [];
@@ -12,6 +14,7 @@ const activeChar = computed(() => {
 });
 const hasCharacter = computed(() => (store.currentUser.userData?.character ?? []).length > 0);
 const isWalker     = computed(() => hasCharacter.value && !activeChar.value?.clan);
+const isFeed       = computed(() => route.name === 'Feed');
 
 const tabs = computed(() => {
   if (!hasCharacter.value) return [
@@ -30,7 +33,7 @@ const tabs = computed(() => {
 <template>
   <main class="red-shadow-fx">
     <div class="div-container">
-      <AppLayout :tabs="tabs" :hide-title="!hasCharacter || isWalker">
+      <AppLayout :tabs="tabs" :hide-title="!hasCharacter || isWalker || isFeed">
         <WalkerHomeComponent v-if="!hasCharacter || isWalker" />
         <router-view v-else />
       </AppLayout>

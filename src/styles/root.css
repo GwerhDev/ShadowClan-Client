@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Cinzel:wght@400;600&&display=swap');
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
   margin: 0;
   padding: 0;

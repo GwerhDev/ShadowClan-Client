@@ -51,7 +51,7 @@ function styleActive(path: string) {
           <i :class="tab.icon"></i>
           <span>{{ tab.name }}</span>
           <span v-if="tab.badge" class="tab-badge">{{ tab.badge }}</span>
-          <small v-else-if="store.currentUser.userBattleInfo.some(b => b.category === tab.id)"><i
+          <small v-else-if="store.userBattleInfo.some(b => b.category === tab.id)"><i
               class="fas fa-user-shield user-battle-indicator"></i></small>
           <span v-else></span>
         </button>

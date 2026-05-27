@@ -12,35 +12,36 @@ const props = defineProps({
   assignedMemberIds: {
     type: Array as PropType<string[]>,
     default: () => []
+  },
+  confirmedIds: {
+    type: Array as PropType<string[]>,
+    default: () => []
   }
 });
 
-const emit = defineEmits(['close', 'characters-selected']);
+const emit = defineEmits(['close', 'character-selected']);
 
-const handleCardClick = (characters: Character) => {
-  if (props.assignedMemberIds.includes(characters._id)) {
-    return; // Do nothing if characters is already assigned
+const handleCardClick = (character: Character) => {
+  if (props.assignedMemberIds.includes(character._id)) {
+    return;
   }
-  emit('characters-selected', characters);
+  emit('character-selected', character);
   emit('close');
 };
 
-const isAssigned = (memberId: string) => {
-  return props.assignedMemberIds.includes(memberId);
-};
+const isAssigned = (memberId: string) => props.assignedMemberIds.includes(memberId);
 </script>
 
 <template>
   <CustomModal title="Seleccionar Miembro" @close="$emit('close')">
     <div v-if="characters.length" class="characters-selection-grid">
-      <ShadowWarMemberCard v-for="characters in characters" :key="characters._id" :characters="characters" @click="handleCardClick(characters)"
-        :class="{ 'is-assigned': isAssigned(characters._id) }" />
+      <ShadowWarMemberCard v-for="character in characters" :key="character._id" :character="character"
+        :confirmed-ids="confirmedIds" :assigned-ids="assignedMemberIds"
+        @click="handleCardClick(character)" :class="{ 'is-assigned': isAssigned(character._id) }" />
     </div>
     <div class="no-characters" v-else>
       <h1><i class="fas fa-ban"></i></h1>
-      <h4>
-        No hay miembros confirmados
-      </h4>
+      <h4>No hay miembros en el clan</h4>
     </div>
   </CustomModal>
 </template>

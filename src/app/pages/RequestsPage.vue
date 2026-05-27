@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useStore } from '../../middlewares/store';
-import { getClanInvitations, reviewClanInvitation } from '../../middlewares/services';
+import { getClanInvitations, reviewClanInvitation, confirmShadowWar } from '../../middlewares/services';
 import { classes } from '../../middlewares/misc/const';
 import AppLayout from '../layouts/AppLayout.vue';
 
@@ -14,15 +14,11 @@ const processingId = ref<string | null>(null);
 const actionError = ref('');
 const showDetail = ref(false);
 
-const visibleInvitations = computed(() =>
-  invitations.value.filter(inv =>
-    String(inv.character?._id) === String(store.currentCharacter)
-  )
-);
+const visibleInvitations = computed(() => invitations.value);
 
 const reviewedRequests = computed(() =>
   (store.notifications as any[])
-    .filter((n: any) => n.type === 'clan-request-reviewed')
+    .filter((n: any) => n.type === 'clan-request-reviewed' && String(n.targetId) === String(store.currentCharacter))
     .map((n: any) => ({ type: 'clan-request-reviewed', raw: { ...n.data, _notifId: n.id } }))
 );
 
@@ -32,20 +28,37 @@ const reviewedCharacterRequests = computed(() =>
     .map((n: any) => ({ type: 'character-request-reviewed', raw: { ...n.data, _notifId: n.id } }))
 );
 
+const shadowWarAssignments = computed(() =>
+  (store.notifications as any[])
+    .filter((n: any) => n.type === 'shadowwar-assignment' && String(n.targetId) === String(store.currentCharacter))
+    .map((n: any) => ({ type: 'shadowwar-assignment', raw: { ...n.data, _notifId: n.id } }))
+);
+
 const allItems = computed(() => [
   ...visibleInvitations.value.map(inv => ({ type: 'clan-invitation', raw: inv })),
   ...reviewedRequests.value,
   ...reviewedCharacterRequests.value,
+  ...shadowWarAssignments.value,
 ]);
 
-onMounted(async () => {
-  try {
-    invitations.value = await getClanInvitations() ?? [];
-  } catch {
+watch(
+  () => store.currentCharacter,
+  async (charId) => {
+    selected.value = null;
+    showDetail.value = false;
     invitations.value = [];
-  }
-  loading.value = false;
-});
+    if (!charId) return;
+    loading.value = true;
+    try {
+      invitations.value = await getClanInvitations(charId) ?? [];
+    } catch {
+      invitations.value = [];
+    } finally {
+      loading.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 function selectItem(item: { type: string; raw: any }) {
   selected.value = item;
@@ -88,6 +101,7 @@ function itemTitle(item: { type: string; raw: any }): string {
   if (item.type === 'clan-invitation') return item.raw.clan?.name ?? '—';
   if (item.type === 'clan-request-reviewed') return item.raw.clan?.name ?? '—';
   if (item.type === 'character-request-reviewed') return item.raw.character?.name ?? '—';
+  if (item.type === 'shadowwar-assignment') return item.raw.characterName ?? '—';
   return '—';
 }
 
@@ -99,7 +113,26 @@ function itemSubtitle(item: { type: string; raw: any }): string {
     const label = item.raw.type === 'claim' ? 'Reclamación' : 'Creación';
     return item.raw.action === 'accept' ? `${label} aprobada` : `${label} rechazada`;
   }
+  if (item.type === 'shadowwar-assignment') return 'Asignación — Guerra Sombría';
   return '—';
+}
+
+async function confirmWarAssignment(item: { type: string; raw: any }) {
+  processingId.value = item.raw._notifId;
+  actionError.value = '';
+  try {
+    await confirmShadowWar(item.raw.shadowWarId);
+    await store.handleGetNextShadowWar();
+    const notif = (store.notifications as any[]).find((n: any) => n.id === item.raw._notifId);
+    if (notif) { notif.read = true; }
+    store.decrementPendingInboxCount();
+    selected.value = null;
+    showDetail.value = false;
+  } catch (e: any) {
+    actionError.value = e?.response?.data?.message ?? 'Error al confirmar la participación.';
+  } finally {
+    processingId.value = null;
+  }
 }
 
 function dismissReviewedRequest(notifId: string) {
@@ -143,9 +176,10 @@ function dismissReviewedRequest(notifId: string) {
               >
                 <div class="req-item-icon-wrap" :class="item.type">
                   <i :class="
-                    item.type === 'clan-invitation' ? 'fas fa-envelope'
-                    : item.type === 'clan-request-reviewed' ? (item.raw.action === 'accept' ? 'fas fa-check' : 'fas fa-times')
-                    : item.raw.action === 'accept' ? 'fas fa-user-check' : 'fas fa-user-times'
+                    item.type === 'clan-invitation'           ? 'fas fa-envelope'
+                    : item.type === 'clan-request-reviewed'  ? (item.raw.action === 'accept' ? 'fas fa-check' : 'fas fa-times')
+                    : item.type === 'shadowwar-assignment'   ? 'fas fa-sword'
+                    : item.raw.action === 'accept'           ? 'fas fa-user-check' : 'fas fa-user-times'
                   "></i>
                 </div>
                 <div class="req-item-body">
@@ -245,6 +279,39 @@ function dismissReviewedRequest(notifId: string) {
                 <div class="req-detail-actions">
                   <button class="req-btn ghost" @click="dismissReviewedRequest(selected.raw._notifId)">
                     <i class="fas fa-check"></i> Entendido
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="selected.type === 'shadowwar-assignment'">
+              <div class="req-detail-content">
+                <div class="req-detail-header">
+                  <div class="req-detail-type request">
+                    <i class="fas fa-sword"></i>
+                    <span>Asignación — Guerra Sombría</span>
+                  </div>
+                </div>
+
+                <div class="req-detail-clan">
+                  <i class="fas fa-khanda req-clan-icon"></i>
+                  <div>
+                    <h2 class="req-clan-name">{{ selected.raw.characterName ?? '—' }}</h2>
+                    <p class="req-clan-sub">ha sido asignado a la próxima Guerra Sombría</p>
+                  </div>
+                </div>
+
+                <p v-if="actionError" class="req-error">{{ actionError }}</p>
+
+                <div class="req-detail-actions">
+                  <button class="req-btn accept"
+                    :disabled="processingId === selected.raw._notifId"
+                    @click="confirmWarAssignment(selected)">
+                    <i class="fas fa-check"></i>
+                    {{ processingId === selected.raw._notifId ? 'Confirmando...' : 'Confirmar participación' }}
+                  </button>
+                  <button class="req-btn ghost" @click="dismissReviewedRequest(selected.raw._notifId)">
+                    Descartar
                   </button>
                 </div>
               </div>
@@ -402,6 +469,11 @@ $border: rgba(255, 255, 255, .07);
   &.character-request-reviewed {
     background: rgba(129, 199, 132, .1);
     color: #81c784;
+  }
+
+  &.shadowwar-assignment {
+    background: rgba(227, 210, 168, .08);
+    color: rgb(227, 210, 168);
   }
 }
 

@@ -171,7 +171,8 @@ export const reviewClanRequest: any = async (id: string, action: 'accept' | 'rej
   return response;
 };
 
-export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, getShadowWars } from './shadowWarService';
+export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, updateShadowWarClan, getShadowWars, confirmShadowWar } from './shadowWarService';
+export { getClanPosts, createClanPost, updateClanPost, deleteClanPost } from './clanPostService';
 export { getClans, createClan, updateClan, deleteClan } from './clanService';
 
 export const createCharacterClaim: any = async (characterId: string) => {
@@ -260,8 +261,8 @@ export const cancelClanInvitation: any = async (clanId: string, invitationId: st
   );
 };
 
-export const getClanInvitations: any = async () => {
-  const response: any = await axios.get(API_URL + "/clan-invitation", { withCredentials: true })
+export const getClanInvitations: any = async (characterId: string) => {
+  const response: any = await axios.get(API_URL + "/clan-invitation/character/" + characterId, { withCredentials: true })
     .then(r => r.data);
   return response;
 };

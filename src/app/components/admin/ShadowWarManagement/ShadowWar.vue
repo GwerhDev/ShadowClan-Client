@@ -1,38 +1,32 @@
 <script setup lang="ts">
-import { ref, Ref } from 'vue';
+import { ref } from 'vue';
 import CreateShadowWarForm from './CreateShadowWarForm.vue';
+import PublishModal from './PublishModal.vue';
 
-withDefaults(defineProps<{
-  openShareModal?: () => void;
+const showPublishModal = ref(false);
+
+defineProps<{
   nextWarDate?: string;
-}>(), {
-  openShareModal: () => {},
-  nextWarDate: '',
-});
-
-const error: Ref<string | null> = ref(null);
-
+}>();
 </script>
 
 <template>
   <div class="shadow-war-container">
     <span class="info-text">
       <span class="title">
-      <h2>Próxima Batalla</h2>
-        <i @click="openShareModal()" class="fas fa-share"></i>
+        <h2>Próxima Batalla</h2>
+        <button class="btn-publish-trigger" @click="showPublishModal = true">
+          <i class="fas fa-paper-plane"></i>
+          Publicar
+        </button>
       </span>
       <p>La próxima <b>Guerra Sombría</b> es el <i>{{ nextWarDate }} a las
           19:30h (hora del servidor)</i>.</p>
-      <div v-if="error">
-        <p>Ha ocurrido un error:</p>
-        <pre>{{ error }}</pre>
-      </div>
-      <div class="button-container">
-        <span class="copied-feedback"></span>
-      </div>
     </span>
 
     <CreateShadowWarForm />
+
+    <PublishModal v-if="showPublishModal" @close="showPublishModal = false" />
   </div>
 </template>
 

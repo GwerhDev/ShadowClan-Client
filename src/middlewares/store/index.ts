@@ -19,7 +19,6 @@ export const useStore = defineStore('store', {
       chatbotmodel: '',
       shadowWarData: null,
       shadowWarError: null,
-      userBattleInfo: [],
     },
 
     layout: {
@@ -44,6 +43,25 @@ export const useStore = defineStore('store', {
     pendingRequestsCount: 0,
     clanEventModal: null,
   }),
+
+  getters: {
+    userBattleInfo(): { category: string; match: number; group: number }[] {
+      const battle = (this.currentUser as any).shadowWarData?.battle;
+      const charId = this.currentCharacter;
+      if (!battle || !charId) return [];
+      const result: { category: string; match: number; group: number }[] = [];
+      for (const categoryName in battle) {
+        const category = battle[categoryName];
+        for (let i = 0; i < category.length; i++) {
+          const match = category[i];
+          const inGroup = (chars: any[]) => (chars ?? []).some((m: any) => m && (m._id === charId || m === charId));
+          if (inGroup(match.group1?.character)) result.push({ category: categoryName, match: i + 1, group: 1 });
+          if (inGroup(match.group2?.character)) result.push({ category: categoryName, match: i + 1, group: 2 });
+        }
+      }
+      return result;
+    },
+  },
 
   actions: {
     async handleLogout() {
@@ -86,14 +104,6 @@ export const useStore = defineStore('store', {
 
     setCurrentShadowWarDetails(shadowWar: ShadowWar | null) {
       this.admin.currentShadowWar = shadowWar;
-    },
-
-    setUserBattleInfo(battleInfo: { category: string; match: number; group: number }[]) {
-      this.currentUser.userBattleInfo = battleInfo;
-    },
-
-    clearUserBattleInfo() {
-      this.currentUser.userBattleInfo = [];
     },
 
     async handleGetNextShadowWar() {
@@ -444,11 +454,10 @@ export const useStore = defineStore('store', {
     },
 
     async handleFetchPendingInbox() {
+      if (!this.currentCharacter) return;
       try {
-        const invs = await getClanInvitations() ?? [];
-        this.pendingInboxCount = invs.filter(
-          (inv: any) => String(inv.character?._id) === String(this.currentCharacter)
-        ).length;
+        const invs = await getClanInvitations(this.currentCharacter) ?? [];
+        this.pendingInboxCount = invs.length;
       } catch {
         // silently ignore — badge stays at 0
       }
