@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { useStore } from '../../middlewares/store';
 import SideBar from './SideBar.vue';
-import diabloIcon from "../../assets/svg/diablo-icon.svg";
+import diabloIcon from "../../assets/png/shadowclan-icon.png";
 import TabBar from './TabBar.vue';
 import { useRoute } from 'vue-router';
 import { computed } from 'vue';

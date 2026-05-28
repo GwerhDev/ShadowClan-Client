@@ -3,14 +3,14 @@ import { API_URL } from '../misc/const';
 
 const BASE = API_URL + '/clan-management/accursed-tower';
 
-export const getAccursedTowers = async () =>
-  axios.get(BASE, { withCredentials: true }).then(r => r.data);
+export const getAccursedTowers = async (characterId?: string) =>
+  axios.get(BASE, { params: { characterId }, withCredentials: true }).then(r => r.data);
 
-export const getActiveAccursedTower = async () =>
-  axios.get(BASE + '/active', { withCredentials: true }).then(r => r.data);
+export const getActiveAccursedTower = async (characterId?: string) =>
+  axios.get(BASE + '/active', { params: { characterId }, withCredentials: true }).then(r => r.data);
 
-export const createAccursedTower = async (towerNumber: number, date: string, enemyClan?: string | null) =>
-  axios.post(BASE, { towerNumber, date, enemyClan: enemyClan || null }, { withCredentials: true }).then(r => r.data);
+export const createAccursedTower = async (towerNumber: number, date: string, enemyClan?: string | null, characterId?: string) =>
+  axios.post(BASE, { towerNumber, date, enemyClan: enemyClan || null, characterId }, { withCredentials: true }).then(r => r.data);
 
 export const updateAccursedTower = async (id: string, data: { towerNumber?: number; date?: string; roster?: any; enemyClan?: string | null; result?: string; completed?: boolean }) =>
   axios.patch(BASE + '/' + id, data, { withCredentials: true }).then(r => r.data);
@@ -26,3 +26,6 @@ export const searchEnemyClans = async (q: string) =>
 
 export const createEnemyClan = async (name: string) =>
   axios.post(BASE + '/clans', { name }, { withCredentials: true }).then(r => r.data);
+
+export const respondToTowerWar = async (towerId: string, characterId: string) =>
+  axios.post(BASE + `/${towerId}/respond`, { characterId }, { withCredentials: true }).then(r => r.data);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
-import { getClanPosts, deleteClanPost, updateClanPost } from '../../../middlewares/services';
+import { getClanPosts, deleteClanPost, updateClanPost, respondToShadowWar, respondToTowerWar } from '../../../middlewares/services';
 import { classes } from '../../../middlewares/misc/const';
 import shadowWarBanner      from '../../../assets/png/shadow-war-banner.png';
 import accursedTowerBanner  from '../../../assets/png/accursed-tower-banner.png';
@@ -104,6 +104,33 @@ function formatDate(iso: string) {
   });
 }
 
+// ── call to arms ─────────────────────────────────────────────────
+const respondingId = ref<string | null>(null);
+
+function isConfirmed(post: any): boolean {
+  return (post.instanceConfirmed ?? []).includes(store.currentCharacter);
+}
+
+async function respondToCall(post: any) {
+  if (isConfirmed(post) || respondingId.value) return;
+  respondingId.value = post._id;
+  try {
+    if (post.source === 'shadow_war') {
+      await respondToShadowWar(String(post.referenceId), store.currentCharacter);
+    } else {
+      await respondToTowerWar(String(post.referenceId), store.currentCharacter);
+    }
+    const idx = posts.value.findIndex(p => p._id === post._id);
+    if (idx !== -1) {
+      posts.value[idx] = {
+        ...posts.value[idx],
+        instanceConfirmed: [...(posts.value[idx].instanceConfirmed ?? []), store.currentCharacter],
+      };
+    }
+  } catch { /* silently ignore */ }
+  finally  { respondingId.value = null; }
+}
+
 // ── fetch ─────────────────────────────────────────────────────────
 async function fetchPosts(charId: string) {
   loading.value = true;
@@ -192,19 +219,41 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
         <!-- ── shadow war banner ── -->
         <div v-if="post.source === 'shadow_war'" class="feed-sw-wrap">
           <img :src="shadowWarBanner" class="feed-sw-banner" alt="Shadow War" />
-          <button class="feed-sw-cta" @click="$router.push('/shadow-war')">
-            <i class="fas fa-swords"></i>
-            Ver nómina
-          </button>
+          <div class="feed-sw-actions">
+            <button
+              class="feed-sw-cta feed-sw-cta--respond"
+              :class="{ 'feed-sw-cta--confirmed': isConfirmed(post) }"
+              :disabled="isConfirmed(post) || respondingId === post._id"
+              @click="respondToCall(post)"
+            >
+              <i :class="respondingId === post._id ? 'fas fa-spinner fa-spin' : isConfirmed(post) ? 'fas fa-check' : 'fas fa-hand-fist'"></i>
+              {{ isConfirmed(post) ? 'Confirmado' : 'Responder al llamado' }}
+            </button>
+            <button class="feed-sw-cta" @click="$router.push('/shadow-war')">
+              <i class="fas fa-khanda"></i>
+              Ver nómina
+            </button>
+          </div>
         </div>
 
         <!-- ── accursed tower banner ── -->
         <div v-if="post.source === 'accursed_tower'" class="feed-sw-wrap">
           <img :src="accursedTowerBanner" class="feed-sw-banner" alt="Torre Maldita" />
-          <button class="feed-sw-cta" @click="$router.push(post.referenceId ? `/accursed-tower/${post.referenceId}` : '/accursed-tower')">
-            <i class="fas fa-chess-rook"></i>
-            Ver nómina
-          </button>
+          <div class="feed-sw-actions">
+            <button
+              class="feed-sw-cta feed-sw-cta--respond"
+              :class="{ 'feed-sw-cta--confirmed': isConfirmed(post) }"
+              :disabled="isConfirmed(post) || respondingId === post._id"
+              @click="respondToCall(post)"
+            >
+              <i :class="respondingId === post._id ? 'fas fa-spinner fa-spin' : isConfirmed(post) ? 'fas fa-check' : 'fas fa-hand-fist'"></i>
+              {{ isConfirmed(post) ? 'Confirmado' : 'Responder al llamado' }}
+            </button>
+            <button class="feed-sw-cta" @click="$router.push(post.referenceId ? `/accursed-tower/${post.referenceId}` : '/accursed-tower')">
+              <i class="fas fa-chess-rook"></i>
+              Ver nómina
+            </button>
+          </div>
         </div>
 
       </li>
@@ -406,6 +455,11 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
   flex-direction: column;
 }
 
+.feed-sw-actions {
+  display: flex;
+  border-top: 1px solid rgba(255, 255, 255, .05);
+}
+
 .feed-sw-banner {
   width: 100%;
   display: block;
@@ -418,7 +472,7 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
   align-items: center;
   justify-content: center;
   gap: .45rem;
-  width: 100%;
+  flex: 1;
   padding: .6rem 1rem;
   font-size: .78rem;
   font-weight: 600;
@@ -428,15 +482,40 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
   border-radius: 0;
   background: rgba(227, 210, 168, .06);
   border: none;
-  border-top: 1px solid rgba(227, 210, 168, .2);
   color: rgb(227, 210, 168);
   transition: background .15s, color .15s;
 
   i { font-size: .72rem; }
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: rgba(227, 210, 168, .12);
     color: #fff;
+  }
+
+  &:disabled { cursor: default; }
+
+  & + & {
+    border-left: 1px solid rgba(255, 255, 255, .05);
+  }
+
+  &--respond {
+    background: rgba(255, 255, 255, .03);
+    color: rgba(255, 255, 255, .6);
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, .07);
+      color: rgba(255, 255, 255, .9);
+    }
+  }
+
+  &--confirmed {
+    color: #4ade80;
+    background: rgba(34, 197, 94, .06);
+
+    &:hover:not(:disabled) {
+      background: rgba(34, 197, 94, .06);
+      color: #4ade80;
+    }
   }
 }
 

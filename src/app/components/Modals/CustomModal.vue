@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import diabloImg from "../../../assets/svg/diablo-icon.svg";
+import diabloImg from "../../../assets/png/shadowclan-icon.png";
 
 defineProps({
   title: {

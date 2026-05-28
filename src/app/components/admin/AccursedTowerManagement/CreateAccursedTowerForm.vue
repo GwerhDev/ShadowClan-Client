@@ -170,7 +170,7 @@ onMounted(async () => {
   loading.value = true;
   try {
     const [wars, clanData] = await Promise.all([
-      getAccursedTowers(),
+      getAccursedTowers(store.currentCharacter ?? undefined),
       clanId.value ? getClanMembers(clanId.value) : null,
     ]);
 
@@ -194,7 +194,7 @@ async function createInstance() {
   if (!newTowerNumber.value || !newDate.value) return;
   saving.value = true;
   try {
-    const created = await createAccursedTower(newTowerNumber.value, newDate.value, newEnemyClan.value || null);
+    const created = await createAccursedTower(newTowerNumber.value, newDate.value, newEnemyClan.value || null, store.currentCharacter ?? undefined);
     towerWars.value.push(created);
     towerWars.value.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     newTowerNumber.value = null;

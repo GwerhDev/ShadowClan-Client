@@ -221,7 +221,7 @@ const createInstance = async () => {
   if (!newDate.value) return;
   saving.value = true;
   try {
-    const created = await createShadowWarManagement(newDate.value, newEnemyClan.value || null);
+    const created = await createShadowWarManagement(newDate.value, newEnemyClan.value || null, store.currentCharacter);
     store.setShadowWarData(created);
     shadowWarId.value = created._id ?? null;
     newDate.value = '';

@@ -1,7 +1,7 @@
 <style scoped lang="scss" src="./TitleComponent.scss"></style>
 
 <script setup lang="ts">
-import diabloIcon from "../../assets/svg/diablo-icon.svg";
+import diabloIcon from "../../assets/png/shadowclan-icon.png";
 
 defineProps(['title', 'icon']);
 

@@ -55,9 +55,11 @@ const status = computed<'confirmed' | 'pending' | null>(() => {
           <span class="resonance">{{ character.resonance }}</span>
         </span>
       </div>
-      <span v-if="status" class="status-badge" :class="status">
-        {{ status === 'confirmed' ? 'Confirmado' : 'Pendiente' }}
-      </span>
+      <i
+        v-if="status"
+        :class="status === 'confirmed' ? 'fas fa-check-circle status-icon status-icon--confirmed' : 'fas fa-clock status-icon status-icon--pending'"
+        :title="status === 'confirmed' ? 'Confirmado' : 'Pendiente'"
+      ></i>
     </div>
     <div v-else class="empty-card">
       <span>+</span>

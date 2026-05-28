@@ -112,7 +112,7 @@ export const useStore = defineStore('store', {
 
     async handleGetNextShadowWar() {
       try {
-        const response = await getNextShadowWar();
+        const response = await getNextShadowWar(this.currentCharacter ?? undefined);
         this.setShadowWarData(response);
       } catch (error: any) {
         this.setShadowWarError(error.message);
@@ -129,7 +129,7 @@ export const useStore = defineStore('store', {
 
     async handleGetActiveTowerWar() {
       try {
-        const response = await getActiveAccursedTower();
+        const response = await getActiveAccursedTower(this.currentCharacter ?? undefined);
         this.setTowerWarList(Array.isArray(response) ? response : response ? [response] : []);
       } catch (error: any) {
         this.setTowerWarError(error.message);
@@ -367,7 +367,7 @@ export const useStore = defineStore('store', {
 
     async handleGetShadowWars(page: number = 1, append: boolean = false) {
       if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin" || this.currentUser.userData?.role === "leader" || this.currentUser.userData?.role === "officer") {
-        const newShadowWars = await getShadowWars(page);
+        const newShadowWars = await getShadowWars(page, this.currentCharacter ?? undefined);
         if (append && this.admin.shadowWars) {
           this.admin.shadowWars = [...this.admin.shadowWars, ...newShadowWars];
         } else {
@@ -380,7 +380,7 @@ export const useStore = defineStore('store', {
 
     async handleGetHistory(page: number = 1, type: 'all' | 'shadow_war' | 'accursed_tower' = 'all', append: boolean = false) {
       try {
-        const res = await getHistory(page, type);
+        const res = await getHistory(page, type, this.currentCharacter ?? undefined);
         const items: any[] = res.data ?? [];
         if (append) {
           this.admin.history = [...(this.admin.history ?? []), ...items];
@@ -413,7 +413,7 @@ export const useStore = defineStore('store', {
 
     async handleGetAccursedTowerDetails(id: string) {
       try {
-        const response = await getAccursedTowerById(id);
+        const response = await getAccursedTowerById(id, this.currentCharacter ?? undefined);
         this.admin.currentAccursedTower = response;
         return response;
       } catch (error) {
@@ -424,7 +424,7 @@ export const useStore = defineStore('store', {
 
     async handleGetShadowWar(id: string) {
       try {
-        const response = await getShadowWarById(id);
+        const response = await getShadowWarById(id, this.currentCharacter ?? undefined);
         this.admin.currentShadowWar = response;
 
         return response;
@@ -473,7 +473,7 @@ export const useStore = defineStore('store', {
 
     async handleGetClanRequestsManagement() {
       try {
-        return await getClanRequestsManagement();
+        return await getClanRequestsManagement(this.currentCharacter ?? undefined);
       } catch (error) {
         console.error(error);
         return [];
@@ -511,7 +511,7 @@ export const useStore = defineStore('store', {
 
     async handleFetchPendingRequests() {
       try {
-        const requests = await getClanRequestsManagement() ?? [];
+        const requests = await getClanRequestsManagement(this.currentCharacter ?? undefined) ?? [];
         this.pendingRequestsCount = (requests as any[]).filter((r: any) => r.status === 'pending').length;
       } catch {
         // silently ignore

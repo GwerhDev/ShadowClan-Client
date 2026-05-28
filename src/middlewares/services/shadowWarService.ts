@@ -7,14 +7,14 @@ export const createShadowWar: any = async (formData: any) => {
   return response;
 };
 
-export const getShadowWars: any = async (page: number) => {
-  const response: any = await axios.get(API_URL + "/clan-management/shadow-wars" + (page ? "?page=" + page : ""), { withCredentials: true })
+export const getShadowWars: any = async (page: number, characterId?: string) => {
+  const response: any = await axios.get(API_URL + "/clan-management/shadow-wars", { params: { page: page || 1, characterId }, withCredentials: true })
     .then(response => response.data.data)
   return response;
 };
 
-export const getShadowWarById: any = async (id: string) => {
-  const response: any = await axios.get(API_URL + `/clan-management/shadow-wars/${id}`, { withCredentials: true })
+export const getShadowWarById: any = async (id: string, characterId?: string) => {
+  const response: any = await axios.get(API_URL + `/clan-management/shadow-wars/${id}`, { params: { characterId }, withCredentials: true })
     .then(response => response.data)
   return response;
 };
@@ -33,10 +33,10 @@ export const updateShadowWarClan: any = async (id: string, formData: any) => {
 };
 
 // Create a shadow war instance (leader/officer)
-export const createShadowWarManagement: any = async (date: string, enemyClan?: string | null) => {
+export const createShadowWarManagement: any = async (date: string, enemyClan?: string | null, characterId?: string) => {
   const response: any = await axios.post(
     API_URL + '/clan-management/shadow-wars',
-    { date, enemyClan: enemyClan || null },
+    { date, enemyClan: enemyClan || null, characterId },
     { withCredentials: true }
   ).then(response => response.data);
   return response;
@@ -54,8 +54,8 @@ export const completeShadowWarManagement: any = async (id: string) =>
   axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, { completed: true }, { withCredentials: true })
     .then(r => r.data);
 
-export const getNextShadowWar: any = async () => {
-  const response: any = await axios.get(API_URL + "/shadow-war/next", { withCredentials: true })
+export const getNextShadowWar: any = async (characterId?: string) => {
+  const response: any = await axios.get(API_URL + "/shadow-war/next", { params: { characterId }, withCredentials: true })
     .then(response => response.data)
   return response;
 };
@@ -65,3 +65,6 @@ export const confirmShadowWar: any = async (shadowWarId: string) => {
     .then(response => response.data)
   return response;
 };
+
+export const respondToShadowWar = async (shadowWarId: string, characterId: string) =>
+  axios.post(API_URL + `/clan-management/shadow-wars/${shadowWarId}/respond`, { characterId }, { withCredentials: true }).then(r => r.data);

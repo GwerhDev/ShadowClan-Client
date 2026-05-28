@@ -86,7 +86,6 @@ onMounted(async () => {
           targetId: data.characterId ? String(data.characterId) : null,
           data,
         });
-        store.pendingInboxCount += 1;
       });
     }
   } finally {

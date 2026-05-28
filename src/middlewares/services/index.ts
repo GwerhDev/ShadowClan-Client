@@ -159,8 +159,8 @@ export const deleteAccount: any = async () => {
   await axios.delete(API_URL + "/auth/account", { withCredentials: true });
 };
 
-export const getClanRequestsManagement: any = async () => {
-  const response: any = await axios.get(API_URL + "/clan-request/manage", { withCredentials: true })
+export const getClanRequestsManagement: any = async (characterId?: string) => {
+  const response: any = await axios.get(API_URL + "/clan-request/manage", { params: { characterId }, withCredentials: true })
     .then(response => response.data);
   return response;
 };
@@ -171,10 +171,10 @@ export const reviewClanRequest: any = async (id: string, action: 'accept' | 'rej
   return response;
 };
 
-export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, updateShadowWarClan, getShadowWars, confirmShadowWar, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement } from './shadowWarService';
+export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, updateShadowWarClan, getShadowWars, confirmShadowWar, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, respondToShadowWar } from './shadowWarService';
 export { getClanPosts, createClanPost, updateClanPost, deleteClanPost } from './clanPostService';
 export { getClans, createClan, updateClan, deleteClan, searchClans } from './clanService';
-export { getAccursedTowers, getActiveAccursedTower, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchEnemyClans, createEnemyClan } from './towerWarService';
+export { getAccursedTowers, getActiveAccursedTower, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchEnemyClans, createEnemyClan, respondToTowerWar } from './towerWarService';
 export { getHistory, getAccursedTowerById } from './historyService';
 
 export const createCharacterClaim: any = async (characterId: string) => {

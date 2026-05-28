@@ -90,27 +90,12 @@
     color: rgba(255, 255, 255, .2);
   }
 
-  .status-badge {
+  .status-icon {
     flex-shrink: 0;
-    font-size: .58rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    padding: .2rem .5rem;
-    border-radius: 4px;
-    white-space: nowrap;
+    font-size: 1rem;
 
-    &.confirmed {
-      background: rgba(129, 199, 132, .1);
-      border: 1px solid rgba(129, 199, 132, .3);
-      color: #81c784;
-    }
-
-    &.pending {
-      background: rgba(255, 193, 7, .07);
-      border: 1px solid rgba(255, 193, 7, .22);
-      color: rgba(255, 193, 7, .85);
-    }
+    &--confirmed { color: #81c784; }
+    &--pending   { color: rgba(255, 193, 7, .85); }
   }
 
   .empty-card {

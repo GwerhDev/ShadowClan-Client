@@ -42,11 +42,12 @@
         flex-direction: column;
 
         >img {
-          width: 48px;
-          height: 48px;
+          width: 72px;
+          height: 72px;
           align-self: center;
           flex-shrink: 0;
           padding: .25rem 0;
+          object-fit: contain;
         }
       }
 
@@ -55,6 +56,19 @@
 
         button {
           padding-inline: 2rem;
+        }
+
+        .title-section {
+          display: flex;
+          align-items: center;
+          gap: .75rem;
+
+          img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            flex-shrink: 0;
+          }
         }
       }
 
