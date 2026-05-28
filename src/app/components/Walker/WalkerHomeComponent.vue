@@ -3,17 +3,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import SearchSelector from '../Selectors/SearchSelector.vue';
 import LinkCharacterForm from './LinkCharacterForm.vue';
-import { Clan } from '../../../interfaces';
-import { API_URL } from '../../../middlewares/misc/const';
-import { getMyCharacterClaims, getMyCharacterCreationRequests } from '../../../middlewares/services';
+import { getMyCharacterClaims, getMyCharacterCreationRequests, searchClans } from '../../../middlewares/services';
 import { getSocket } from '../../../middlewares/socket';
-import axios from 'axios';
-
 const store: any = useStore();
 
 const linkingCharacter = ref(false);
-const clans = ref<Clan[]>([]);
 const selectedClanId = ref('');
+
 const submitting = ref(false);
 const requestStatus = ref<'idle' | 'success' | 'conflict' | 'error'>('idle');
 const myRequests = ref<any[]>([]);
@@ -28,11 +24,6 @@ const activeCharacter = computed(() => {
 const pendingRequests = computed(() =>
   myRequests.value.filter((r: any) => r.status === 'pending')
 );
-
-async function fetchClans() {
-  const res = await axios.get(API_URL + '/clan', { withCredentials: true });
-  clans.value = res.data;
-}
 
 async function fetchMyRequests() {
   myRequests.value = await store.handleGetClanRequests() ?? [];
@@ -78,7 +69,7 @@ async function fetchPendingCharacterRequests() {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchClans(), fetchMyRequests(), fetchPendingCharacterRequests()]);
+  await Promise.all([fetchMyRequests(), fetchPendingCharacterRequests()]);
   const socket = getSocket();
   socket?.on('clan-request:reviewed', handleReviewed);
   socket?.on('character-request:reviewed', handleCharacterReviewed);
@@ -189,7 +180,7 @@ onUnmounted(() => {
           <h4>unirse a un clan</h4>
           <SearchSelector
             v-model="selectedClanId"
-            :options="clans"
+            :fetch-fn="searchClans"
             placeholder="Buscar clan..."
           />
           <button
@@ -209,6 +200,7 @@ onUnmounted(() => {
 
     </div>
   </div>
+
 
 </template>
 
@@ -511,4 +503,5 @@ $gold-mid: rgba(227, 210, 168, .5);
     }
   }
 }
+
 </style>

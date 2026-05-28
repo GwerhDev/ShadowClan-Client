@@ -20,3 +20,9 @@ export const deactivateAccursedTower = async (id: string) =>
 
 export const completeAccursedTower = async (id: string) =>
   axios.patch(BASE + '/' + id, { completed: true }, { withCredentials: true }).then(r => r.data);
+
+export const searchEnemyClans = async (q: string) =>
+  axios.get(BASE + '/clans', { params: { q }, withCredentials: true }).then(r => r.data);
+
+export const createEnemyClan = async (name: string) =>
+  axios.post(BASE + '/clans', { name }, { withCredentials: true }).then(r => r.data);

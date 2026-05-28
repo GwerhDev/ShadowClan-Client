@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, Ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useStore } from '../../../../middlewares/store';
-import { getClanMembers, getClans, getAccursedTowers, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower } from '../../../../middlewares/services';
-import { Character, Clan } from '../../../../interfaces';
+import { getClanMembers, getAccursedTowers, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, createEnemyClan } from '../../../../middlewares/services';
+import { Character } from '../../../../interfaces';
 import AccursedTowerMemberCard from './AccursedTowerMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
@@ -17,7 +17,12 @@ const loading      = ref(true);
 const saving       = ref(false);
 const towerWars    = ref<any[]>([]);
 const clanMembers  = ref<Character[]>([]);
-const clans: Ref<Clan[]> = ref([]);
+
+// Create clan modal
+const showCreateClanModal = ref(false);
+const newClanName         = ref('');
+const creatingClan        = ref(false);
+const createClanError     = ref('');
 
 // Create form
 const newTowerNumber  = ref<number | null>(null);
@@ -101,6 +106,15 @@ const chars  = computed(() => store.currentUser.userData?.character ?? []);
 const active = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
 const clanId = computed(() => active.value?.clan?._id ?? active.value?.clan ?? null);
 
+const isLeaderOrOfficer = computed(() => {
+  const role = store.currentUser.userData?.role;
+  if (role === 'admin' || role === 'super_admin') return true;
+  if (!active.value?.clan) return false;
+  const clan   = active.value.clan;
+  const charId = String(active.value._id);
+  return String(clan.leader) === charId || (clan.officer ?? []).some((o: any) => String(o) === charId);
+});
+
 const groupSizes: Record<'group1'|'group2'|'group3', number> = {
   group1: 4, group2: 4, group3: 2,
 };
@@ -137,15 +151,28 @@ const assignedIds = computed(() => {
 
 // ── Load ──────────────────────────────────────────────────────────────────────
 
+async function handleCreateClan() {
+  if (!newClanName.value.trim()) return;
+  creatingClan.value   = true;
+  createClanError.value = '';
+  try {
+    await createEnemyClan(newClanName.value.trim());
+    showCreateClanModal.value = false;
+    newClanName.value = '';
+  } catch (err: any) {
+    createClanError.value = err?.response?.data?.message ?? 'Error al crear el clan.';
+  } finally {
+    creatingClan.value = false;
+  }
+}
+
 onMounted(async () => {
   loading.value = true;
   try {
-    const [wars, clanData, fetchedClans] = await Promise.all([
+    const [wars, clanData] = await Promise.all([
       getAccursedTowers(),
       clanId.value ? getClanMembers(clanId.value) : null,
-      getClans(),
     ]);
-    clans.value = fetchedClans ?? [];
 
     towerWars.value = wars ?? [];
 
@@ -308,7 +335,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
         </div>
         <div class="field-col field-col--grow">
           <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
-          <SearchSelector v-model="newEnemyClan" :options="clans" placeholder="Sin clan enemigo" />
+          <SearchSelector v-model="newEnemyClan" :fetch-fn="searchClans" placeholder="Buscar clan..." create-label="Crear clan enemigo" @create="showCreateClanModal = true" />
         </div>
         <button class="btn-create" :disabled="!newTowerNumber || !newDate || saving" @click="createInstance">
           <i class="fas fa-plus"></i> Crear
@@ -348,7 +375,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
               </div>
               <div class="field-col field-col--grow">
                 <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
-                <SearchSelector v-model="editValues.enemyClan" :options="clans" placeholder="Sin clan enemigo" />
+                <SearchSelector v-model="editValues.enemyClan" :fetch-fn="searchClans" :selected-label="instance.enemyClan?.name" placeholder="Buscar clan..." create-label="Crear clan enemigo" @create="showCreateClanModal = true" />
               </div>
               <div class="instance-actions">
                 <button class="btn-save" :disabled="saving" @click="saveEdit(instance)">
@@ -484,6 +511,38 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
       :tower="publishModalTower"
       @close="publishModalTower = null"
     />
+
+    <!-- Create clan modal -->
+    <Teleport to="body">
+      <div v-if="showCreateClanModal" class="create-clan-overlay" @click.self="showCreateClanModal = false">
+        <div class="create-clan-modal">
+          <h4 class="create-clan-title">Crear clan enemigo</h4>
+          <div v-if="!isLeaderOrOfficer" class="create-clan-denied">
+            <i class="fas fa-lock"></i>
+            <p>Solo líderes u oficiales pueden crear clanes.</p>
+          </div>
+          <template v-else>
+            <input
+              class="create-clan-input"
+              type="text"
+              v-model="newClanName"
+              placeholder="Nombre del clan"
+              @keydown.enter="handleCreateClan"
+              @keydown.esc="showCreateClanModal = false"
+            />
+            <p v-if="createClanError" class="create-clan-error">{{ createClanError }}</p>
+            <div class="create-clan-actions">
+              <button class="btn-create-clan" :disabled="!newClanName.trim() || creatingClan" @click="handleCreateClan">
+                <i class="fas fa-check"></i> Crear
+              </button>
+              <button class="btn-cancel-modal" @click="showCreateClanModal = false; createClanError = ''">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Member modal -->
     <MemberSelectionModal

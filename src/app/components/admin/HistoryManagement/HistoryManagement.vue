@@ -56,37 +56,7 @@ const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
     <router-view v-if="route.params.shadowwar_id || route.params.tower_id" />
     <template v-else>
 
-      <div v-if="!loading && store.admin.history?.length">
-        <TableComponent :navItems="navItems">
-          <template #header>
-            <li class="th-cell">
-              <select v-model="filter" @change="fetchHistory" class="type-filter-select" :class="{ active: filter !== 'all' }">
-                <option value="all">Todas</option>
-                <option value="shadow_war">Guerras Sombrías</option>
-                <option value="accursed_tower">Torres Malditas</option>
-              </select>
-            </li>
-            <li class="th-cell">fecha</li>
-            <li class="th-cell">enemigo</li>
-            <li class="th-cell">resultado</li>
-            <li class="th-cell th-cell--last">acciones</li>
-          </template>
-          <HistoryListCard
-            v-for="item in store.admin.history"
-            :key="item._id"
-            :war="item"
-          />
-          <div v-if="isFetching && hasMore" class="loading-indicator">
-            Cargando más historiales...
-          </div>
-        </TableComponent>
-      </div>
-
-      <div v-if="hasMore && !loading && !isFetching" class="load-more-container">
-        <button @click="loadMore" :disabled="isFetching">Cargar más</button>
-      </div>
-
-      <div v-else-if="loading" class="skeleton-table-container">
+      <div v-if="loading" class="skeleton-table-container">
         <div class="skeleton-table-header skeleton-cols-5">
           <div class="skeleton-box skeleton-header-item"></div>
           <div class="skeleton-box skeleton-header-item"></div>
@@ -103,10 +73,42 @@ const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
         </div>
       </div>
 
-      <div v-else-if="!loading && !store.admin.history?.length" class="empty-state">
-        <i class="fas fa-clock-rotate-left"></i>
-        <p>No hay historiales disponibles.</p>
-      </div>
+      <template v-else>
+        <TableComponent :navItems="navItems">
+          <template #header>
+            <li class="th-cell">
+              <select v-model="filter" @change="fetchHistory" class="type-filter-select" :class="{ active: filter !== 'all' }">
+                <option value="all">Todas</option>
+                <option value="shadow_war">Guerras Sombrías</option>
+                <option value="accursed_tower">Torres Malditas</option>
+              </select>
+            </li>
+            <li class="th-cell">fecha</li>
+            <li class="th-cell">enemigo</li>
+            <li class="th-cell">resultado</li>
+            <li class="th-cell th-cell--last">acciones</li>
+          </template>
+
+          <HistoryListCard
+            v-for="item in store.admin.history"
+            :key="item._id"
+            :war="item"
+          />
+
+          <li v-if="!store.admin.history?.length" class="table-empty-row">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>No hay historiales disponibles.</span>
+          </li>
+
+          <div v-if="isFetching && hasMore" class="loading-indicator">
+            Cargando más historiales...
+          </div>
+        </TableComponent>
+
+        <div v-if="hasMore && !isFetching" class="load-more-container">
+          <button @click="loadMore" :disabled="isFetching">Cargar más</button>
+        </div>
+      </template>
 
     </template>
   </div>

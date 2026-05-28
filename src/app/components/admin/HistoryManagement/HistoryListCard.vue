@@ -24,8 +24,12 @@ const viewDetails = () => {
   }
 };
 
-const deleteTower = async () => {
-  await store.handleDeleteTowerWar(props.war._id);
+const deleteEntry = async () => {
+  if (props.war.type === 'accursed_tower') {
+    await store.handleDeleteTowerWar(props.war._id);
+  } else {
+    await store.handleDeleteShadowWarHistory(props.war._id);
+  }
 };
 </script>
 
@@ -49,7 +53,7 @@ const deleteTower = async () => {
     <span class="actions-col">
       <div class="buttons-container">
         <template v-if="confirmDelete">
-          <button class="icon-button icon-button--confirm" @click="deleteTower" title="Confirmar eliminación">
+          <button class="icon-button icon-button--confirm" @click="deleteEntry" title="Confirmar eliminación">
             <i class="fas fa-check"></i>
           </button>
           <button class="icon-button" @click="confirmDelete = false" title="Cancelar">
@@ -60,7 +64,7 @@ const deleteTower = async () => {
           <button class="icon-button" @click="viewDetails" title="Ver detalle">
             <i class="fas fa-eye"></i>
           </button>
-          <button v-if="war.type === 'accursed_tower'" class="icon-button icon-button--danger" @click="confirmDelete = true" title="Eliminar">
+          <button class="icon-button icon-button--danger" @click="confirmDelete = true" title="Eliminar">
             <i class="fas fa-trash"></i>
           </button>
         </template>

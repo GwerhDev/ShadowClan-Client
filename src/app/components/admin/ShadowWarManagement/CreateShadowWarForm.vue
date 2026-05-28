@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref, computed } from 'vue';
-import { updateShadowWarClan, getClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement } from '../../../../middlewares/services';
-import { Clan, Character, Match } from '../../../../interfaces';
+import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan } from '../../../../middlewares/services';
+import { Character, Match } from '../../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
@@ -12,7 +12,26 @@ const emit = defineEmits(['publish']);
 const showShareModal = ref(false);
 const store: any = useStore();
 
-const clans: Ref<Clan[]> = ref([]);
+const showCreateClanModal = ref(false);
+const newClanName         = ref('');
+const creatingClan        = ref(false);
+const createClanError     = ref('');
+
+async function handleCreateClan() {
+  if (!newClanName.value.trim()) return;
+  creatingClan.value    = true;
+  createClanError.value = '';
+  try {
+    await createEnemyClan(newClanName.value.trim());
+    showCreateClanModal.value = false;
+    newClanName.value = '';
+  } catch (err: any) {
+    createClanError.value = err?.response?.data?.message ?? 'Error al crear el clan.';
+  } finally {
+    creatingClan.value = false;
+  }
+}
+
 const clanMembers: Ref<Character[]> = ref([]);
 const shadowWarData = computed(() => store.currentUser.shadowWarData);
 
@@ -175,12 +194,7 @@ onMounted(async () => {
       await store.handleGetNextShadowWar();
     }
 
-    const [fetchedClans, clanData] = await Promise.all([
-      getClans(),
-      clanId.value ? getClanMembers(clanId.value) : Promise.resolve(null),
-    ]);
-
-    clans.value = fetchedClans;
+    const clanData = await (clanId.value ? getClanMembers(clanId.value) : Promise.resolve(null));
 
     if (clanData) {
       clanMembers.value = [
@@ -425,8 +439,10 @@ function onDragEnd() {
           <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
           <SearchSelector
             v-model="newEnemyClan"
-            :options="clans"
-            placeholder="Sin clan enemigo"
+            :fetch-fn="searchClans"
+            placeholder="Buscar clan..."
+            create-label="Crear clan enemigo"
+            @create="showCreateClanModal = true"
           />
         </div>
         <button class="btn-create" :disabled="!newDate || saving" @click="createInstance">
@@ -450,8 +466,11 @@ function onDragEnd() {
             <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
             <SearchSelector
               v-model="enemyClan"
-              :options="clans"
-              placeholder="Sin clan enemigo"
+              :fetch-fn="searchClans"
+              :selected-label="shadowWarData?.enemyClan?.name"
+              placeholder="Buscar clan..."
+              create-label="Crear clan enemigo"
+              @create="showCreateClanModal = true"
               @select="!editing && updateShadowWarData()"
               @clear="!editing && updateShadowWarData()"
             />
@@ -555,6 +574,32 @@ function onDragEnd() {
     <ShareModal v-if="showShareModal" @close="showShareModal = false" />
 
   </div>
+
+  <Teleport to="body">
+    <div v-if="showCreateClanModal" class="create-clan-overlay" @click.self="showCreateClanModal = false">
+      <div class="create-clan-modal">
+        <h4 class="create-clan-title">Crear clan enemigo</h4>
+        <input
+          class="create-clan-input"
+          type="text"
+          v-model="newClanName"
+          placeholder="Nombre del clan"
+          @keydown.enter="handleCreateClan"
+          @keydown.esc="showCreateClanModal = false"
+        />
+        <p v-if="createClanError" class="create-clan-error">{{ createClanError }}</p>
+        <div class="create-clan-actions">
+          <button class="btn-create-clan" :disabled="!newClanName.trim() || creatingClan" @click="handleCreateClan">
+            <i class="fas fa-check"></i> Crear
+          </button>
+          <button class="btn-cancel-modal" @click="showCreateClanModal = false; createClanError = ''">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
 </template>
 
 <style scoped lang="scss" src="./CreateShadowWarForm.scss" />

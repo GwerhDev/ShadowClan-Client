@@ -97,4 +97,33 @@
     background: rgba(255, 255, 255, .07);
     color: var(--color-app-white);
   }
+
+  &--create {
+    color: rgba(227, 210, 168, .75);
+    border-top: 1px solid rgba(255, 255, 255, .07);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+
+    i { font-size: .75rem; }
+
+    &:hover {
+      background: rgba(227, 210, 168, .07);
+      color: rgb(227, 210, 168);
+    }
+  }
+}
+
+.suggestion-empty {
+  padding: .5rem .75rem;
+  color: rgba(255, 255, 255, .3);
+  font-size: .85rem;
+}
+
+.suggestion-loading {
+  padding: .5rem .75rem;
+  color: rgba(255, 255, 255, .3);
+  font-size: .85rem;
+  display: flex;
+  justify-content: center;
 }

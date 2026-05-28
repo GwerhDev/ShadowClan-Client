@@ -3,117 +3,165 @@ import { ref, computed, watch } from 'vue';
 import { Clan } from '../../../interfaces';
 
 const props = defineProps<{
-  modelValue: string; // The currently selected value (clan ID)
-  options: Clan[]; // All available options (clans)
+  modelValue: string;
+  options?: Clan[];
+  fetchFn?: (q: string) => Promise<Clan[]>;
   placeholder?: string;
   label?: string;
+  createLabel?: string;
+  selectedLabel?: string;
 }>();
 
-const emit = defineEmits(['update:modelValue', 'select', 'clear']);
+const emit = defineEmits(['update:modelValue', 'select', 'clear', 'create']);
 
-const searchQuery = ref('');
-const showSuggestions = ref(false);
-const internalSelectedName = ref(''); // To display the selected name in the input
-const isSelected = ref(false); // New ref to track if an option is selected
+const searchQuery          = ref('');
+const showDropdown         = ref(false);
+const internalSelectedName = ref('');
+const isSelected           = ref(false);
+const fetchedOptions       = ref<Clan[]>([]);
+const isFetching           = ref(false);
+let   fetchTimer: ReturnType<typeof setTimeout> | null = null;
 
-// Filter options based on search query
 const filteredOptions = computed(() => {
-  if (!searchQuery.value) {
-    return props.options;
-  }
-  const query = searchQuery.value.toLowerCase();
-  return props.options.filter((option: any) => option.name.toLowerCase().includes(query));
+  if (props.fetchFn) return fetchedOptions.value;
+  if (!props.options || !searchQuery.value) return [];
+  const q = searchQuery.value.toLowerCase();
+  return props.options.filter((o: any) => o.name.toLowerCase().includes(q));
 });
 
-// Update internalSelectedName and isSelected when modelValue changes
+const showDropdownContent = computed(() =>
+  showDropdown.value && (searchQuery.value.length > 0 || !!props.fetchFn && isFetching.value)
+);
+
 watch(() => props.modelValue, (newValue) => {
+  const pool = props.fetchFn ? fetchedOptions.value : (props.options ?? []);
   if (newValue) {
-    const selectedOption: Clan | any = props.options.find(option => option._id === newValue);
-    internalSelectedName.value = selectedOption ? selectedOption.name : '';
-    isSelected.value = !!selectedOption; // Set isSelected based on whether an option is found
+    const found = pool.find((o: any) => o._id === newValue);
+    if (found) {
+      internalSelectedName.value = (found as any).name ?? '';
+    } else if (props.selectedLabel) {
+      internalSelectedName.value = props.selectedLabel;
+    }
+    isSelected.value = true;
   } else {
     internalSelectedName.value = '';
     isSelected.value = false;
   }
 }, { immediate: true });
 
-// Handle input focus/blur to show/hide suggestions
+watch(() => props.selectedLabel, (label) => {
+  if (label && isSelected.value && !internalSelectedName.value) {
+    internalSelectedName.value = label;
+  }
+});
+
 const handleFocus = () => {
-  if (!isSelected.value) { // Only show suggestions if nothing is selected
-    showSuggestions.value = true;
+  // Only show in static-options mode when there's already a query
+  if (!props.fetchFn && !isSelected.value && searchQuery.value) {
+    showDropdown.value = true;
   }
 };
 
 const handleBlur = () => {
   setTimeout(() => {
-    showSuggestions.value = false;
-    // If nothing is selected and search query is not empty, clear it
-    if (!props.modelValue && searchQuery.value) {
-      searchQuery.value = '';
-    }
+    showDropdown.value = false;
+    if (!props.modelValue && searchQuery.value) searchQuery.value = '';
   }, 150);
 };
 
-// Handle selection from suggestions
-const selectOption = (option: Clan | any) => {
+const handleInputChange = () => {
+  if (isSelected.value) {
+    emit('update:modelValue', '');
+    isSelected.value = false;
+    fetchedOptions.value = [];
+  }
+  showDropdown.value = true;
+
+  if (props.fetchFn) {
+    if (fetchTimer) clearTimeout(fetchTimer);
+    if (searchQuery.value.trim().length < 3) {
+      fetchedOptions.value = [];
+      return;
+    }
+    fetchTimer = setTimeout(async () => {
+      isFetching.value = true;
+      try {
+        fetchedOptions.value = await props.fetchFn!(searchQuery.value.trim());
+      } finally {
+        isFetching.value = false;
+      }
+    }, 1000);
+  }
+};
+
+const selectOption = (option: any) => {
   emit('update:modelValue', option._id);
   emit('select', option);
   internalSelectedName.value = option.name;
-  searchQuery.value = ''; // Clear search query after selection
-  showSuggestions.value = false;
-  isSelected.value = true; // Mark as selected
+  searchQuery.value = '';
+  showDropdown.value = false;
+  isSelected.value = true;
 };
 
-// Handle input change (for search)
-const handleInputChange = () => {
-  if (isSelected.value) { // If something was selected, clear it when typing
-    emit('update:modelValue', '');
-    isSelected.value = false;
-  }
-  showSuggestions.value = true; // Ensure suggestions are shown when typing
-};
-
-// Clear the current selection
 const clearSelection = () => {
   emit('update:modelValue', '');
   emit('clear');
   internalSelectedName.value = '';
   searchQuery.value = '';
   isSelected.value = false;
-  showSuggestions.value = false; // Hide suggestions after clearing
+  showDropdown.value = false;
+  fetchedOptions.value = [];
 };
 
-// Display selected name in input, or search query if typing
 const inputValue = computed({
   get: () => isSelected.value ? internalSelectedName.value : searchQuery.value,
-  set: (val) => {
-    searchQuery.value = val;
-  }
+  set: (val) => { searchQuery.value = val; }
 });
-
 </script>
 
 <template>
   <div class="search-selector-outter-container">
     <div class="search-selector-container">
-      <label v-if="label">
-        {{ label }}
-      </label>
+      <label v-if="label">{{ label }}</label>
       <div class="input-wrapper">
-        <input type="text" v-model="inputValue" :placeholder="placeholder" @focus="handleFocus" @blur="handleBlur"
-          @input="handleInputChange" :readonly="isSelected" />
-        <button title="Cambiar clan" v-if="isSelected" @click="clearSelection" class="clear-button">
+        <input
+          type="text"
+          v-model="inputValue"
+          :placeholder="placeholder"
+          @focus="handleFocus"
+          @blur="handleBlur"
+          @input="handleInputChange"
+          :readonly="isSelected"
+        />
+        <button title="Cambiar" v-if="isSelected" @click="clearSelection" class="clear-button">
           <i class="fas fa-exchange"></i>
         </button>
       </div>
-      <div v-if="showSuggestions && filteredOptions.length" class="suggestions-dropdown">
-        <div v-for="option in filteredOptions" :key="option._id" @mousedown.prevent="selectOption(option)"
-          class="suggestion-item">
-          {{ option.name }}
+
+      <div v-if="showDropdownContent" class="suggestions-dropdown">
+        <div v-if="isFetching" class="suggestion-loading">
+          <i class="fas fa-spinner fa-spin"></i>
         </div>
-      </div>
-      <div v-else-if="showSuggestions && !filteredOptions.length && searchQuery" class="suggestions-dropdown">
-        No se encontraron resultados.
+        <template v-else>
+          <div
+            v-for="option in filteredOptions"
+            :key="option._id"
+            @mousedown.prevent="selectOption(option)"
+            class="suggestion-item"
+          >
+            {{ option.name }}
+          </div>
+          <div v-if="!filteredOptions.length && searchQuery" class="suggestion-empty">
+            No se encontraron resultados.
+          </div>
+          <div
+            v-if="createLabel"
+            @mousedown.prevent="$emit('create')"
+            class="suggestion-item suggestion-item--create"
+          >
+            <i class="fas fa-plus"></i> {{ createLabel }}
+          </div>
+        </template>
       </div>
     </div>
   </div>

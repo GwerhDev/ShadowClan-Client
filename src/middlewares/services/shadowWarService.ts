@@ -2,26 +2,25 @@ import axios from "axios"
 import { API_URL } from "../misc/const"
 
 export const createShadowWar: any = async (formData: any) => {
-  const response: any = await axios.post(API_URL + "/admin/shadow-wars", formData, { withCredentials: true })
+  const response: any = await axios.post(API_URL + "/clan-management/shadow-wars", formData, { withCredentials: true })
     .then(response => response.data)
   return response;
 };
 
 export const getShadowWars: any = async (page: number) => {
-  const response: any = await axios.get(API_URL + "/admin/shadow-wars" + (page ? "?page=" + page : ""), { withCredentials: true })
+  const response: any = await axios.get(API_URL + "/clan-management/shadow-wars" + (page ? "?page=" + page : ""), { withCredentials: true })
     .then(response => response.data.data)
   return response;
 };
 
 export const getShadowWarById: any = async (id: string) => {
-  const response: any = await axios.get(API_URL + `/admin/shadow-wars/${id}`, { withCredentials: true })
+  const response: any = await axios.get(API_URL + `/clan-management/shadow-wars/${id}`, { withCredentials: true })
     .then(response => response.data)
   return response;
 };
 
-// Admin-scoped update (requires admin/super_admin)
 export const updateShadowWar: any = async (id: string, formData: any) => {
-  const response: any = await axios.patch(API_URL + `/admin/shadow-wars/${id}`, formData, { withCredentials: true })
+  const response: any = await axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, formData, { withCredentials: true })
     .then(response => response.data)
   return response;
 };

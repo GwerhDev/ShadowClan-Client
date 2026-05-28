@@ -59,18 +59,18 @@
   }
 }
 
-.empty-state {
+.table-empty-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: .75rem;
-  padding: 3rem 1rem;
+  justify-content: center;
+  gap: .6rem;
+  padding: 2.5rem 1rem;
   color: rgba(255, 255, 255, .3);
   font-size: .85rem;
-  text-align: center;
+  list-style: none;
 
-  i { font-size: 1.6rem; }
-  p { margin: 0; }
+  i { font-size: 1.1rem; }
+  span { margin: 0; }
 }
 
 .load-more-container {

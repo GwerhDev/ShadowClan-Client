@@ -43,13 +43,16 @@
 
     li {
       padding: .45rem .3rem;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
       &:last-child {
         position: sticky;
         right: 0;
         background: rgba(255, 255, 255, .05);
         z-index: 1;
-        text-align: center;
       }
 
       &:hover {

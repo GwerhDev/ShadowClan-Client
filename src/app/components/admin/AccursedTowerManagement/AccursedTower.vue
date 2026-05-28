@@ -8,7 +8,6 @@ import CreateAccursedTowerForm from './CreateAccursedTowerForm.vue';
       <span class="title">
         <h2>Prepárate para la batalla</h2>
       </span>
-      <p>Administra la nómina para el <b>Desafío de la Torre Maldita</b></p>
     </span>
     <CreateAccursedTowerForm />
   </div>

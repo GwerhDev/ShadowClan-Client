@@ -24,3 +24,6 @@ export const deleteClan: any = async (id: any) => {
                                    .then(response => response.data)
   return response;
 };
+
+export const searchClans = async (q: string): Promise<{ _id: string; name: string }[]> =>
+  axios.get(API_URL + '/clan', { params: { name: q }, withCredentials: true }).then(r => r.data);

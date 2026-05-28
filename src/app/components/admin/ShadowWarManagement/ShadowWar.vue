@@ -12,7 +12,6 @@ const showPublishModal = ref(false);
       <span class="title">
         <h2>Prepárate para la batalla</h2>
       </span>
-      <p>Administra la nómina para la <b>Guerra Sombría</b></p>
     </span>
     <CreateShadowWarForm @publish="showPublishModal = true" />
     <PublishModal v-if="showPublishModal" @close="showPublishModal = false" />
