@@ -38,4 +38,6 @@ export interface ShadowWar {
     proud: Match[];
   };
   confirmed: Character[];
+  completed?: boolean;
+  clan?: string;
 }

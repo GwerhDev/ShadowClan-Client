@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  padding: 1.1rem;
 }
 
 // ── Back button ───────────────────────────────────────────────────────────────
@@ -121,7 +120,7 @@
 .ctx-menu-fixed {
   position: fixed;
   z-index: 100;
-  min-width: 140px;
+  width: max-content;
   background: #1a1a22;
   border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 8px;
@@ -135,6 +134,7 @@
 .ctx-item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: .5rem;
   width: 100%;
   padding: .5rem .75rem;
@@ -148,7 +148,6 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background .12s, color .12s;
-  text-align: left;
 
   i { font-size: .7rem; width: 12px; text-align: center; }
   &:hover { background: rgba(255, 255, 255, .07); color: #fff; }
@@ -324,7 +323,10 @@
   border-radius: 10px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: .5rem;
+  text-align: center;
 }
 
 .stat-label {
@@ -409,7 +411,7 @@
 
 .battles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
 }
 
@@ -483,6 +485,10 @@
   0%   { opacity: .4; }
   50%  { opacity: .9; }
   100% { opacity: .4; }
+}
+
+@media (max-width: 900px) {
+  .battles-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 600px) {

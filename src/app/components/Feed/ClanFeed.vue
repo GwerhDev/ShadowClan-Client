@@ -3,8 +3,8 @@ import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import { getClanPosts, deleteClanPost, updateClanPost, respondToShadowWar, respondToTowerWar } from '../../../middlewares/services';
 import { classes } from '../../../middlewares/misc/const';
-import shadowWarBanner      from '../../../assets/png/shadow-war-banner.png';
-import accursedTowerBanner  from '../../../assets/png/accursed-tower-banner.png';
+import shadowWarBanner     from '../../../assets/png/shadow-war-banner.png';
+import accursedTowerBanner from '../../../assets/png/accursed-tower-banner.png';
 
 const store: any = useStore();
 const posts   = ref<any[]>([]);
@@ -47,7 +47,6 @@ function cancelEdit() {
 }
 
 async function saveEdit(postId: string) {
-  if (!editContent.value.trim()) return;
   saving.value = true;
   try {
     await updateClanPost(postId, editContent.value.trim());
@@ -158,8 +157,8 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
     <ul v-else class="feed-list">
       <li v-for="post in posts" :key="post._id" class="feed-item">
 
-        <!-- ── header: call-to-arms posts show clan announcement, not author ── -->
-        <template v-if="post.source === 'shadow_war' || post.source === 'accursed_tower'">
+        <!-- ── auto call-to-arms ── -->
+        <template v-if="post.auto">
           <div class="feed-cta-header">
             <div class="feed-cta-icon">
               <i :class="post.source === 'shadow_war' ? 'fas fa-khanda' : 'fas fa-chess-rook'"></i>
@@ -183,9 +182,17 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
               <i class="fas fa-ellipsis-h"></i>
             </button>
           </div>
+          <div class="feed-cta-body">
+            <p>
+              Tu clan ha convocado una instancia de
+              <strong>{{ post.source === 'shadow_war' ? 'Guerra Sombría' : 'Torre Maldita' }}</strong>
+              <template v-if="post.instanceEnemyClan"> contra <strong>{{ post.instanceEnemyClan }}</strong></template>.
+              ¿Acudirás al llamado?
+            </p>
+          </div>
         </template>
 
-        <!-- ── header: regular posts ── -->
+        <!-- ── regular posts + manually published shadow_war/tower ── -->
         <template v-else>
           <div class="feed-header">
             <img
@@ -221,8 +228,8 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
           </div>
         </template>
 
-        <!-- ── body: only for regular posts ── -->
-        <div v-if="post.source === 'general'" class="feed-body">
+        <!-- ── body ── -->
+        <div v-if="!post.auto" class="feed-body">
           <template v-if="editingId === post._id">
             <textarea
               class="feed-edit-textarea"
@@ -234,7 +241,7 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
               <button class="btn-cancel-edit" @click="cancelEdit">Cancelar</button>
               <button
                 class="btn-save-edit"
-                :disabled="!editContent.trim() || saving"
+                :disabled="saving"
                 @click="saveEdit(post._id)"
               >
                 <i v-if="saving" class="fas fa-spinner fa-spin"></i>
@@ -245,11 +252,12 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
           <p v-else-if="post.content" class="feed-content">{{ post.content }}</p>
         </div>
 
-        <!-- ── shadow war banner ── -->
+        <!-- ── shadow war banner + actions ── -->
         <div v-if="post.source === 'shadow_war'" class="feed-sw-wrap">
-          <img :src="shadowWarBanner" class="feed-sw-banner" alt="Shadow War" />
+          <img v-if="!post.auto" :src="shadowWarBanner" class="feed-sw-banner" alt="Shadow War" />
           <div class="feed-sw-actions">
             <button
+              v-if="post.auto"
               class="feed-sw-cta feed-sw-cta--respond"
               :class="{ 'feed-sw-cta--confirmed': isConfirmed(post) }"
               :disabled="isConfirmed(post) || respondingId === post._id"
@@ -265,11 +273,12 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
           </div>
         </div>
 
-        <!-- ── accursed tower banner ── -->
+        <!-- ── accursed tower banner + actions ── -->
         <div v-if="post.source === 'accursed_tower'" class="feed-sw-wrap">
-          <img :src="accursedTowerBanner" class="feed-sw-banner" alt="Torre Maldita" />
+          <img v-if="!post.auto" :src="accursedTowerBanner" class="feed-sw-banner" alt="Torre Maldita" />
           <div class="feed-sw-actions">
             <button
+              v-if="post.auto"
               class="feed-sw-cta feed-sw-cta--respond"
               :class="{ 'feed-sw-cta--confirmed': isConfirmed(post) }"
               :disabled="isConfirmed(post) || respondingId === post._id"
@@ -297,13 +306,14 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
         @click.stop
       >
         <button
+          v-if="!posts.find(p => p._id === activeMenu)?.auto"
           class="ctx-item"
           @click="startEdit(posts.find(p => p._id === activeMenu))"
         >
           <i class="fas fa-pen"></i>
           Editar
         </button>
-        <div class="ctx-divider"></div>
+        <div v-if="!posts.find(p => p._id === activeMenu)?.auto" class="ctx-divider"></div>
         <button
           class="ctx-item ctx-danger"
           :disabled="!!deletingId"
@@ -363,6 +373,20 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* ── call-to-arms body ── */
+.feed-cta-body {
+  padding: .5rem 1rem .75rem;
+
+  p {
+    margin: 0;
+    font-size: .88rem;
+    color: rgba(255, 255, 255, .7);
+    line-height: 1.5;
+
+    strong { color: var(--color-app-white); }
+  }
 }
 
 /* ── call-to-arms header ── */
@@ -670,7 +694,7 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
 .feed-context-menu {
   position: fixed;
   z-index: 9999;
-  min-width: 148px;
+  width: max-content;
   background: #1e2029;
   border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 8px;
@@ -682,6 +706,7 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
   .ctx-item {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     gap: .55rem;
     padding: .5rem .75rem;
     border-radius: 5px;
@@ -691,7 +716,6 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
     font-size: .82rem;
     cursor: pointer;
     width: 100%;
-    text-align: left;
     transition: background .12s, color .12s;
 
     i { width: 14px; text-align: center; font-size: .78rem; }

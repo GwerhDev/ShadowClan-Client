@@ -78,7 +78,7 @@
   top: calc(100% + 6px);
   right: 0;
   z-index: 100;
-  min-width: 140px;
+  width: max-content;
   background: #1a1a22;
   border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 8px;
@@ -92,6 +92,7 @@
 .ctx-item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: .5rem;
   width: 100%;
   padding: .5rem .75rem;

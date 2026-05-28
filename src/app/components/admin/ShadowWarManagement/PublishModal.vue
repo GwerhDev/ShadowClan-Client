@@ -19,7 +19,7 @@ async function publish() {
   posting.value = true;
   error.value = '';
   try {
-    await createClanPost(currentCharacter.value, content.value.trim(), 'shadow_war');
+    await createClanPost(currentCharacter.value, content.value.trim(), 'shadow_war', shadowWarData.value?._id ?? null);
     content.value = '';
     emit('close');
   } catch (e: any) {

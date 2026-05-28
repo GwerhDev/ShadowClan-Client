@@ -69,6 +69,10 @@
                   <button class="ctx-item" @click="openEdit">
                     <i class="fas fa-pen"></i> Editar
                   </button>
+                  <button class="ctx-item" @click="toggleCompleted" :disabled="saving">
+                    <i :class="tower?.completed ? 'fas fa-rotate-left' : 'fas fa-flag-checkered'"></i>
+                    {{ tower?.completed ? 'Marcar activa' : 'Completar' }}
+                  </button>
                   <button class="ctx-item ctx-item--danger" @click="confirmDelete = true; showCtx = false">
                     <i class="fas fa-trash"></i> Eliminar
                   </button>
@@ -248,6 +252,20 @@ async function updateResult() {
     await updateAccursedTower(tower.value._id, { result: selectedResult.value });
   } catch {
     selectedResult.value = tower.value.result ?? 'pending';
+  }
+}
+
+async function toggleCompleted() {
+  if (!tower.value?._id) return;
+  saving.value = true;
+  showCtx.value = false;
+  try {
+    const newCompleted = !tower.value.completed;
+    await updateAccursedTower(tower.value._id, { completed: newCompleted });
+    await store.handleGetAccursedTowerDetails(tower.value._id);
+    if (newCompleted) router.push('/management/history');
+  } finally {
+    saving.value = false;
   }
 }
 
