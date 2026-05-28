@@ -46,7 +46,9 @@ const dynamicTitle = computed(() => {
       </section>
       <div class="section-container">
         <section class="menu-section desktop" v-if="tabs && tabs.length">
-          <img :src="diabloIcon" alt="icon" />
+          <div class="sidebar-icon-wrap">
+            <img :src="diabloIcon" alt="icon" />
+          </div>
           <SideBar :logged="store.currentUser.logged" :tabs="tabs" />
         </section>
 
