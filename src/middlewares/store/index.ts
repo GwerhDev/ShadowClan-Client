@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById, deactivateAccursedTower, closeShadowWarManagement } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getActiveShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById, deactivateAccursedTower, closeShadowWarManagement } from '../services';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
 import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
@@ -112,7 +112,7 @@ export const useStore = defineStore('store', {
 
     async handleGetNextShadowWar() {
       try {
-        const response = await getNextShadowWar(this.currentCharacter ?? undefined);
+        const response = await getActiveShadowWar(this.currentCharacter ?? undefined);
         this.setShadowWarData(response);
       } catch (error: any) {
         this.setShadowWarError(error.message);
@@ -452,7 +452,12 @@ export const useStore = defineStore('store', {
       if (id && userId) {
         setStoredCharacter(userId, id).catch(() => {});
       }
+      // Reset clan-scoped state so it refetches for the new character
+      this.currentUser.shadowWarData = null;
+      this.currentUser.towerWarList  = [];
       this.handleFetchPendingInbox();
+      this.handleGetNextShadowWar();
+      this.handleGetActiveTowerWar();
     },
 
     async handleGetClanRequests() {

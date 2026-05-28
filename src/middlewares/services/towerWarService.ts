@@ -7,7 +7,7 @@ export const getAccursedTowers = async (characterId?: string) =>
   axios.get(BASE, { params: { characterId }, withCredentials: true }).then(r => r.data);
 
 export const getActiveAccursedTower = async (characterId?: string) =>
-  axios.get(BASE + '/active', { params: { characterId }, withCredentials: true }).then(r => r.data);
+  axios.get(API_URL + '/accursed-tower/active', { params: { characterId }, withCredentials: true }).then(r => r.data);
 
 export const createAccursedTower = async (towerNumber: number, date: string, enemyClan?: string | null, characterId?: string) =>
   axios.post(BASE, { towerNumber, date, enemyClan: enemyClan || null, characterId }, { withCredentials: true }).then(r => r.data);

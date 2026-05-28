@@ -171,7 +171,7 @@ export const reviewClanRequest: any = async (id: string, action: 'accept' | 'rej
   return response;
 };
 
-export { createShadowWar, getNextShadowWar, getShadowWarById, updateShadowWar, updateShadowWarClan, getShadowWars, confirmShadowWar, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, respondToShadowWar } from './shadowWarService';
+export { createShadowWar, getActiveShadowWar, getShadowWarById, updateShadowWar, updateShadowWarClan, getShadowWars, confirmShadowWar, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, respondToShadowWar } from './shadowWarService';
 export { getClanPosts, createClanPost, updateClanPost, deleteClanPost } from './clanPostService';
 export { getClans, createClan, updateClan, deleteClan, searchClans } from './clanService';
 export { getAccursedTowers, getActiveAccursedTower, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchEnemyClans, createEnemyClan, respondToTowerWar } from './towerWarService';

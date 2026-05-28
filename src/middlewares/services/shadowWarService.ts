@@ -54,8 +54,8 @@ export const completeShadowWarManagement: any = async (id: string) =>
   axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, { completed: true }, { withCredentials: true })
     .then(r => r.data);
 
-export const getNextShadowWar: any = async (characterId?: string) => {
-  const response: any = await axios.get(API_URL + "/shadow-war/next", { params: { characterId }, withCredentials: true })
+export const getActiveShadowWar: any = async (characterId?: string) => {
+  const response: any = await axios.get(API_URL + "/shadow-war/active", { params: { characterId }, withCredentials: true })
     .then(response => response.data)
   return response;
 };
