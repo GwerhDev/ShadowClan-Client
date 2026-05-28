@@ -103,7 +103,10 @@ const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
         </div>
       </div>
 
-      <p v-else-if="!loading && !store.admin.history?.length">No hay historiales disponibles.</p>
+      <div v-else-if="!loading && !store.admin.history?.length" class="empty-state">
+        <i class="fas fa-clock-rotate-left"></i>
+        <p>No hay historiales disponibles.</p>
+      </div>
 
     </template>
   </div>

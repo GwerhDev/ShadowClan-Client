@@ -51,12 +51,12 @@ function getClassName(value: string) {
     </span>
     <span><p>{{ inv.character?.resonance ?? '—' }}</p></span>
     <span>
-      <ul class="buttons-container">
-        <button :disabled="cancelling" @click="handleCancel" title="Cancelar invitación">
+      <div class="buttons-container">
+        <button class="icon-button icon-button--danger" :disabled="cancelling" @click="handleCancel" title="Cancelar invitación">
           <i v-if="cancelling" class="fas fa-spinner fa-spin"></i>
           <i v-else class="fas fa-ban"></i>
         </button>
-      </ul>
+      </div>
     </span>
   </div>
 </template>
@@ -120,32 +120,45 @@ span {
 .no-class { color: rgba(255, 255, 255, .3); }
 
 .buttons-container {
-  max-width: 100px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: .5rem;
+}
 
-  button {
-    background: transparent;
-    border: 1px solid rgba(229, 115, 115, .35);
-    color: #e57373;
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background .15s, border-color .15s;
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .5);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+
+  &:hover:not(:disabled) {
+    color: rgb(227, 210, 168);
+    background: rgba(255, 255, 255, .05);
+    border-color: rgba(227, 210, 168, .35);
+  }
+
+  &:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+  }
+
+  &--danger {
+    color: rgba(248, 113, 113, .65);
+    border-color: rgba(239, 68, 68, .2);
 
     &:hover:not(:disabled) {
-      background: rgba(229, 115, 115, .08);
-      border-color: rgba(229, 115, 115, .6);
-    }
-
-    &:disabled {
-      opacity: .4;
-      cursor: not-allowed;
+      color: #f87171;
+      background: rgba(239, 68, 68, .06);
+      border-color: rgba(239, 68, 68, .4);
     }
   }
 }

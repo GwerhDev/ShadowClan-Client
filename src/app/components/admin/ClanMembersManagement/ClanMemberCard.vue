@@ -109,14 +109,10 @@ async function handleConfirmDelete() {
     </span>
     <span><p>{{ char.resonance ?? '—' }}</p></span>
     <span>
-      <ul class="buttons-container">
-        <button v-if="isLeader || isOfficer" @click="handleEdit">
-          <img src="../../../../assets/svg/edit-icon.svg" alt="Editar" width="18px" />
-        </button>
-        <button v-if="role !== 'leader'" @click="handleDelete">
-          <img src="../../../../assets/svg/delete-icon.svg" alt="Eliminar" width="22px" />
-        </button>
-      </ul>
+      <div class="buttons-container">
+        <button class="icon-button" v-if="isLeader || isOfficer" @click="handleEdit" title="Editar"><i class="fas fa-pen"></i></button>
+        <button class="icon-button icon-button--danger" v-if="role !== 'leader'" @click="handleDelete" title="Eliminar"><i class="fas fa-trash"></i></button>
+      </div>
     </span>
   </div>
 
@@ -146,10 +142,10 @@ async function handleConfirmDelete() {
       <input type="number" v-model.number="editResonance" />
     </span>
     <span>
-      <ul class="buttons-container">
-        <button @click="handleUpdate">✔️</button>
-        <button @click="handleCancel">❌</button>
-      </ul>
+      <div class="buttons-container">
+        <button class="icon-button icon-button--confirm" @click="handleUpdate" title="Guardar"><i class="fas fa-check"></i></button>
+        <button class="icon-button" @click="handleCancel" title="Cancelar"><i class="fas fa-times"></i></button>
+      </div>
     </span>
   </div>
 
@@ -174,10 +170,10 @@ async function handleConfirmDelete() {
     </span>
     <span><p>{{ char.resonance ?? '—' }}</p></span>
     <span>
-      <ul class="buttons-container">
-        <button @click="handleConfirmDelete">✔️</button>
-        <button @click="handleCancel">❌</button>
-      </ul>
+      <div class="buttons-container">
+        <button class="icon-button icon-button--confirm" @click="handleConfirmDelete" title="Confirmar eliminación"><i class="fas fa-check"></i></button>
+        <button class="icon-button" @click="handleCancel" title="Cancelar"><i class="fas fa-times"></i></button>
+      </div>
     </span>
   </div>
 </template>

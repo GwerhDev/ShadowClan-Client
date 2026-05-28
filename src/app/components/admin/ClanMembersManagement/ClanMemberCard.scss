@@ -11,14 +11,9 @@ span {
 }
 
 .buttons-container {
-  max-width: 100px;
   display: flex;
-  flex-direction: column;
-  gap: .4rem;
-
-  button {
-    width: 80px;
-  }
+  align-items: center;
+  gap: .5rem;
 }
 
 button {
@@ -43,14 +38,43 @@ button {
     color: rgba(255, 255, 255, .9);
   }
 
-  &.btn-danger {
-    border-color: rgba(229, 115, 115, .3);
-    color: #e57373;
-    background: rgba(229, 115, 115, .06);
+  &:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+  }
+}
+
+.icon-button {
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  color: rgba(255, 255, 255, .5);
+
+  &:hover:not(:disabled) {
+    color: rgb(227, 210, 168);
+    background: rgba(255, 255, 255, .05);
+    border-color: rgba(227, 210, 168, .35);
+  }
+
+  &--danger {
+    color: rgba(248, 113, 113, .65);
+    border-color: rgba(239, 68, 68, .2);
 
     &:hover:not(:disabled) {
-      border-color: rgba(229, 115, 115, .6);
-      background: rgba(229, 115, 115, .14);
+      color: #f87171;
+      background: rgba(239, 68, 68, .06);
+      border-color: rgba(239, 68, 68, .4);
+    }
+  }
+
+  &--confirm {
+    color: #4ade80;
+    border-color: rgba(34, 197, 94, .3);
+
+    &:hover:not(:disabled) {
+      color: #4ade80;
+      background: rgba(34, 197, 94, .06);
+      border-color: rgba(34, 197, 94, .5);
     }
   }
 }

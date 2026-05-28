@@ -59,6 +59,20 @@
   }
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, .3);
+  font-size: .85rem;
+  text-align: center;
+
+  i { font-size: 1.6rem; }
+  p { margin: 0; }
+}
+
 .load-more-container {
   display: flex;
   justify-content: center;
