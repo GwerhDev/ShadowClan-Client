@@ -90,13 +90,6 @@
     color: rgba(255, 255, 255, .2);
   }
 
-  .status-icon {
-    flex-shrink: 0;
-    font-size: 1rem;
-
-    &--confirmed { color: #81c784; }
-    &--pending   { color: rgba(255, 193, 7, .85); }
-  }
 
   .empty-card {
     display: flex;

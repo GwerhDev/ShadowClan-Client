@@ -2,6 +2,7 @@
 import { PropType, computed } from 'vue';
 import { Character } from '../../../../interfaces';
 import { classes } from '../../../../middlewares/misc/const';
+import ConfirmStatusIcon from '../../common/ConfirmStatusIcon.vue';
 
 const props = defineProps({
   character: {
@@ -55,11 +56,7 @@ const status = computed<'confirmed' | 'pending' | null>(() => {
           <span class="resonance">{{ character.resonance }}</span>
         </span>
       </div>
-      <i
-        v-if="status"
-        :class="status === 'confirmed' ? 'fas fa-check-circle status-icon status-icon--confirmed' : 'fas fa-clock status-icon status-icon--pending'"
-        :title="status === 'confirmed' ? 'Confirmado' : 'Pendiente'"
-      ></i>
+      <ConfirmStatusIcon :status="status" />
     </div>
     <div v-else class="empty-card">
       <span>+</span>

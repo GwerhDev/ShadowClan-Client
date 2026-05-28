@@ -61,27 +61,23 @@
     color: rgba(255, 255, 255, .2);
   }
 
-  .status-badge {
+  .confirm-btn {
     flex-shrink: 0;
-    font-size: .58rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    padding: .2rem .5rem;
-    border-radius: 4px;
-    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid rgba(129, 199, 132, .35);
+    color: #81c784;
+    font-size: .78rem;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
 
-    &.confirmed {
-      background: rgba(129, 199, 132, .1);
-      border: 1px solid rgba(129, 199, 132, .3);
-      color: #81c784;
-    }
-
-    &.pending {
-      background: rgba(255, 193, 7, .07);
-      border: 1px solid rgba(255, 193, 7, .22);
-      color: rgba(255, 193, 7, .85);
-    }
+    &:hover { background: rgba(76, 175, 80, .1); border-color: rgba(76, 175, 80, .6); }
+    &:disabled { opacity: .4; cursor: not-allowed; }
   }
 
   .empty-card {

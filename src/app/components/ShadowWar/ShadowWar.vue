@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';
+import { confirmShadowWar } from '../../../middlewares/services';
 
 const store: any = useStore();
 
@@ -38,6 +39,18 @@ const isMemberLinked = (character: MemberOrId) => {
   if (!character?._id || !store.currentCharacter) return false;
   return character._id === store.currentCharacter;
 };
+
+const confirming = ref(false);
+
+async function handleConfirm() {
+  if (!shadowWarData.value?._id || confirming.value) return;
+  confirming.value = true;
+  try {
+    await confirmShadowWar(shadowWarData.value._id);
+    await store.handleGetNextShadowWar();
+  } catch { /* silently ignore */ }
+  finally  { confirming.value = false; }
+}
 </script>
 
 <template>
@@ -69,7 +82,10 @@ const isMemberLinked = (character: MemberOrId) => {
                         <template v-else>
                           <ShadowWarMemberCard v-for="(character, index) in getPaddedMembers(match.group1.character)"
                             :key="index" :character="character" :is-linked="isMemberLinked(character)"
-                            :confirmed-ids="confirmedIds" />
+                            :confirmed-ids="confirmedIds"
+                            :can-confirm="isMemberLinked(character)"
+                            :confirming="confirming"
+                            @confirm="handleConfirm" />
                         </template>
                       </div>
                     </div>
@@ -82,7 +98,10 @@ const isMemberLinked = (character: MemberOrId) => {
                         <template v-else>
                           <ShadowWarMemberCard v-for="(character, index) in getPaddedMembers(match.group2.character)"
                             :key="index" :character="character" :is-linked="isMemberLinked(character)"
-                            :confirmed-ids="confirmedIds" />
+                            :confirmed-ids="confirmedIds"
+                            :can-confirm="isMemberLinked(character)"
+                            :confirming="confirming"
+                            @confirm="handleConfirm" />
                         </template>
                       </div>
                     </div>

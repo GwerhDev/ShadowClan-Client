@@ -2,6 +2,7 @@
 import { PropType, computed } from 'vue';
 import { Character } from '../../../interfaces';
 import { classes } from '../../../middlewares/misc/const';
+import ConfirmStatusIcon from '../common/ConfirmStatusIcon.vue';
 
 const props = defineProps({
   character: {
@@ -16,7 +17,17 @@ const props = defineProps({
     type: Array as PropType<string[]>,
     default: () => []
   },
+  canConfirm: {
+    type: Boolean,
+    default: false,
+  },
+  confirming: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+defineEmits(['confirm']);
 
 const getClassImage = (className: string | undefined) => {
   return classes.find(c => c.value === className)?.image ?? '';
@@ -46,9 +57,16 @@ const status = computed<'confirmed' | 'pending' | null>(() => {
           <span class="resonance">{{ character.resonance }}</span>
         </span>
       </div>
-      <span v-if="status" class="status-badge" :class="status">
-        {{ status === 'confirmed' ? 'Confirmado' : 'Pendiente' }}
-      </span>
+      <button
+        v-if="canConfirm && status === 'pending'"
+        class="confirm-btn"
+        :disabled="confirming"
+        @click.stop="$emit('confirm')"
+        title="Confirmar participación"
+      >
+        <i :class="confirming ? 'fas fa-spinner fa-spin' : 'fas fa-check'"></i>
+      </button>
+      <ConfirmStatusIcon v-else :status="status" />
     </div>
     <div v-else class="empty-card">
       <i class="fas fa-ban"></i>

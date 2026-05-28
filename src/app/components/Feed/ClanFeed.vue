@@ -158,42 +158,71 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
     <ul v-else class="feed-list">
       <li v-for="post in posts" :key="post._id" class="feed-item">
 
-        <!-- ── header ── -->
-        <div class="feed-header">
-          <img
-            v-if="post.author?.currentClass"
-            :src="getClassImage(post.author.currentClass)"
-            :alt="post.author.currentClass"
-            class="feed-avatar"
-          />
-          <div v-else class="feed-avatar feed-avatar--empty"></div>
-
-          <div class="feed-author-info">
-            <div class="feed-author-name-row">
-              <span class="feed-author-name">{{ post.author?.name ?? '—' }}</span>
-              <span v-if="post.authorRole && post.authorRole !== 'member'" :class="['feed-role-badge', `feed-role-badge--${post.authorRole}`]">
-                {{ post.authorRole === 'leader' ? 'Líder' : 'Oficial' }}
+        <!-- ── header: call-to-arms posts show clan announcement, not author ── -->
+        <template v-if="post.source === 'shadow_war' || post.source === 'accursed_tower'">
+          <div class="feed-cta-header">
+            <div class="feed-cta-icon">
+              <i :class="post.source === 'shadow_war' ? 'fas fa-khanda' : 'fas fa-chess-rook'"></i>
+            </div>
+            <div class="feed-cta-info">
+              <span class="feed-cta-title">
+                {{ post.source === 'shadow_war' ? 'Guerra Sombría' : 'Torre Maldita' }}
+                <span v-if="post.instanceEnemyClan" class="feed-cta-vs">vs {{ post.instanceEnemyClan }}</span>
+              </span>
+              <span class="feed-cta-meta">
+                {{ post.instanceDate ? formatDate(post.instanceDate) : formatDate(post.createdAt) }}
               </span>
             </div>
-            <span class="feed-author-meta">
-              {{ formatDate(post.createdAt) }}
-              <template v-if="post.author?.resonance"> · {{ post.author.resonance }} res</template>
-            </span>
+            <button
+              v-if="isLeaderOrOfficer"
+              class="feed-menu-btn"
+              :class="{ active: activeMenu === post._id }"
+              @click.stop="openMenu($event, post._id)"
+              title="Opciones"
+            >
+              <i class="fas fa-ellipsis-h"></i>
+            </button>
           </div>
+        </template>
 
-          <button
-            v-if="isLeaderOrOfficer"
-            class="feed-menu-btn"
-            :class="{ active: activeMenu === post._id }"
-            @click.stop="openMenu($event, post._id)"
-            title="Opciones"
-          >
-            <i class="fas fa-ellipsis-h"></i>
-          </button>
-        </div>
+        <!-- ── header: regular posts ── -->
+        <template v-else>
+          <div class="feed-header">
+            <img
+              v-if="post.author?.currentClass"
+              :src="getClassImage(post.author.currentClass)"
+              :alt="post.author.currentClass"
+              class="feed-avatar"
+            />
+            <div v-else class="feed-avatar feed-avatar--empty"></div>
 
-        <!-- ── body ── -->
-        <div class="feed-body">
+            <div class="feed-author-info">
+              <div class="feed-author-name-row">
+                <span class="feed-author-name">{{ post.author?.name ?? '—' }}</span>
+                <span v-if="post.authorRole && post.authorRole !== 'member'" :class="['feed-role-badge', `feed-role-badge--${post.authorRole}`]">
+                  {{ post.authorRole === 'leader' ? 'Líder' : 'Oficial' }}
+                </span>
+              </div>
+              <span class="feed-author-meta">
+                {{ formatDate(post.createdAt) }}
+                <template v-if="post.author?.resonance"> · {{ post.author.resonance }} res</template>
+              </span>
+            </div>
+
+            <button
+              v-if="isLeaderOrOfficer"
+              class="feed-menu-btn"
+              :class="{ active: activeMenu === post._id }"
+              @click.stop="openMenu($event, post._id)"
+              title="Opciones"
+            >
+              <i class="fas fa-ellipsis-h"></i>
+            </button>
+          </div>
+        </template>
+
+        <!-- ── body: only for regular posts ── -->
+        <div v-if="post.source === 'general'" class="feed-body">
           <template v-if="editingId === post._id">
             <textarea
               class="feed-edit-textarea"
@@ -334,6 +363,57 @@ watch(currentCharacter, charId => { if (charId) fetchPosts(charId); }, { immedia
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* ── call-to-arms header ── */
+.feed-cta-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .9rem 1rem .65rem;
+}
+
+.feed-cta-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(227, 210, 168, .08);
+  border: 1px solid rgba(227, 210, 168, .2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgb(227, 210, 168);
+  font-size: 1rem;
+}
+
+.feed-cta-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+}
+
+.feed-cta-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--color-app-white);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.feed-cta-vs {
+  font-size: .78rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, .5);
+}
+
+.feed-cta-meta {
+  font-size: .72rem;
+  color: rgba(255, 255, 255, .38);
 }
 
 /* ── header ── */
