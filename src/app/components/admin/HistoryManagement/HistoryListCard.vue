@@ -18,9 +18,9 @@ const formatDate = (dateString: string) => {
 
 const viewDetails = () => {
   if (props.war.type === 'accursed_tower') {
-    router.push(`/management/history/tower/${props.war._id}`);
+    router.push(`/management/history/accursed-tower/${props.war._id}`);
   } else {
-    router.push(`/management/history/${props.war._id}`);
+    router.push(`/management/history/shadow-war/${props.war._id}`);
   }
 };
 

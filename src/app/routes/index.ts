@@ -105,13 +105,13 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Historial', requiresClanManagement: true },
         children: [
           {
-            path: 'tower/:tower_id',
+            path: 'accursed-tower/:tower_id',
             name: 'ManagementHistoryTowerDetails',
             component: AccursedTowerHistoryDetails,
             meta: { title: 'Historial Torre', requiresClanManagement: true },
           },
           {
-            path: ':shadowwar_id',
+            path: 'shadow-war/:shadowwar_id',
             name: 'ManagementHistoryDetails',
             component: HistoryDetails,
             meta: { title: 'Historial', requiresClanManagement: true },

@@ -12,7 +12,7 @@ export const getActiveAccursedTower = async () =>
 export const createAccursedTower = async (towerNumber: number, date: string, enemyClan?: string | null) =>
   axios.post(BASE, { towerNumber, date, enemyClan: enemyClan || null }, { withCredentials: true }).then(r => r.data);
 
-export const updateAccursedTower = async (id: string, data: { towerNumber?: number; date?: string; roster?: any; enemyClan?: string | null }) =>
+export const updateAccursedTower = async (id: string, data: { towerNumber?: number; date?: string; roster?: any; enemyClan?: string | null; result?: string; completed?: boolean }) =>
   axios.patch(BASE + '/' + id, data, { withCredentials: true }).then(r => r.data);
 
 export const deactivateAccursedTower = async (id: string) =>

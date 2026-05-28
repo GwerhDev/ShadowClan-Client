@@ -398,11 +398,17 @@ export const useStore = defineStore('store', {
       await deactivateAccursedTower(id);
       this.admin.history = (this.admin.history ?? []).filter((w: any) => w._id !== id);
       this.currentUser.towerWarList = this.currentUser.towerWarList.filter((w: any) => w._id !== id);
+      if ((this.admin as any).currentAccursedTower?._id === id) {
+        (this.admin as any).currentAccursedTower = null;
+      }
     },
 
     async handleDeleteShadowWarHistory(id: string) {
       await closeShadowWarManagement(id);
       this.admin.history = (this.admin.history ?? []).filter((w: any) => w._id !== id);
+      if (this.currentUser.shadowWarData?._id === id) {
+        this.currentUser.shadowWarData = null;
+      }
     },
 
     async handleGetAccursedTowerDetails(id: string) {

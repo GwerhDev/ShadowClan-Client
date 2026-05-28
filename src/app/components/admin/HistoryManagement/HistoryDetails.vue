@@ -5,7 +5,6 @@
       <i class="fas fa-arrow-left"></i> Volver al historial
     </button>
 
-    <!-- Loading -->
     <template v-if="loading">
       <div class="detail-skeleton">
         <div class="skeleton-box skeleton-title"></div>
@@ -18,22 +17,18 @@
       </div>
     </template>
 
-    <!-- Error -->
     <div v-else-if="error" class="detail-empty">
       <i class="fas fa-triangle-exclamation"></i>
       <p>Error al cargar los detalles.</p>
     </div>
 
-    <!-- Empty -->
     <div v-else-if="!currentShadowWar" class="detail-empty">
       <i class="fas fa-scroll"></i>
       <p>No se encontraron detalles para esta Guerra Sombría.</p>
     </div>
 
-    <!-- Content -->
     <template v-else>
 
-      <!-- Header -->
       <div class="detail-header">
         <div class="detail-meta">
           <span class="detail-vs">vs</span>
@@ -41,13 +36,66 @@
           <span class="detail-date">{{ formattedDateDisplay }}</span>
         </div>
         <div class="detail-actions">
-          <select class="result-select" :class="selectedResult" v-model="selectedResult" @change="updateShadowWarResult">
+          <select class="result-select" v-model="selectedResult" @change="updateShadowWarResult">
             <option v-for="opt in shadowWarResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
           </select>
+
+          <template v-if="confirmDelete">
+            <button class="ctx-confirm-btn" @click="handleDelete" :disabled="saving">
+              <i class="fas fa-check"></i> Confirmar
+            </button>
+            <button class="ctx-cancel-btn" @click="confirmDelete = false">
+              <i class="fas fa-times"></i>
+            </button>
+          </template>
+
+          <template v-else-if="editing">
+            <button class="ctx-confirm-btn" @click="saveEdit" :disabled="saving">
+              <i class="fas fa-check"></i> Guardar
+            </button>
+            <button class="ctx-cancel-btn" @click="cancelEdit">
+              <i class="fas fa-times"></i>
+            </button>
+          </template>
+
+          <div v-else class="ctx-wrapper">
+            <button class="btn-dots" @click.stop="toggleCtx">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <Teleport to="body">
+              <template v-if="showCtx">
+                <div class="ctx-overlay" @click="showCtx = false" />
+                <div class="ctx-menu-fixed" :style="{ top: ctxPos.top + 'px', left: ctxPos.left + 'px', transform: 'translateX(-100%)' }">
+                  <button class="ctx-item" @click="openEdit">
+                    <i class="fas fa-pen"></i> Editar
+                  </button>
+                  <button class="ctx-item ctx-item--danger" @click="confirmDelete = true; showCtx = false">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
+                </div>
+              </template>
+            </Teleport>
+          </div>
         </div>
       </div>
 
-      <!-- Stats -->
+      <!-- Edit mode fields -->
+      <div v-if="editing" class="edit-fields-row">
+        <div class="edit-field">
+          <label>Fecha</label>
+          <input type="date" v-model="editDate" />
+        </div>
+        <div class="edit-field edit-field--grow">
+          <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
+          <SearchSelector
+            v-model="editEnemyClan"
+            :fetch-fn="searchClans"
+            :selected-label="currentShadowWar.enemyClan?.name"
+            placeholder="Buscar clan..."
+          />
+        </div>
+      </div>
+
       <div class="detail-stats">
         <div class="stat-card">
           <span class="stat-label">Resultado</span>
@@ -64,7 +112,6 @@
         </div>
       </div>
 
-      <!-- Battles -->
       <div class="battles-grid">
         <div
           v-for="(matches, battleType) in currentShadowWar.battle"
@@ -116,20 +163,28 @@ import { Match } from '../../../../interfaces';
 import { translateBattle, translateResult } from '../../../../helpers/lists';
 import MatchDetailsModal from './MatchDetailsModal.vue';
 import ConfirmedMembersModal from './ConfirmedMembersModal.vue';
+import SearchSelector from '../../Selectors/SearchSelector.vue';
 import { useStore } from '../../../../middlewares/store';
+import { searchClans, closeShadowWarManagement, updateShadowWarClan } from '../../../../middlewares/services';
 
 const route  = useRoute();
 const router = useRouter();
 const store  = useStore();
 
-const currentShadowWar = computed(() => store.admin.currentShadowWar);
-
+const currentShadowWar    = computed(() => store.admin.currentShadowWar);
 const loading             = ref(true);
 const error               = ref(false);
+const saving              = ref(false);
 const showMembersModal    = ref(false);
 const showMatchDetailsModal = ref(false);
 const selectedMatch       = ref<Match | null>(null);
 const selectedResult      = ref('');
+const showCtx             = ref(false);
+const ctxPos              = ref({ top: 0, left: 0 });
+const confirmDelete       = ref(false);
+const editing             = ref(false);
+const editDate            = ref('');
+const editEnemyClan       = ref('');
 
 const shadowWarResults = [
   { value: 'victory', text: 'Victoria' },
@@ -139,11 +194,6 @@ const shadowWarResults = [
 ];
 
 const resultLabel = computed(() => shadowWarResults.find(r => r.value === selectedResult.value)?.text ?? '');
-
-watch(currentShadowWar, (val) => {
-  if (val) selectedResult.value = val.result;
-}, { immediate: true });
-
 const confirmedMembersCount = computed(() => currentShadowWar.value?.confirmed?.length ?? 0);
 
 const formattedDateDisplay = computed(() => {
@@ -153,10 +203,59 @@ const formattedDateDisplay = computed(() => {
   return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
 });
 
-function openMembersModal()      { showMembersModal.value = true; }
-function closeMembersModal()     { showMembersModal.value = false; }
-function openMatchDetailsModal(match: Match) { selectedMatch.value = match; showMatchDetailsModal.value = true; }
-function closeMatchDetailsModal() { showMatchDetailsModal.value = false; selectedMatch.value = null; }
+watch(currentShadowWar, (val) => {
+  if (val) selectedResult.value = val.result;
+}, { immediate: true });
+
+function toggleCtx(e: MouseEvent) {
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  ctxPos.value = { top: rect.bottom + 4, left: rect.right };
+  showCtx.value = !showCtx.value;
+}
+
+function openEdit() {
+  const sw = currentShadowWar.value;
+  editDate.value = sw?.date ? new Date(sw.date).toISOString().slice(0, 10) : '';
+  editEnemyClan.value = sw?.enemyClan?._id ?? '';
+  editing.value = true;
+  showCtx.value = false;
+}
+
+function cancelEdit() {
+  editing.value = false;
+  confirmDelete.value = false;
+}
+
+async function saveEdit() {
+  if (!currentShadowWar.value?._id) return;
+  saving.value = true;
+  try {
+    await updateShadowWarClan(currentShadowWar.value._id, {
+      date:      editDate.value || undefined,
+      enemyClan: editEnemyClan.value || null,
+      result:    selectedResult.value,
+    });
+    await store.handleGetShadowWar(currentShadowWar.value._id);
+    editing.value = false;
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function handleDelete() {
+  if (!currentShadowWar.value?._id) return;
+  saving.value = true;
+  try {
+    await closeShadowWarManagement(currentShadowWar.value._id);
+    store.admin.history = (store.admin.history ?? []).filter((w: any) => w._id !== currentShadowWar.value!._id);
+    if (store.currentUser.shadowWarData?._id === currentShadowWar.value._id) {
+      store.currentUser.shadowWarData = null;
+    }
+    router.push('/management/history');
+  } finally {
+    saving.value = false;
+  }
+}
 
 const updateShadowWarResult = async () => {
   if (!currentShadowWar.value?._id || !selectedResult.value) return;
@@ -166,6 +265,11 @@ const updateShadowWarResult = async () => {
     selectedResult.value = currentShadowWar.value.result;
   }
 };
+
+function openMembersModal()      { showMembersModal.value = true; }
+function closeMembersModal()     { showMembersModal.value = false; }
+function openMatchDetailsModal(match: Match) { selectedMatch.value = match; showMatchDetailsModal.value = true; }
+function closeMatchDetailsModal() { showMatchDetailsModal.value = false; selectedMatch.value = null; }
 
 onMounted(async () => {
   const id = route.params.shadowwar_id as string;

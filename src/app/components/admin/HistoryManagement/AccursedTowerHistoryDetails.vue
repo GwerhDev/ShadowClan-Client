@@ -1,24 +1,191 @@
+<template>
+  <div class="history-details">
+
+    <button class="btn-back" @click="router.push('/management/history')">
+      <i class="fas fa-arrow-left"></i> Volver al historial
+    </button>
+
+    <template v-if="loading">
+      <div class="detail-skeleton">
+        <div class="skeleton-box skeleton-title"></div>
+        <div class="skeleton-row">
+          <div class="skeleton-box skeleton-chip"></div>
+          <div class="skeleton-box skeleton-chip"></div>
+        </div>
+        <div class="skeleton-box skeleton-section"></div>
+        <div class="skeleton-box skeleton-section"></div>
+      </div>
+    </template>
+
+    <div v-else-if="error" class="detail-empty">
+      <i class="fas fa-triangle-exclamation"></i>
+      <p>Error al cargar los detalles.</p>
+    </div>
+
+    <div v-else-if="!tower" class="detail-empty">
+      <i class="fas fa-chess-rook"></i>
+      <p>No se encontraron detalles para esta Torre Maldita.</p>
+    </div>
+
+    <template v-else>
+
+      <div class="detail-header">
+        <div class="detail-meta">
+          <span class="detail-vs">vs</span>
+          <h2 class="detail-enemy">{{ tower.enemyClan?.name || 'Sin clan enemigo' }}</h2>
+          <span class="detail-date">{{ formattedDate }}</span>
+        </div>
+        <div class="detail-actions">
+          <select class="result-select" v-model="selectedResult" @change="updateResult">
+            <option v-for="opt in towerResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
+          </select>
+
+          <template v-if="confirmDelete">
+            <button class="ctx-confirm-btn" @click="deleteTower" :disabled="saving">
+              <i class="fas fa-check"></i> Confirmar
+            </button>
+            <button class="ctx-cancel-btn" @click="confirmDelete = false">
+              <i class="fas fa-times"></i>
+            </button>
+          </template>
+
+          <template v-else-if="editing">
+            <button class="ctx-confirm-btn" @click="saveEdit" :disabled="saving">
+              <i class="fas fa-check"></i> Guardar
+            </button>
+            <button class="ctx-cancel-btn" @click="cancelEdit">
+              <i class="fas fa-times"></i>
+            </button>
+          </template>
+
+          <div v-else class="ctx-wrapper">
+            <button class="btn-dots" @click.stop="toggleCtx">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <Teleport to="body">
+              <template v-if="showCtx">
+                <div class="ctx-overlay" @click="showCtx = false" />
+                <div class="ctx-menu-fixed" :style="{ top: ctxPos.top + 'px', left: ctxPos.left + 'px', transform: 'translateX(-100%)' }">
+                  <button class="ctx-item" @click="openEdit">
+                    <i class="fas fa-pen"></i> Editar
+                  </button>
+                  <button class="ctx-item ctx-item--danger" @click="confirmDelete = true; showCtx = false">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
+                </div>
+              </template>
+            </Teleport>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit mode fields -->
+      <div v-if="editing" class="edit-fields-row">
+        <div class="edit-field">
+          <label>N° de Torre</label>
+          <input type="number" v-model.number="editTowerNumber" min="1" class="tower-number-input" />
+        </div>
+        <div class="edit-field">
+          <label>Fecha</label>
+          <input type="date" v-model="editDate" />
+        </div>
+        <div class="edit-field edit-field--grow">
+          <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
+          <SearchSelector
+            v-model="editEnemyClan"
+            :fetch-fn="searchClans"
+            :selected-label="tower.enemyClan?.name"
+            placeholder="Buscar clan..."
+          />
+        </div>
+      </div>
+
+      <div class="detail-stats">
+        <div class="stat-card">
+          <span class="stat-label">Resultado</span>
+          <span :class="['result-chip', `result-${selectedResult}`]">{{ resultLabel }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Torre N°</span>
+          <span class="stat-value">{{ tower.towerNumber }}</span>
+        </div>
+      </div>
+
+      <div v-if="tower.roster" class="tower-roster-grid">
+        <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="battle-section">
+          <h5 class="battle-title">{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }}</h5>
+          <div class="matches-list">
+            <div
+              v-for="(character, idx) in padGroup(tower.roster[grp], groupSizes[grp])"
+              :key="idx"
+              class="roster-slot"
+              :class="{ 'roster-slot--empty': !character }"
+            >
+              <template v-if="character">
+                <span class="roster-name">{{ character.name }}</span>
+                <span class="roster-class">{{ character.currentClass || '—' }}</span>
+              </template>
+              <span v-else class="roster-empty-label">No asignado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="battle-section tower-group3">
+          <h5 class="battle-title">Grupo 3</h5>
+          <div class="matches-list">
+            <div
+              v-for="(character, idx) in padGroup(tower.roster.group3, groupSizes.group3)"
+              :key="idx"
+              class="roster-slot"
+              :class="{ 'roster-slot--empty': !character }"
+            >
+              <template v-if="character">
+                <span class="roster-name">{{ character.name }}</span>
+                <span class="roster-class">{{ character.currentClass || '—' }}</span>
+              </template>
+              <span v-else class="roster-empty-label">No asignado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </template>
+  </div>
+</template>
+
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from '../../../../middlewares/store';
-import ShadowWarMemberCard from '../../ShadowWar/ShadowWarMemberCard.vue';
+import { updateAccursedTower, searchClans } from '../../../../middlewares/services';
+import SearchSelector from '../../Selectors/SearchSelector.vue';
 
 const route  = useRoute();
 const router = useRouter();
 const store: any = useStore();
 
-const loading       = ref(true);
-const error         = ref<string | null>(null);
-const confirmDelete = ref(false);
+const loading        = ref(true);
+const error          = ref(false);
+const saving         = ref(false);
+const showCtx        = ref(false);
+const ctxPos         = ref({ top: 0, left: 0 });
+const confirmDelete  = ref(false);
+const editing        = ref(false);
+const selectedResult = ref('pending');
+const editDate       = ref('');
+const editEnemyClan  = ref('');
+const editTowerNumber = ref<number | null>(null);
 
 const tower = computed(() => store.admin.currentAccursedTower);
 
-const deleteTower = async () => {
-  await store.handleDeleteTowerWar(route.params.tower_id as string);
-  router.push('/management/history');
-};
+const towerResults = [
+  { value: 'victory', text: 'Victoria'  },
+  { value: 'defeat',  text: 'Derrota'   },
+  { value: 'draw',    text: 'Empate'    },
+  { value: 'pending', text: 'Pendiente' },
+];
 
+const resultLabel = computed(() => towerResults.find(r => r.value === selectedResult.value)?.text ?? '');
 const groupSizes = { group1: 4, group2: 4, group3: 2 } as const;
 
 function padGroup(arr: any[] | undefined, size: number): (any | undefined)[] {
@@ -27,173 +194,113 @@ function padGroup(arr: any[] | undefined, size: number): (any | undefined)[] {
   return result;
 }
 
+watch(tower, (val) => {
+  if (val) selectedResult.value = val.result ?? 'pending';
+}, { immediate: true });
+
+const formattedDate = computed(() => {
+  const d = tower.value?.date;
+  if (!d) return '';
+  const date = new Date(d);
+  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+});
+
+function toggleCtx(e: MouseEvent) {
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  ctxPos.value = { top: rect.bottom + 4, left: rect.right };
+  showCtx.value = !showCtx.value;
+}
+
+function openEdit() {
+  const t = tower.value;
+  editTowerNumber.value = t?.towerNumber ?? null;
+  editDate.value = t?.date ? new Date(t.date).toISOString().slice(0, 10) : '';
+  editEnemyClan.value = t?.enemyClan?._id ?? '';
+  editing.value = true;
+  showCtx.value = false;
+}
+
+function cancelEdit() {
+  editing.value = false;
+  confirmDelete.value = false;
+}
+
+async function saveEdit() {
+  if (!tower.value?._id) return;
+  saving.value = true;
+  try {
+    await updateAccursedTower(tower.value._id, {
+      towerNumber: editTowerNumber.value ?? undefined,
+      date:        editDate.value || undefined,
+      enemyClan:   editEnemyClan.value || null,
+      result:      selectedResult.value,
+    });
+    await store.handleGetAccursedTowerDetails(tower.value._id);
+    editing.value = false;
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function updateResult() {
+  if (!tower.value?._id) return;
+  try {
+    await updateAccursedTower(tower.value._id, { result: selectedResult.value });
+  } catch {
+    selectedResult.value = tower.value.result ?? 'pending';
+  }
+}
+
+async function deleteTower() {
+  saving.value = true;
+  try {
+    await store.handleDeleteTowerWar(route.params.tower_id as string);
+    router.push('/management/history');
+  } finally {
+    saving.value = false;
+  }
+}
+
 onMounted(async () => {
   try {
     await store.handleGetAccursedTowerDetails(route.params.tower_id as string);
-  } catch (err: any) {
-    error.value = err.message;
+  } catch {
+    error.value = true;
   } finally {
     loading.value = false;
   }
 });
 </script>
 
-<template>
-  <div>
-    <div class="details-header">
-      <button class="btn-back" @click="router.push('/management/history')">
-        <i class="fas fa-arrow-left"></i> Volver al historial
-      </button>
-      <template v-if="tower && !loading">
-        <template v-if="confirmDelete">
-          <button class="btn-delete btn-delete--confirm" @click="deleteTower">
-            <i class="fas fa-check"></i> Confirmar
-          </button>
-          <button class="btn-back" @click="confirmDelete = false">
-            <i class="fas fa-times"></i> Cancelar
-          </button>
-        </template>
-        <button v-else class="btn-delete" @click="confirmDelete = true">
-          <i class="fas fa-trash"></i> Eliminar
-        </button>
-      </template>
-    </div>
-    <h2>Detalles de la Torre Maldita</h2>
-
-    <div v-if="loading">Cargando...</div>
-
-    <div v-else-if="error">
-      <p>Error al cargar los detalles: {{ error }}</p>
-    </div>
-
-    <template v-else-if="tower">
-      <p>Clan Enemigo:</p>
-      <h4 class="featured">{{ tower.enemyClan?.name || 'N/A' }}</h4>
-
-      <small class="date-container">
-        <input readonly type="date" :value="tower.date ? tower.date.slice(0, 10) : ''" />
-      </small>
-
-      <div class="info-container">
-        <ul class="blocks-section">
-          <li>
-            <p>Torre N°: <strong>{{ tower.towerNumber }}</strong></p>
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="tower.roster" class="battle-section">
-        <!-- Grupos 1 y 2 -->
-        <div class="tw-groups-row">
-          <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="tw-group">
-            <h4>{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }}</h4>
-            <div class="tw-cards-col">
-              <ShadowWarMemberCard
-                v-for="(character, idx) in padGroup(tower.roster[grp], groupSizes[grp])"
-                :key="idx"
-                :character="character"
-                :is-linked="false"
-                :confirmed-ids="[]"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Grupo 3 -->
-        <div class="tw-group3">
-          <h4>Grupo 3</h4>
-          <div class="tw-cards-row">
-            <ShadowWarMemberCard
-              v-for="(character, idx) in padGroup(tower.roster.group3, groupSizes.group3)"
-              :key="idx"
-              :character="character"
-              :is-linked="false"
-              :confirmed-ids="[]"
-            />
-          </div>
-        </div>
-      </div>
-    </template>
-
-    <div v-else>
-      <p>No se encontraron detalles para esta Torre Maldita.</p>
-    </div>
-  </div>
-</template>
-
 <style scoped lang="scss" src="./HistoryDetails.scss"></style>
 
-<style scoped>
-.details-header {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  margin-bottom: 1rem;
-}
-
-.details-header .btn-back {
-  margin-bottom: 0;
-}
-
-.btn-delete {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .35rem .9rem;
-  border-radius: 6px;
-  font-size: 0.82rem;
-  background: transparent;
-  border: 1px solid rgba(239, 68, 68, .3);
-  color: rgba(239, 68, 68, .7);
-  cursor: pointer;
-  transition: background .15s, border-color .15s, color .15s;
-
-  &:hover {
-    background: rgba(239, 68, 68, .08);
-    border-color: rgba(239, 68, 68, .5);
-    color: #f87171;
-  }
-
-  &--confirm {
-    border-color: rgba(34, 197, 94, .3);
-    color: rgba(34, 197, 94, .8);
-    &:hover {
-      background: rgba(34, 197, 94, .08);
-      border-color: rgba(34, 197, 94, .5);
-      color: #4ade80;
-    }
-  }
-}
-
-.tw-groups-row {
+<style scoped lang="scss">
+.tower-roster-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-top: 1rem;
+
+  .tower-group3 { grid-column: 1 / -1; }
 }
 
-.tw-group {
+.roster-slot {
   display: flex;
-  flex-direction: column;
-  gap: .5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: .55rem .75rem;
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .03);
+
+  &--empty { justify-content: center; }
 }
 
-.tw-cards-col {
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
-}
+.roster-name  { font-size: .85rem; color: rgba(255, 255, 255, .8); }
+.roster-class { font-size: .72rem; color: rgba(255, 255, 255, .35); }
+.roster-empty-label { font-size: .78rem; color: rgba(255, 255, 255, .2); }
 
-.tw-group3 {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
-}
-
-.tw-cards-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: .5rem;
+@media (max-width: 600px) {
+  .tower-roster-grid { grid-template-columns: 1fr; }
+  .tower-group3 { grid-column: 1; }
 }
 </style>
