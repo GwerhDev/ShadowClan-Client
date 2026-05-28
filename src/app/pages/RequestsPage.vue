@@ -155,8 +155,7 @@ function dismissReviewedRequest(notifId: string) {
           <!-- LEFT: lista -->
           <aside class="req-sidebar">
             <div class="req-sidebar-header">
-              <h4 class="req-sidebar-label">personaje activo</h4>
-              <h2 class="req-sidebar-title">Misivas</h2>
+<h2 class="req-sidebar-title">Misivas</h2>
             </div>
 
             <div v-if="loading" class="req-empty">Cargando...</div>
@@ -376,7 +375,6 @@ $border: rgba(255, 255, 255, .07);
   grid-template-columns: 280px 1fr;
   height: 100%;
   overflow: hidden;
-  border-left: 1px solid $border;
 }
 
 /* ── Sidebar ── */

@@ -221,9 +221,7 @@ $gold-mid: rgba(227, 210, 168, .5);
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  max-width: 620px;
   width: 100%;
-  margin: 0 auto;
 }
 
 /* ── Header ── */

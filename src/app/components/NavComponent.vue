@@ -41,8 +41,6 @@ function goToRequests() {
         <LogoComponent />
       </section>
       <div class="nav-sections">
-        <section class="spacer"></section>
-
         <section class="router-section">
           <router-link title="Inicio" to="/" class="nav-item">
             <i class="fas fa-home"></i>

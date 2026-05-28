@@ -1,11 +1,15 @@
 <style scoped lang="scss" src="./HistoryListCard.scss"/>
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStore } from '../../../../middlewares/store';
 import { translateResult } from '../../../../helpers/lists';
 
 const props = defineProps<{ war: any }>();
 
 const router = useRouter();
+const store: any = useStore();
+const confirmDelete = ref(false);
 
 const formatDate = (dateString: string) => {
   const options: any = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -18,6 +22,10 @@ const viewDetails = () => {
   } else {
     router.push(`/management/history/${props.war._id}`);
   }
+};
+
+const deleteTower = async () => {
+  await store.handleDeleteTowerWar(props.war._id);
 };
 </script>
 
@@ -40,9 +48,22 @@ const viewDetails = () => {
     </span>
     <span class="actions-col">
       <div class="buttons-container">
-        <button class="icon-button" @click="viewDetails" title="Ver detalle">
-          <i class="fas fa-eye"></i>
-        </button>
+        <template v-if="confirmDelete">
+          <button class="icon-button icon-button--confirm" @click="deleteTower" title="Confirmar eliminación">
+            <i class="fas fa-check"></i>
+          </button>
+          <button class="icon-button" @click="confirmDelete = false" title="Cancelar">
+            <i class="fas fa-times"></i>
+          </button>
+        </template>
+        <template v-else>
+          <button class="icon-button" @click="viewDetails" title="Ver detalle">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button v-if="war.type === 'accursed_tower'" class="icon-button icon-button--danger" @click="confirmDelete = true" title="Eliminar">
+            <i class="fas fa-trash"></i>
+          </button>
+        </template>
       </div>
     </span>
   </div>

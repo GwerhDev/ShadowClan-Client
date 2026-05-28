@@ -16,21 +16,12 @@ const hasCharacter = computed(() => (store.currentUser.userData?.character ?? []
 const isWalker     = computed(() => hasCharacter.value && !activeChar.value?.clan);
 const isFeed       = computed(() => route.name === 'Feed');
 
-const tabs = computed(() => {
-  if (!hasCharacter.value) return [
-    { id: 'welcome', name: 'Bienvenida', icon: 'fas fa-door-open', path: '/' },
-  ];
-  if (isWalker.value) return [
-    { id: 'home', name: 'Inicio', icon: 'fas fa-home', path: '/' },
-  ];
-  return [];
-});
 </script>
 
 <template>
   <main class="red-shadow-fx">
     <div class="div-container">
-      <AppLayout :tabs="tabs" :hide-title="!hasCharacter || isWalker || isFeed">
+      <AppLayout :hide-title="!hasCharacter || isWalker || isFeed">
         <WalkerHomeComponent v-if="!hasCharacter || isWalker" />
         <router-view v-else />
       </AppLayout>

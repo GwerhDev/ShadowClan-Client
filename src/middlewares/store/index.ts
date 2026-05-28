@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getNextShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById, deactivateAccursedTower } from '../services';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
 import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
@@ -392,6 +392,12 @@ export const useStore = defineStore('store', {
         this.admin.history = [];
         return false;
       }
+    },
+
+    async handleDeleteTowerWar(id: string) {
+      await deactivateAccursedTower(id);
+      this.admin.history = (this.admin.history ?? []).filter((w: any) => w._id !== id);
+      this.currentUser.towerWarList = this.currentUser.towerWarList.filter((w: any) => w._id !== id);
     },
 
     async handleGetAccursedTowerDetails(id: string) {

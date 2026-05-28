@@ -188,7 +188,7 @@ const router = createRouter({
   routes
 });
 
-const WALKER_ALLOWED: string[] = ['Home', 'TaskPage', 'MyTasks', 'ClanTasks', 'UserPage', 'Profile', 'Account', 'Requests'];
+const WALKER_ALLOWED: string[] = ['Home', 'Feed', 'TaskPage', 'MyTasks', 'ClanTasks', 'UserPage', 'Profile', 'Account', 'Requests'];
 
 router.beforeEach((to, _from, next) => {
   const store = useStore();
