@@ -1,31 +1,19 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
 import { Character } from '../../../../interfaces';
-import { classes } from '../../../../middlewares/misc/const';
+import ClassImage from '../../common/ClassImage.vue';
 
 defineProps({
-  character: {
-    type: Object as PropType<Character | undefined>,
-    default: undefined
-  },
-  showUnassignButton: {
-    type: Boolean,
-    default: false
-  }
+  character:         { type: Object as PropType<Character | undefined>, default: undefined },
+  showUnassignButton:{ type: Boolean, default: false },
 });
-
-const getClassImage = (className: string | undefined) => {
-  const foundClass = classes.find(c => c.value === className);
-  return foundClass ? foundClass.image : '';
-};
 </script>
 
 <template>
   <div class="character-card" @click="$emit('click')">
     <div v-if="character" class="character-info">
       <button v-if="showUnassignButton" class="unassign-button" @click.stop="$emit('unassign')">×</button>
-      <img v-if="getClassImage(character.currentClass)" :src="getClassImage(character.currentClass)" :alt="character.currentClass" class="class-image" />
-      <div v-else class="class-image class-image--fallback"><i class="fas fa-question"></i></div>
+      <ClassImage :current-class="character.currentClass" />
       <div class="character-details">
         <span class="character-name">{{ character.name }}</span>
         <span class="resonance">{{ character.resonance }}</span>

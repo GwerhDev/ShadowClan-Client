@@ -1,30 +1,18 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
 import { Character } from '../../../interfaces';
-import { classes } from '../../../middlewares/misc/const';
+import ClassImage from '../common/ClassImage.vue';
 
 defineProps({
-  character: {
-    type: Object as PropType<Character | undefined>,
-    default: undefined,
-  },
-  isLinked: {
-    type: Boolean,
-    default: false,
-  },
+  character: { type: Object as PropType<Character | undefined>, default: undefined },
+  isLinked:  { type: Boolean, default: false },
 });
-
-const getClassImage = (className: string | undefined) => {
-  const foundClass = classes.find(c => c.value === className);
-  return foundClass ? foundClass.image : '';
-};
 </script>
 
 <template>
   <div class="character-card" :class="{ 'linked-character': isLinked }">
     <div v-if="character" class="character-info">
-      <img v-if="getClassImage(character!.currentClass)" :src="getClassImage(character!.currentClass)" :alt="character!.currentClass" class="class-image" />
-      <div v-else class="class-image class-image--fallback"><i class="fas fa-question"></i></div>
+      <ClassImage :current-class="character!.currentClass" :size="30" />
       <div class="character-details">
         <span class="character-name">{{ character!.name }}</span>
         <span class="resonance">{{ character!.resonance }}</span>

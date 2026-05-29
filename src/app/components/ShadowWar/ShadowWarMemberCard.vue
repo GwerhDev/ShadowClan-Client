@@ -3,6 +3,7 @@ import { PropType, computed } from 'vue';
 import { Character } from '../../../interfaces';
 import { classes } from '../../../middlewares/misc/const';
 import ConfirmStatusIcon from '../common/ConfirmStatusIcon.vue';
+import ClassImage from '../common/ClassImage.vue';
 
 const props = defineProps({
   character: {
@@ -29,13 +30,8 @@ const props = defineProps({
 
 defineEmits(['confirm']);
 
-const getClassImage = (className: string | undefined) => {
-  return classes.find(c => c.value === className)?.image ?? '';
-};
-
-const getClassName = (className: string | undefined) => {
-  return classes.find(c => c.value === className)?.name ?? (className ?? '');
-};
+const getClassName = (className: string | undefined) =>
+  classes.find(c => c.value === className)?.name ?? (className ?? '');
 
 const status = computed<'confirmed' | 'pending' | null>(() => {
   const id = props.character?._id;
@@ -48,8 +44,7 @@ const status = computed<'confirmed' | 'pending' | null>(() => {
 <template>
   <div class="character-card" :class="{ 'linked-character': isLinked }">
     <div v-if="character" class="character-info">
-      <img v-if="getClassImage(character.currentClass)" :src="getClassImage(character.currentClass)" :alt="character.currentClass" class="class-image" />
-      <div v-else class="class-image class-image--fallback"><i class="fas fa-question"></i></div>
+      <ClassImage :current-class="character.currentClass" />
       <div class="character-details">
         <span class="character-name">{{ character.name }}</span>
         <span class="character-meta">
