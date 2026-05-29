@@ -48,7 +48,8 @@ const status = computed<'confirmed' | 'pending' | null>(() => {
 <template>
   <div class="character-card" :class="{ 'linked-character': isLinked }">
     <div v-if="character" class="character-info">
-      <img :src="getClassImage(character.currentClass)" :alt="character.currentClass" class="class-image" />
+      <img v-if="getClassImage(character.currentClass)" :src="getClassImage(character.currentClass)" :alt="character.currentClass" class="class-image" />
+      <div v-else class="class-image class-image--fallback"><i class="fas fa-question"></i></div>
       <div class="character-details">
         <span class="character-name">{{ character.name }}</span>
         <span class="character-meta">

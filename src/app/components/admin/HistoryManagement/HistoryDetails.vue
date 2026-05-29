@@ -29,6 +29,7 @@
 
     <template v-else>
 
+      <!-- Header -->
       <div class="detail-header">
         <div class="detail-meta">
           <span class="detail-vs">vs</span>
@@ -36,10 +37,6 @@
           <span class="detail-date">{{ formattedDateDisplay }}</span>
         </div>
         <div class="detail-actions">
-          <select class="result-select" v-model="selectedResult" @change="updateShadowWarResult">
-            <option v-for="opt in shadowWarResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
-          </select>
-
           <template v-if="confirmDelete">
             <button class="ctx-confirm-btn" @click="handleDelete" :disabled="saving">
               <i class="fas fa-check"></i> Confirmar
@@ -83,7 +80,7 @@
         </div>
       </div>
 
-      <!-- Edit mode fields -->
+      <!-- Edit mode: fields row -->
       <div v-if="editing" class="edit-fields-row">
         <div class="edit-field">
           <label>Fecha</label>
@@ -100,10 +97,14 @@
         </div>
       </div>
 
+      <!-- Stats -->
       <div class="detail-stats">
         <div class="stat-card">
           <span class="stat-label">Resultado</span>
-          <span :class="['result-chip', `result-${selectedResult}`]">{{ resultLabel }}</span>
+          <select v-if="editing" class="result-select" v-model="selectedResult">
+            <option v-for="opt in shadowWarResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
+          </select>
+          <span v-else :class="['result-chip', `result-${selectedResult}`]">{{ resultLabel }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-label">Confirmados</span>
@@ -116,7 +117,46 @@
         </div>
       </div>
 
-      <div class="battles-grid">
+      <!-- Battles – EDIT mode -->
+      <div v-if="editing && editBattle" class="battles-grid">
+        <div v-for="(catMatches, cat) in editBattle" :key="cat" class="battle-section">
+          <h5 class="battle-title">Batalla {{ translateBattle(String(cat)) }}</h5>
+          <div class="matches-list">
+            <div v-for="(match, mIdx) in (catMatches as any[])" :key="mIdx" class="match-edit-card">
+
+              <div class="match-edit-header">
+                <span class="match-label">Partida {{ mIdx + 1 }}</span>
+                <select v-model="match.result" class="match-result-select">
+                  <option v-for="opt in matchResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
+                </select>
+              </div>
+
+              <div v-for="grp in ['group1', 'group2'] as const" :key="grp" class="group-edit">
+                <span class="group-label">{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }}</span>
+                <div class="group-chars">
+                  <span
+                    v-for="(char, cIdx) in match[grp].character"
+                    :key="cIdx"
+                    class="char-chip"
+                  >
+                    {{ char?.name ?? '—' }}
+                    <button class="char-chip-remove" @click.stop="removeParticipant(String(cat), mIdx, grp, cIdx)">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </span>
+                  <button class="add-char-btn" @click="openMemberPicker(String(cat), mIdx, grp)" title="Agregar participante">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Battles – READ mode -->
+      <div v-else class="battles-grid">
         <div
           v-for="(matches, battleType) in currentShadowWar.battle"
           :key="battleType"
@@ -152,9 +192,16 @@
       @close="closeMembersModal"
     />
     <MatchDetailsModal
-      v-if="showMatchDetailsModal"
+      v-if="showMatchDetailsModal && !editing"
       :match="selectedMatch"
       @close="closeMatchDetailsModal"
+    />
+    <MemberSelectionModal
+      v-if="showMemberPicker"
+      :characters="clanMembers"
+      :assigned-member-ids="assignedIdsForPicker"
+      @close="showMemberPicker = false"
+      @character-selected="handleMemberSelected"
     />
 
   </div>
@@ -167,28 +214,33 @@ import { Match } from '../../../../interfaces';
 import { translateBattle, translateResult } from '../../../../helpers/lists';
 import MatchDetailsModal from './MatchDetailsModal.vue';
 import ConfirmedMembersModal from './ConfirmedMembersModal.vue';
+import MemberSelectionModal from '../ShadowWarManagement/MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
 import { useStore } from '../../../../middlewares/store';
-import { searchClans, closeShadowWarManagement, updateShadowWarClan } from '../../../../middlewares/services';
+import { searchClans, closeShadowWarManagement, updateShadowWarClan, getClanMembers } from '../../../../middlewares/services';
 
 const route  = useRoute();
 const router = useRouter();
 const store  = useStore();
 
-const currentShadowWar    = computed(() => store.admin.currentShadowWar);
-const loading             = ref(true);
-const error               = ref(false);
-const saving              = ref(false);
-const showMembersModal    = ref(false);
+const currentShadowWar      = computed(() => store.admin.currentShadowWar);
+const loading               = ref(true);
+const error                 = ref(false);
+const saving                = ref(false);
+const showMembersModal      = ref(false);
 const showMatchDetailsModal = ref(false);
-const selectedMatch       = ref<Match | null>(null);
-const selectedResult      = ref('');
-const showCtx             = ref(false);
-const ctxPos              = ref({ top: 0, left: 0 });
-const confirmDelete       = ref(false);
-const editing             = ref(false);
-const editDate            = ref('');
-const editEnemyClan       = ref('');
+const selectedMatch         = ref<Match | null>(null);
+const selectedResult        = ref('');
+const showCtx               = ref(false);
+const ctxPos                = ref({ top: 0, left: 0 });
+const confirmDelete         = ref(false);
+const editing               = ref(false);
+const editDate              = ref('');
+const editEnemyClan         = ref('');
+const editBattle            = ref<any>(null);
+const clanMembers           = ref<any[]>([]);
+const showMemberPicker      = ref(false);
+const memberPickerCtx       = ref<{ cat: string; matchIdx: number; group: 'group1'|'group2' } | null>(null);
 
 const shadowWarResults = [
   { value: 'victory', text: 'Victoria' },
@@ -197,7 +249,14 @@ const shadowWarResults = [
   { value: 'pending', text: 'Pendiente'},
 ];
 
-const resultLabel = computed(() => shadowWarResults.find(r => r.value === selectedResult.value)?.text ?? '');
+const matchResults = [
+  { value: 'victory', text: 'Victoria' },
+  { value: 'defeat',  text: 'Derrota'  },
+  { value: 'draw',    text: 'Empate'   },
+  { value: 'pending', text: 'Pendiente'},
+];
+
+const resultLabel           = computed(() => shadowWarResults.find(r => r.value === selectedResult.value)?.text ?? '');
 const confirmedMembersCount = computed(() => currentShadowWar.value?.confirmed?.length ?? 0);
 
 const formattedDateDisplay = computed(() => {
@@ -205,6 +264,17 @@ const formattedDateDisplay = computed(() => {
   if (!d) return '';
   const date = new Date(d);
   return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+});
+
+const assignedIdsForPicker = computed(() => {
+  if (!editBattle.value || !memberPickerCtx.value) return [];
+  const { cat, matchIdx } = memberPickerCtx.value;
+  const m = editBattle.value[cat]?.[matchIdx];
+  if (!m) return [];
+  return [
+    ...(m.group1.character ?? []).map((c: any) => c?._id ?? c),
+    ...(m.group2.character ?? []).map((c: any) => c?._id ?? c),
+  ].filter(Boolean);
 });
 
 watch(currentShadowWar, (val) => {
@@ -217,30 +287,75 @@ function toggleCtx(e: MouseEvent) {
   showCtx.value = !showCtx.value;
 }
 
-function openEdit() {
+async function openEdit() {
   const sw = currentShadowWar.value;
-  editDate.value = sw?.date ? new Date(sw.date).toISOString().slice(0, 10) : '';
+  editDate.value      = sw?.date ? new Date(sw.date).toISOString().slice(0, 10) : '';
   editEnemyClan.value = sw?.enemyClan?._id ?? '';
-  editing.value = true;
+  editBattle.value    = JSON.parse(JSON.stringify(sw?.battle ?? {}));
   showCtx.value = false;
+
+  if ((sw as any)?.clan) {
+    try {
+      const data = await getClanMembers((sw as any).clan);
+      clanMembers.value = [
+        ...(data.leader  ? [data.leader]  : []),
+        ...(data.officer ?? []),
+        ...(data.member  ?? []),
+      ];
+    } catch { clanMembers.value = []; }
+  }
+
+  editing.value = true;
 }
 
 function cancelEdit() {
-  editing.value = false;
+  editing.value  = false;
+  editBattle.value = null;
   confirmDelete.value = false;
+}
+
+function removeParticipant(cat: string, matchIdx: number, group: 'group1'|'group2', charIdx: number) {
+  editBattle.value[cat][matchIdx][group].character.splice(charIdx, 1);
+}
+
+function openMemberPicker(cat: string, matchIdx: number, group: 'group1'|'group2') {
+  memberPickerCtx.value = { cat, matchIdx, group };
+  showMemberPicker.value = true;
+}
+
+function handleMemberSelected(character: any) {
+  if (!memberPickerCtx.value) return;
+  const { cat, matchIdx, group } = memberPickerCtx.value;
+  const chars: any[] = editBattle.value[cat][matchIdx][group].character;
+  const id = character._id ?? character;
+  if (!chars.find((c: any) => (c?._id ?? c) === id)) {
+    chars.push(character);
+  }
+  showMemberPicker.value = false;
 }
 
 async function saveEdit() {
   if (!currentShadowWar.value?._id) return;
   saving.value = true;
   try {
+    // Convert populated objects to IDs for the battle
+    const cleanBattle = JSON.parse(JSON.stringify(editBattle.value));
+    for (const cat of Object.keys(cleanBattle)) {
+      for (const match of cleanBattle[cat]) {
+        match.group1.character = (match.group1.character ?? []).filter(Boolean).map((c: any) => c?._id ?? c);
+        match.group2.character = (match.group2.character ?? []).filter(Boolean).map((c: any) => c?._id ?? c);
+      }
+    }
     await updateShadowWarClan(currentShadowWar.value._id, {
       date:      editDate.value || undefined,
       enemyClan: editEnemyClan.value || null,
       result:    selectedResult.value,
+      battle:    cleanBattle,
+      characterId: store.currentCharacter,
     });
     await store.handleGetShadowWar(currentShadowWar.value._id);
-    editing.value = false;
+    editing.value    = false;
+    editBattle.value = null;
   } finally {
     saving.value = false;
   }
@@ -274,15 +389,6 @@ async function handleDelete() {
     saving.value = false;
   }
 }
-
-const updateShadowWarResult = async () => {
-  if (!currentShadowWar.value?._id || !selectedResult.value) return;
-  try {
-    await store.handleUpdateShadowWar(currentShadowWar.value._id, { result: selectedResult.value });
-  } catch {
-    selectedResult.value = currentShadowWar.value.result;
-  }
-};
 
 function openMembersModal()      { showMembersModal.value = true; }
 function closeMembersModal()     { showMembersModal.value = false; }

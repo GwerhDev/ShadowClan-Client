@@ -50,6 +50,16 @@
     width: 38px;
     height: 38px;
     flex-shrink: 0;
+
+    &--fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, .06);
+      border-radius: 6px;
+      color: rgba(255, 255, 255, .3);
+      font-size: 1rem;
+    }
   }
 
   .character-details {

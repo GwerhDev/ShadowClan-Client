@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, PropType, ref, watch } from 'vue';
-import { Match, Character } from '../../../../interfaces';
+import { PropType, ref, watch } from 'vue';
+import { Match } from '../../../../interfaces';
 import CustomModal from '../../Modals/CustomModal.vue';
-import { useStore } from '../../../../middlewares/store';
 import ShadowWarMemberCard from '../ShadowWarManagement/ShadowWarMemberCard.vue';
 
 const props = defineProps({
@@ -14,65 +13,12 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const store = useStore();
-const currentShadowWar = computed(() => store.admin.currentShadowWar);
-
 const editableResult = ref('');
 
 watch(() => props.match, (newMatch) => {
-  if (newMatch) {
-    editableResult.value = newMatch.result || 'pending';
-  }
+  if (newMatch) editableResult.value = newMatch.result || 'pending';
 }, { immediate: true });
 
-const compareMemberGroups = (groupA: (Character | undefined)[] | undefined, groupB: (Character | undefined)[] | undefined) => {
-  if (!groupA || !groupB) return false;
-  if (groupA.length !== groupB.length) return false;
-
-  const idsA = groupA.map(character => character?._id).filter(Boolean).sort();
-  const idsB = groupB.map(character => character?._id).filter(Boolean).sort();
-
-  if (idsA.length !== idsB.length) return false;
-
-  for (let i = 0; i < idsA.length; i++) {
-    if (idsA[i] !== idsB[i]) return false;
-  }
-  return true;
-};
-
-const updateResult = async () => {
-  if (!store.admin.shadowWars || !props.match || !currentShadowWar.value || !currentShadowWar.value.battle) {
-    console.error('currentShadowWar or its battle property is undefined.');
-    return;
-  }
-
-  const updatedShadowWar = JSON.parse(JSON.stringify(currentShadowWar.value));
-
-  const battleTypes = ['exalted', 'eminent', 'famed', 'proud'] as const;
-  let matchFound = false;
-  for (const type of battleTypes) {
-    const matchIndex = updatedShadowWar.battle[type].findIndex((m: Match) =>
-      compareMemberGroups(m.group1.character, props.match?.group1.character) &&
-      compareMemberGroups(m.group2.character, props.match?.group2.character)
-    );
-    if (matchIndex !== -1) {
-      updatedShadowWar.battle[type][matchIndex].result = editableResult.value;
-      matchFound = true;
-      break;
-    }
-  }
-
-  if (!matchFound) {
-    console.error('Match not found in shadow war for update.');
-    return;
-  }
-
-  try {
-    await store.handleUpdateShadowWar(updatedShadowWar._id!, updatedShadowWar);
-  } catch (error) {
-    console.error('Error updating shadow war result:', error);
-  }
-};
 </script>
 
 <template>
@@ -80,12 +26,9 @@ const updateResult = async () => {
     <div class="match-details-content">
       <div class="result-section">
         <p>Resultado:</p>
-        <select v-model="editableResult" @change="updateResult">
-          <option value="pending">Pendiente</option>
-          <option value="victory">Victoria</option>
-          <option value="defeat">Derrota</option>
-          <option value="draw">Empate</option>
-        </select>
+        <span :class="['result-chip', `result-${editableResult}`]">
+          {{ { pending: 'Pendiente', victory: 'Victoria', defeat: 'Derrota', draw: 'Empate' }[editableResult] ?? editableResult }}
+        </span>
       </div>
       <div class="team-composition">
         <div class="team-group">
