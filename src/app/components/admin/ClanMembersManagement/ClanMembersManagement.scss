@@ -4,11 +4,28 @@
   position: relative;
   flex-direction: column;
 
-  > div {
+  > div:not(.mgmt-toolbar) {
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
+  }
+
+  .mgmt-toolbar {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    flex-shrink: 0;
+
+    @media (max-width: 860px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 }
 
@@ -35,13 +52,18 @@
 }
 
 .button-list {
-  gap: .75rem;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  padding-top: .5rem;
-  padding-bottom: .5rem;
+  gap: .5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  flex-shrink: 0;
+
+  @media (max-width: 860px) {
+    grid-template-columns: repeat(2, 1fr);
+
+    button:last-child {
+      grid-column: 1 / -1;
+    }
+  }
 
   button {
     display: flex;
@@ -402,7 +424,8 @@
   display: flex;
   align-items: center;
   gap: .75rem;
-  padding: .4rem 0 .75rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .search-wrap {
@@ -411,6 +434,10 @@
   max-width: 360px;
   display: flex;
   align-items: center;
+
+  @media (max-width: 860px) {
+    max-width: none;
+  }
 }
 
 .search-icon {

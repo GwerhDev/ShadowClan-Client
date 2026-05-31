@@ -380,20 +380,7 @@ function getClassName(value: string) {
 <template>
   <div class="ul-container">
 
-    <span class="button-list">
-      <button class="btn-secondary btn-with-badge" @click="openRequestsModal">
-        <i class="fas fa-inbox"></i> Ver solicitudes
-        <span v-if="store.pendingRequestsCount > 0" class="btn-badge">{{ store.pendingRequestsCount }}</span>
-      </button>
-      <button class="btn-secondary" @click="openSyncModal">
-        <i class="fas fa-rotate"></i> Actualizar
-      </button>
-      <button @click="openAddModal">
-        <i class="fas fa-user-plus"></i> Agregar miembro
-      </button>
-    </span>
-
-    <div v-if="!loading">
+    <div class="mgmt-toolbar">
       <div class="search-bar">
         <div class="search-wrap">
           <i class="fas fa-magnifying-glass search-icon"></i>
@@ -407,6 +394,21 @@ function getClassName(value: string) {
         </span>
       </div>
 
+      <span class="button-list">
+        <button class="btn-secondary btn-with-badge" @click="openRequestsModal">
+          <i class="fas fa-inbox"></i> Ver solicitudes
+          <span v-if="store.pendingRequestsCount > 0" class="btn-badge">{{ store.pendingRequestsCount }}</span>
+        </button>
+        <button class="btn-secondary" @click="openSyncModal">
+          <i class="fas fa-rotate"></i> Actualizar
+        </button>
+        <button @click="openAddModal">
+          <i class="fas fa-user-plus"></i> Agregar miembro
+        </button>
+      </span>
+    </div>
+
+    <div v-if="!loading">
       <TableComponent
         v-if="members.length || pendingInvitations.length || membersLoading"
         :navItems="navItems"
