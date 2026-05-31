@@ -17,6 +17,8 @@ import {
   sendClanInvitation,
   getClanRequestsManagement,
   reviewClanRequest,
+  bulkImportMembers,
+  syncClanMembers,
 } from '../../../../middlewares/services';
 import { getCharacterByName } from '../../../../middlewares/services/characterService';
 
@@ -87,7 +89,7 @@ async function openRequestsModal() {
   requestsLoading.value   = true;
   requestsError.value     = '';
   try {
-    clanRequests.value = await getClanRequestsManagement();
+    clanRequests.value = await getClanRequestsManagement(active.value?._id);
   } catch {
     requestsError.value = 'Error al cargar las solicitudes.';
   } finally {
@@ -125,6 +127,87 @@ const addEditResonance = ref<number | ''>('');
 const addLoading      = ref(false);
 const addError        = ref('');
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+// ── Sync modal ──
+const showSyncModal   = ref(false);
+const syncFile        = ref<File | null>(null);
+const syncLoading     = ref(false);
+const syncError       = ref('');
+const syncResults     = ref<{ name: string; status: string }[]>([]);
+const syncRemoved     = ref(0);
+const syncDone        = ref(false);
+
+function openSyncModal() {
+  syncFile.value    = null;
+  syncError.value   = '';
+  syncResults.value = [];
+  syncDone.value    = false;
+  showSyncModal.value = true;
+}
+
+function onSyncFileChange(e: Event) {
+  syncFile.value  = (e.target as HTMLInputElement).files?.[0] ?? null;
+  syncError.value = '';
+  syncDone.value  = false;
+}
+
+async function handleSync() {
+  if (!syncFile.value) return;
+  syncLoading.value = true;
+  syncError.value   = '';
+  syncDone.value    = false;
+  try {
+    const res = await syncClanMembers(clanId.value, syncFile.value);
+    syncResults.value = res.results ?? [];
+    syncRemoved.value = res.removed ?? 0;
+    syncDone.value    = true;
+  } catch (e: any) {
+    const data = e?.response?.data;
+    syncError.value = data?.message ?? data?.details ?? data?.error ?? 'Error al sincronizar.';
+  } finally {
+    syncLoading.value = false;
+    await loadClan();
+  }
+}
+
+// ── Step 4: bulk import ──
+const importFile      = ref<File | null>(null);
+const importLoading   = ref(false);
+const importError     = ref('');
+const importResults   = ref<{ name: string; status: string; reason?: string }[]>([]);
+const importDone      = ref(false);
+
+function goToImport() {
+  importFile.value    = null;
+  importError.value   = '';
+  importResults.value = [];
+  importDone.value    = false;
+  addStep.value       = 4 as any;
+}
+
+function onFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  importFile.value  = input.files?.[0] ?? null;
+  importError.value = '';
+}
+
+async function handleBulkImport() {
+  if (!importFile.value) return;
+  importLoading.value = true;
+  importError.value   = '';
+  importResults.value = [];
+  importDone.value    = false;
+  try {
+    const res = await bulkImportMembers(clanId.value, importFile.value);
+    importResults.value = res.results ?? [];
+    importDone.value    = true;
+    await loadClan();
+  } catch (e: any) {
+    importError.value = e?.response?.data?.message ?? 'Error al importar el archivo.';
+  } finally {
+    importLoading.value = false;
+  }
+}
 
 function openAddModal() {
   addStep.value        = 1;
@@ -257,10 +340,15 @@ function getClassName(value: string) {
 
     <span class="button-list">
       <button class="btn-secondary btn-with-badge" @click="openRequestsModal">
-        Ver solicitudes
+        <i class="fas fa-inbox"></i> Ver solicitudes
         <span v-if="store.pendingRequestsCount > 0" class="btn-badge">{{ store.pendingRequestsCount }}</span>
       </button>
-      <button @click="openAddModal">Agregar miembro</button>
+      <button class="btn-secondary" @click="openSyncModal">
+        <i class="fas fa-rotate"></i> Actualizar
+      </button>
+      <button @click="openAddModal">
+        <i class="fas fa-user-plus"></i> Agregar miembro
+      </button>
     </span>
 
     <div v-if="!loading && (allMembers.length || pendingInvitations.length)">
@@ -298,6 +386,43 @@ function getClassName(value: string) {
     <p v-else>No hay miembros en el clan.</p>
 
   </div>
+
+  <!-- Modal: sincronizar desde archivo -->
+  <CustomModal v-if="showSyncModal" title="Actualizar clan desde archivo" @close="showSyncModal = false">
+    <div class="modal-form">
+      <p class="modal-hint">
+        El archivo reemplaza los <strong>miembros</strong> del clan. Los personajes del archivo son creados o actualizados; los que no aparezcan son eliminados del clan.<br />
+        Columnas: <strong>Jugador, Resonancia, Armadura, Penetracion, Potencia, Resistencia, Clase, Whatsapp</strong>.
+      </p>
+      <div class="field-group">
+        <label class="field-label">Archivo (.csv o .xlsx)</label>
+        <input type="file" accept=".csv,.xlsx" class="sync-file-input" @change="onSyncFileChange" :disabled="syncLoading" />
+      </div>
+      <div class="step-actions">
+        <button :disabled="syncLoading || !syncFile" @click="handleSync">
+          <i class="fas fa-rotate"></i>
+          {{ syncLoading ? 'Sincronizando...' : 'Sincronizar' }}
+        </button>
+      </div>
+      <p v-if="syncError" class="modal-error">{{ syncError }}</p>
+      <template v-if="syncDone">
+        <p class="modal-hint">
+          {{ syncResults.length }} procesados
+          <span v-if="syncRemoved > 0"> · {{ syncRemoved }} eliminados del clan</span>
+        </p>
+        <ul class="search-results">
+          <li v-for="r in syncResults" :key="r.name" class="search-result-card" style="cursor:default">
+            <div class="result-info">
+              <div>
+                <strong>{{ r.name }}</strong>
+                <small>{{ r.status === 'created' ? 'Creado' : 'Actualizado' }}</small>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </template>
+    </div>
+  </CustomModal>
 
   <!-- Modal: solicitudes de ingreso -->
   <CustomModal v-if="showRequestsModal" title="Solicitudes de ingreso" @close="showRequestsModal = false">
@@ -362,6 +487,9 @@ function getClassName(value: string) {
           <button :disabled="searchName.trim().length < 2" @click="goToCreate">
             <i class="fas fa-plus"></i> Crear nuevo personaje
           </button>
+          <button @click="goToImport">
+            <i class="fas fa-file-import"></i> Importar CSV / XLSX
+          </button>
         </div>
       </template>
 
@@ -410,6 +538,46 @@ function getClassName(value: string) {
             {{ addLoading
               ? (selectedChar.status === 'claimed' ? 'Enviando...' : 'Agregando...')
               : (selectedChar.status === 'claimed' ? 'Enviar invitación' : 'Agregar al clan') }}
+          </button>
+          <button class="btn-ghost" @click="backToSearch">Volver</button>
+        </div>
+      </template>
+
+      <!-- Step 4: importar CSV / XLSX -->
+      <template v-if="(addStep as any) === 4">
+        <p class="step-label">Importar miembros desde archivo</p>
+        <p class="modal-hint">
+          El archivo debe tener las columnas: <strong>Jugador, Resonancia, Armadura, Penetracion, Potencia, Resistencia, Clase, Whatsapp</strong>.
+        </p>
+
+        <div class="field-group">
+          <label class="field-label">Archivo (.csv o .xlsx)</label>
+          <input type="file" accept=".csv,.xlsx" @change="onFileChange" class="file-input" />
+        </div>
+
+        <div v-if="importDone && importResults.length" class="import-results">
+          <div v-for="r in importResults" :key="r.name" class="import-row" :class="'import-row--' + r.status">
+            <span class="import-name">{{ r.name }}</span>
+            <span class="import-badge">
+              <template v-if="r.status === 'created'">Creado</template>
+              <template v-else-if="r.status === 'updated'">Actualizado</template>
+              <template v-else-if="r.status === 'invited'">Invitado</template>
+              <template v-else>Omitido</template>
+            </span>
+            <span v-if="r.reason" class="import-reason">{{ r.reason }}</span>
+          </div>
+        </div>
+
+        <p v-if="importError" class="modal-error">{{ importError }}</p>
+
+        <div class="step-actions">
+          <button
+            :disabled="importLoading || !importFile"
+            class="w-100"
+            @click="handleBulkImport"
+          >
+            <i class="fas fa-upload"></i>
+            {{ importLoading ? 'Importando...' : 'Importar' }}
           </button>
           <button class="btn-ghost" @click="backToSearch">Volver</button>
         </div>

@@ -277,3 +277,25 @@ export const reviewClanInvitation: any = async (id: string, action: 'accept' | '
   ).then(r => r.data);
   return response;
 };
+
+export const syncClanMembers: any = async (clanId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response: any = await axios.post(
+    `${API_URL}/clan-management/clan/${clanId}/sync`,
+    formData,
+    { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } }
+  ).then(r => r.data);
+  return response;
+};
+
+export const bulkImportMembers: any = async (clanId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response: any = await axios.post(
+    `${API_URL}/clan-management/clan/${clanId}/bulk-import`,
+    formData,
+    { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } }
+  ).then(r => r.data);
+  return response;
+};
