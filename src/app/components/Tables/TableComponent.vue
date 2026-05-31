@@ -7,7 +7,7 @@ const props = defineProps<{
 }>();
 
 const gridColumns = computed(() => {
-  return { gridTemplateColumns: `repeat(${props.navItems.length}, 1fr)` };
+  return { gridTemplateColumns: `repeat(${props.navItems.length}, minmax(80px, 1fr))` };
 });
 </script>
 

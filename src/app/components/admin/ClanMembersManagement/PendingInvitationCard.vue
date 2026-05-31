@@ -99,6 +99,8 @@ span {
     position: sticky;
     right: 0;
     background: rgba(255, 255, 255, .03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     padding-inline: .3rem;
     z-index: 1;
   }
