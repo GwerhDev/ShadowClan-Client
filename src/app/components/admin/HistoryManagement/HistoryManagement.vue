@@ -1,7 +1,7 @@
 <style scoped lang="scss" src="./HistoryManagement.scss" />
 <script setup lang="ts">
 import { useStore } from '../../../../middlewares/store';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import TableComponent from '../../Tables/TableComponent.vue';
 import HistoryListCard from './HistoryListCard.vue';
@@ -12,17 +12,21 @@ const currentPage = ref(1);
 const hasMore     = ref(true);
 const isFetching  = ref(false);
 const filter      = ref<HistoryFilter>('all');
+const sentinel    = ref<HTMLElement | null>(null);
 
 const store: any = useStore();
 const loading    = ref(true);
 const route      = useRoute();
 
+let scrollObserver: IntersectionObserver | null = null;
+
 const loadMore = async () => {
+  if (isFetching.value || !hasMore.value) return;
   isFetching.value = true;
   currentPage.value++;
   const fetchedMore = await store.handleGetHistory(currentPage.value, filter.value, true);
-  hasMore.value     = fetchedMore;
-  isFetching.value  = false;
+  hasMore.value    = fetchedMore;
+  isFetching.value = false;
 };
 
 const fetchHistory = async () => {
@@ -35,9 +39,26 @@ const fetchHistory = async () => {
   loading.value        = false;
 };
 
+function setupObserver() {
+  scrollObserver?.disconnect();
+  if (!sentinel.value) return;
+  scrollObserver = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) loadMore();
+  }, { threshold: 0 });
+  scrollObserver.observe(sentinel.value);
+}
+
+onMounted(() => setupObserver());
+onUnmounted(() => scrollObserver?.disconnect());
+
+watch(sentinel, el => {
+  if (el) setupObserver();
+});
+
 watch(() => store.currentUser.logged, async (isLoggedIn) => {
   if (isLoggedIn) {
-    fetchHistory();
+    await fetchHistory();
+    setupObserver();
   } else {
     store.admin.history = [];
     loading.value = false;
@@ -46,6 +67,11 @@ watch(() => store.currentUser.logged, async (isLoggedIn) => {
 
 watch(() => route.name, (newName) => {
   if (newName === 'ManagementHistory') fetchHistory();
+});
+
+// Reload when the active character changes (user may switch to a different clan)
+watch(() => store.currentCharacter, (newId, oldId) => {
+  if (newId && newId !== oldId) fetchHistory();
 });
 
 const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
@@ -58,18 +84,10 @@ const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
 
       <div v-if="loading" class="skeleton-table-container">
         <div class="skeleton-table-header skeleton-cols-5">
-          <div class="skeleton-box skeleton-header-item"></div>
-          <div class="skeleton-box skeleton-header-item"></div>
-          <div class="skeleton-box skeleton-header-item"></div>
-          <div class="skeleton-box skeleton-header-item"></div>
-          <div class="skeleton-box skeleton-header-item"></div>
+          <div class="skeleton-box skeleton-header-item" v-for="n in 5" :key="n"></div>
         </div>
         <div class="skeleton-table-row skeleton-cols-5" v-for="n in 5" :key="n">
-          <div class="skeleton-box skeleton-cell"></div>
-          <div class="skeleton-box skeleton-cell"></div>
-          <div class="skeleton-box skeleton-cell"></div>
-          <div class="skeleton-box skeleton-cell"></div>
-          <div class="skeleton-box skeleton-cell"></div>
+          <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
         </div>
       </div>
 
@@ -100,16 +118,18 @@ const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
             <span>No hay historiales disponibles.</span>
           </li>
 
-          <div v-if="isFetching && hasMore" class="loading-indicator">
-            Cargando más historiales...
+          <div v-if="isFetching" class="skeleton-table-row skeleton-cols-5">
+            <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
           </div>
         </TableComponent>
-
-        <div v-if="hasMore && !isFetching" class="load-more-container">
-          <button @click="loadMore" :disabled="isFetching">Cargar más</button>
-        </div>
       </template>
+
+      <div ref="sentinel" class="sentinel"></div>
 
     </template>
   </div>
 </template>
+
+<style scoped lang="scss">
+.sentinel { height: 1px; }
+</style>
