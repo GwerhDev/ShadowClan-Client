@@ -1,11 +1,11 @@
 <style scoped lang="scss" src="./ProfileComponent.scss" />
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import AddCharacterModal from './AddCharacterModal.vue';
 import LinkCharacterForm from '../Walker/LinkCharacterForm.vue';
 import { classes } from '../../../middlewares/misc/const';
-import { updateCharacter } from '../../../middlewares/services';
+import { updateCharacter, leaveClan } from '../../../middlewares/services';
 
 const store: any = useStore();
 const showAddModal = ref(false);
@@ -136,6 +136,42 @@ async function saveEdit() {
     editError.value = 'Error al guardar los cambios.';
   } finally {
     editSaving.value = false;
+  }
+}
+
+// ── Clan context menu ──
+const clanMenuOpen = ref(false);
+const clanMenuPos  = ref({ top: 0, left: 0 });
+const leavingClan  = ref(false);
+const leaveError   = ref('');
+
+function openClanMenu(event: MouseEvent) {
+  const btn  = event.currentTarget as HTMLElement;
+  const rect = btn.getBoundingClientRect();
+  clanMenuPos.value = { top: rect.bottom + 6, left: rect.right - 160 };
+  clanMenuOpen.value = !clanMenuOpen.value;
+  event.stopPropagation();
+}
+
+function closeClanMenu() { clanMenuOpen.value = false; }
+
+onMounted(()   => document.addEventListener('click', closeClanMenu));
+onUnmounted(() => document.removeEventListener('click', closeClanMenu));
+
+async function handleLeaveClan() {
+  if (!activeCharacter.value) return;
+  const clan = activeCharacter.value.clan;
+  if (!clan) return;
+  leavingClan.value = true;
+  leaveError.value  = '';
+  try {
+    await leaveClan(clan._id ?? clan, activeCharacter.value._id);
+    closeClanMenu();
+    await store.handleUserData();
+  } catch (e: any) {
+    leaveError.value = e?.response?.data?.message ?? 'Error al abandonar el clan.';
+  } finally {
+    leavingClan.value = false;
   }
 }
 
@@ -282,7 +318,7 @@ function charHasUnreadNotifications(char: any): boolean {
         </div>
 
         <!-- Clan section -->
-        <div v-if="activeCharacter.clan" class="clan-card">
+        <div v-if="activeCharacter.clan" class="clan-card" @click.stop>
           <div class="clan-card-header">
             <i class="fas fa-shield-halved clan-shield-icon"></i>
             <div class="clan-card-titles">
@@ -290,6 +326,9 @@ function charHasUnreadNotifications(char: any): boolean {
               <h2 class="clan-card-name">{{ activeCharacter.clan.name }}</h2>
             </div>
             <span class="clan-role-badge">{{ activeCharacterRole ?? '—' }}</span>
+            <button class="clan-menu-btn" :class="{ active: clanMenuOpen }" @click.stop="openClanMenu" title="Opciones">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
           </div>
           <div class="clan-card-stats">
             <div class="clan-stat-item">
@@ -309,6 +348,22 @@ function charHasUnreadNotifications(char: any): boolean {
       </div>
     </template>
   </div>
+
+  <!-- Clan context menu -->
+  <Teleport to="body">
+    <div
+      v-if="clanMenuOpen"
+      class="clan-ctx-menu"
+      :style="{ top: clanMenuPos.top + 'px', left: clanMenuPos.left + 'px' }"
+      @click.stop
+    >
+      <button class="ctx-item ctx-danger" :disabled="leavingClan" @click="handleLeaveClan">
+        <i :class="leavingClan ? 'fas fa-spinner fa-spin' : 'fas fa-person-walking-arrow-right'"></i>
+        {{ leavingClan ? 'Abandonando...' : 'Abandonar clan' }}
+      </button>
+      <p v-if="leaveError" class="ctx-error">{{ leaveError }}</p>
+    </div>
+  </Teleport>
 
   <!-- Character switcher modal -->
   <div v-if="showCharSwitcher" class="char-switcher-overlay" @click.self="showCharSwitcher = false">
@@ -349,3 +404,51 @@ function charHasUnreadNotifications(char: any): boolean {
 
   <AddCharacterModal v-if="showAddModal" @close="showAddModal = false" />
 </template>
+
+
+<!-- clan context menu — global (vive en body via Teleport) -->
+<style lang="scss">
+.clan-ctx-menu {
+  position: fixed;
+  z-index: 9999;
+  width: max-content;
+  min-width: 160px;
+  background: #1e2029;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .55);
+  padding: .3rem;
+  display: flex;
+  flex-direction: column;
+
+  .ctx-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .55rem;
+    padding: .5rem .75rem;
+    border-radius: 5px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, .7);
+    font-size: .82rem;
+    cursor: pointer;
+    width: 100%;
+    transition: background .12s, color .12s;
+    i { width: 14px; text-align: center; font-size: .78rem; }
+    &:hover:not(:disabled) { background: rgba(255,255,255,.07); color: rgba(255,255,255,.95); }
+    &:disabled { opacity: .4; cursor: not-allowed; }
+  }
+
+  .ctx-danger {
+    color: rgba(229, 115, 115, .8);
+    &:hover:not(:disabled) { background: rgba(229,115,115,.08); color: rgb(229,115,115); }
+  }
+
+  .ctx-error {
+    margin: .25rem .5rem .2rem;
+    font-size: .75rem;
+    color: #e57373;
+  }
+}
+</style>

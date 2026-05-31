@@ -165,6 +165,12 @@ export const getClanRequestsManagement: any = async (characterId?: string) => {
   return response;
 };
 
+export const cancelClanRequest: any = async (id: string) => {
+  const response: any = await axios.delete(API_URL + '/clan-request/' + id, { withCredentials: true })
+    .then(r => r.data);
+  return response;
+};
+
 export const reviewClanRequest: any = async (id: string, action: 'accept' | 'reject') => {
   const response: any = await axios.patch(API_URL + "/clan-request/" + id, { action }, { withCredentials: true })
     .then(response => response.data);
@@ -243,6 +249,15 @@ export const getClanMembers: any = async (clanId: string) => {
 export const addClanMember: any = async (clanId: string, characterId: string) => {
   const response: any = await axios.post(API_URL + "/clan-management/clan/" + clanId + "/members", { characterId }, { withCredentials: true })
                                    .then(response => response.data);
+  return response;
+};
+
+export const leaveClan: any = async (clanId: string, characterId: string) => {
+  const response: any = await axios.post(
+    `${API_URL}/clan-management/clan/${clanId}/leave`,
+    { characterId },
+    { withCredentials: true }
+  ).then(r => r.data);
   return response;
 };
 

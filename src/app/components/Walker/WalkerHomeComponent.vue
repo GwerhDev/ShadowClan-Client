@@ -3,16 +3,17 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import SearchSelector from '../Selectors/SearchSelector.vue';
 import LinkCharacterForm from './LinkCharacterForm.vue';
-import { getMyCharacterClaims, getMyCharacterCreationRequests, searchClans, createClanCreationRequest, getMyClanCreationRequests } from '../../../middlewares/services';
+import { getMyCharacterClaims, getMyCharacterCreationRequests, searchClans, createClanCreationRequest, getMyClanCreationRequests, cancelClanRequest } from '../../../middlewares/services';
 import { getSocket } from '../../../middlewares/socket';
 const store: any = useStore();
 
 const linkingCharacter = ref(false);
 const selectedClanId = ref('');
 
-const submitting = ref(false);
-const requestStatus = ref<'idle' | 'success' | 'conflict' | 'error'>('idle');
-const myRequests = ref<any[]>([]);
+const submitting      = ref(false);
+const requestStatus   = ref<'idle' | 'success' | 'conflict' | 'error'>('idle');
+const cancellingId    = ref<string | null>(null);
+const myRequests      = ref<any[]>([]);
 const pendingCharacterRequests = ref<any[]>([]);
 
 // Clan creation request
@@ -34,6 +35,17 @@ const pendingRequests = computed(() =>
 
 async function fetchMyRequests() {
   myRequests.value = await store.handleGetClanRequests() ?? [];
+}
+
+async function handleCancelRequest(id: string) {
+  cancellingId.value = id;
+  try {
+    await cancelClanRequest(id);
+    myRequests.value = myRequests.value.filter((r: any) => r._id !== id);
+    if (store.pendingRequestsCount > 0) store.pendingRequestsCount--;
+  } finally {
+    cancellingId.value = null;
+  }
 }
 
 async function fetchClanCreationRequests() {
@@ -207,6 +219,14 @@ onUnmounted(() => {
         <div class="request-row" v-for="req in pendingRequests" :key="req._id">
           <span class="request-clan">{{ req.clan?.name }}</span>
           <span class="request-status pending">Pendiente</span>
+          <button
+            class="request-cancel-btn"
+            :disabled="cancellingId === req._id"
+            @click="handleCancelRequest(req._id)"
+            title="Cancelar solicitud"
+          >
+            <i :class="cancellingId === req._id ? 'fas fa-spinner fa-spin' : 'fas fa-times'"></i>
+          </button>
         </div>
       </div>
 
@@ -431,13 +451,38 @@ $gold-mid: rgba(227, 210, 168, .5);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: .65rem;
     padding: .55rem .85rem;
     background: rgba(255, 255, 255, .03);
     border: 1px solid rgba(255,255,255,.05);
     border-radius: 6px;
   }
 
-  .request-clan { font-size: .88rem; }
+  .request-clan { font-size: .88rem; flex: 1; }
+
+  .request-cancel-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid rgba(229, 115, 115, .25);
+    color: rgba(229, 115, 115, .6);
+    cursor: pointer;
+    font-size: .7rem;
+    flex-shrink: 0;
+    transition: background .15s, color .15s, border-color .15s;
+
+    &:hover:not(:disabled) {
+      background: rgba(229, 115, 115, .1);
+      border-color: rgba(229, 115, 115, .5);
+      color: rgb(229, 115, 115);
+    }
+
+    &:disabled { opacity: .4; cursor: not-allowed; }
+  }
 
   .request-type {
     font-size: .7rem;

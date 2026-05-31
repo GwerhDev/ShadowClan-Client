@@ -595,6 +595,28 @@
   margin: 0;
 }
 
+/* ── Clan menu button ── */
+.clan-menu-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, .3);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+
+  &:hover, &.active {
+    background: rgba(255, 255, 255, .07);
+    color: rgba(255, 255, 255, .7);
+  }
+}
+
 /* ── No characters ── */
 .no-character-card {
   width: 100%;
