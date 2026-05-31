@@ -36,10 +36,6 @@
           <span class="detail-date">{{ formattedDate }}</span>
         </div>
         <div class="detail-actions">
-          <select class="result-select" v-model="selectedResult" @change="updateResult">
-            <option v-for="opt in towerResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
-          </select>
-
           <template v-if="confirmDelete">
             <button class="ctx-confirm-btn" @click="deleteTower" :disabled="saving">
               <i class="fas fa-check"></i> Confirmar
@@ -98,8 +94,11 @@
           <SearchSelector
             v-model="editEnemyClan"
             :fetch-fn="searchClans"
-            :selected-label="tower.enemyClan?.name"
+            :selected-label="editEnemyClanName || tower.enemyClan?.name"
             placeholder="Buscar clan..."
+            create-label="Crear clan enemigo"
+            @create="showCreateClanModal = true"
+            @clear="editEnemyClanName = ''"
           />
         </div>
       </div>
@@ -107,7 +106,10 @@
       <div class="detail-stats">
         <div class="stat-card">
           <span class="stat-label">Resultado</span>
-          <span :class="['result-chip', `result-${selectedResult}`]">{{ resultLabel }}</span>
+          <select v-if="editing" class="result-select" v-model="selectedResult">
+            <option v-for="opt in towerResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
+          </select>
+          <span v-else :class="['result-chip', `result-${selectedResult}`]">{{ resultLabel }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-label">Torre N°</span>
@@ -155,22 +157,64 @@
 
     </template>
   </div>
+
+  <Teleport to="body">
+    <div v-if="showCreateClanModal" class="create-clan-overlay" @click.self="showCreateClanModal = false; createClanError = ''">
+      <div class="create-clan-modal">
+        <h4 class="create-clan-title">Crear clan enemigo</h4>
+        <input class="create-clan-input" type="text" v-model="newClanName"
+          placeholder="Nombre del clan" @keydown.enter="handleCreateClan" @keydown.esc="showCreateClanModal = false" />
+        <p v-if="createClanError" class="create-clan-error">{{ createClanError }}</p>
+        <div class="create-clan-actions">
+          <button class="btn-create-clan" :disabled="!newClanName.trim() || creatingClan" @click="handleCreateClan">
+            <i class="fas fa-check"></i> Crear
+          </button>
+          <button class="btn-cancel-modal" @click="showCreateClanModal = false; createClanError = ''">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from '../../../../middlewares/store';
-import { updateAccursedTower, searchClans } from '../../../../middlewares/services';
+import { updateAccursedTower, searchClans, createEnemyClan } from '../../../../middlewares/services';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
 
 const route  = useRoute();
 const router = useRouter();
 const store: any = useStore();
 
-const loading        = ref(true);
-const error          = ref(false);
-const saving         = ref(false);
+const loading             = ref(true);
+const error               = ref(false);
+const saving              = ref(false);
+const showCreateClanModal = ref(false);
+const newClanName         = ref('');
+const creatingClan        = ref(false);
+const createClanError     = ref('');
+const editEnemyClanName   = ref('');
+
+async function handleCreateClan() {
+  if (!newClanName.value.trim()) return;
+  creatingClan.value    = true;
+  createClanError.value = '';
+  try {
+    const name    = newClanName.value.trim();
+    const created = await createEnemyClan(name);
+    editEnemyClan.value       = created._id;
+    editEnemyClanName.value   = name;
+    showCreateClanModal.value = false;
+    newClanName.value         = '';
+  } catch (err: any) {
+    createClanError.value = err?.response?.data?.message ?? 'Error al crear el clan.';
+  } finally {
+    creatingClan.value = false;
+  }
+}
 const showCtx        = ref(false);
 const ctxPos         = ref({ top: 0, left: 0 });
 const confirmDelete  = ref(false);

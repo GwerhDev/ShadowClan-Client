@@ -91,8 +91,11 @@
           <SearchSelector
             v-model="editEnemyClan"
             :fetch-fn="searchClans"
-            :selected-label="currentShadowWar.enemyClan?.name"
+            :selected-label="editEnemyClanName || currentShadowWar.enemyClan?.name"
             placeholder="Buscar clan..."
+            create-label="Crear clan enemigo"
+            @create="showCreateClanModal = true"
+            @clear="editEnemyClanName = ''"
           />
         </div>
       </div>
@@ -205,6 +208,33 @@
     />
 
   </div>
+
+  <!-- Create enemy clan modal — same pattern as CreateShadowWarForm -->
+  <Teleport to="body">
+    <div v-if="showCreateClanModal" class="create-clan-overlay" @click.self="showCreateClanModal = false; createClanError = ''">
+      <div class="create-clan-modal">
+        <h4 class="create-clan-title">Crear clan enemigo</h4>
+        <input
+          class="create-clan-input"
+          type="text"
+          v-model="newClanName"
+          placeholder="Nombre del clan"
+          @keydown.enter="handleCreateClan"
+          @keydown.esc="showCreateClanModal = false"
+        />
+        <p v-if="createClanError" class="create-clan-error">{{ createClanError }}</p>
+        <div class="create-clan-actions">
+          <button class="btn-create-clan" :disabled="!newClanName.trim() || creatingClan" @click="handleCreateClan">
+            <i class="fas fa-check"></i> Crear
+          </button>
+          <button class="btn-cancel-modal" @click="showCreateClanModal = false; createClanError = ''">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
 </template>
 
 <script setup lang="ts">
@@ -217,7 +247,7 @@ import ConfirmedMembersModal from './ConfirmedMembersModal.vue';
 import MemberSelectionModal from '../ShadowWarManagement/MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
 import { useStore } from '../../../../middlewares/store';
-import { searchClans, closeShadowWarManagement, updateShadowWarClan, getClanMembers } from '../../../../middlewares/services';
+import { searchClans, closeShadowWarManagement, updateShadowWarClan, getClanMembers, createEnemyClan } from '../../../../middlewares/services';
 
 const route  = useRoute();
 const router = useRouter();
@@ -233,6 +263,29 @@ const selectedMatch         = ref<Match | null>(null);
 const selectedResult        = ref('');
 const showCtx               = ref(false);
 const ctxPos                = ref({ top: 0, left: 0 });
+const showCreateClanModal   = ref(false);
+const newClanName           = ref('');
+const creatingClan          = ref(false);
+const createClanError       = ref('');
+const editEnemyClanName     = ref('');
+
+async function handleCreateClan() {
+  if (!newClanName.value.trim()) return;
+  creatingClan.value    = true;
+  createClanError.value = '';
+  try {
+    const name = newClanName.value.trim();
+    const created = await createEnemyClan(name);
+    editEnemyClan.value       = created._id;
+    editEnemyClanName.value   = name;
+    showCreateClanModal.value = false;
+    newClanName.value         = '';
+  } catch (err: any) {
+    createClanError.value = err?.response?.data?.message ?? 'Error al crear el clan.';
+  } finally {
+    creatingClan.value = false;
+  }
+}
 const confirmDelete         = ref(false);
 const editing               = ref(false);
 const editDate              = ref('');
@@ -409,3 +462,67 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss" src="./HistoryDetails.scss"></style>
+
+<!-- Create clan modal styles — global because it lives in body via Teleport -->
+<style lang="scss">
+.create-clan-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.create-clan-modal {
+  background: var(--color-primary-bg);
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.create-clan-title {
+  margin: 0;
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255, 255, 255, .7);
+}
+.create-clan-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 .75rem;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 8px;
+  color: var(--color-app-white);
+  font-family: 'Cinzel', serif;
+  font-size: .9rem;
+  &:focus { outline: none; border-color: rgba(227, 210, 168, .4); }
+  &::placeholder { color: rgba(255, 255, 255, .25); }
+}
+.create-clan-error { margin: 0; font-size: .78rem; color: #f87171; }
+.create-clan-actions { display: flex; gap: .5rem; justify-content: flex-end; }
+.btn-create-clan {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .3rem .85rem; height: 36px;
+  font-family: 'Cinzel', serif; font-size: .72rem;
+  background: transparent; border: 1px solid rgba(76, 175, 80, .4);
+  color: #81c784; border-radius: 6px; cursor: pointer;
+  &:hover:not(:disabled) { background: rgba(76, 175, 80, .1); border-color: rgba(76, 175, 80, .7); }
+  &:disabled { opacity: .4; cursor: not-allowed; }
+}
+.btn-cancel-modal {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .3rem .85rem; height: 36px;
+  font-family: 'Cinzel', serif; font-size: .72rem;
+  background: transparent; border: 1px solid rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .5); border-radius: 6px; cursor: pointer;
+  &:hover { border-color: rgba(255, 255, 255, .3); color: rgba(255, 255, 255, .8); }
+}
+</style>

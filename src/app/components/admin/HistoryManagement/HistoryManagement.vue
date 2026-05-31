@@ -253,7 +253,10 @@ async function handleAddHistory() {
 
           <div class="field-group">
             <label class="field-label">Clan enemigo</label>
+
+            <!-- Search mode -->
             <SearchSelector
+              v-if="!showCreateClan"
               v-model="selectedClanId"
               :fetch-fn="searchEnemyClans"
               placeholder="Buscar clan enemigo..."
@@ -263,16 +266,21 @@ async function handleAddHistory() {
               @clear="onClanClear"
               @create="onClanCreate"
             />
-            <!-- Inline create form -->
-            <div v-if="showCreateClan" class="create-clan-inline">
+
+            <!-- Create mode — replaces the searcher -->
+            <div v-else class="create-clan-inline">
               <input
                 v-model="newClanName"
                 class="field-input"
                 placeholder="Nombre del nuevo clan"
                 @keyup.enter="confirmNewClan"
+                autofocus
               />
               <button class="btn-confirm-clan" @click="confirmNewClan" :disabled="!newClanName.trim()">
                 <i class="fas fa-check"></i>
+              </button>
+              <button class="btn-cancel-clan" @click="showCreateClan = false; newClanName = ''" title="Cancelar">
+                <i class="fas fa-xmark"></i>
               </button>
             </div>
           </div>
@@ -366,7 +374,23 @@ async function handleAddHistory() {
 .create-clan-inline {
   display: flex;
   gap: .4rem;
-  margin-top: .25rem;
+}
+
+.btn-cancel-clan {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, .4);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+
+  &:hover { background: rgba(255, 255, 255, .07); color: rgba(255, 255, 255, .7); }
 }
 
 .btn-confirm-clan {
