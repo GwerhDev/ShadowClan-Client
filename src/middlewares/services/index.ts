@@ -111,7 +111,7 @@ export const getCharacter: any = async () => {
   return response;
 };
 
-export const updateCharacter: any = async (id: string, data: { name?: string; currentClass?: string; resonance?: number }) => {
+export const updateCharacter: any = async (id: string, data: { name?: string; currentClass?: string; resonance?: number; armor?: number; armorPenetration?: number; power?: number; resistance?: number }) => {
   const response: any = await axios.put(API_URL + "/character/" + id, data, { withCredentials: true })
     .then(r => r.data);
   return response;
@@ -201,6 +201,14 @@ export const getMyCharacterCreationRequests: any = async () => {
   return response;
 };
 export { getCharacterByName } from './characterService';
+
+export const getClanMembersPage: any = async (clanId: string, params: { page: number; limit: number; q?: string }) => {
+  const response: any = await axios.get(`${API_URL}/clan-management/clan/${clanId}/members`, {
+    params,
+    withCredentials: true,
+  }).then(r => r.data);
+  return response;
+};
 
 export const getClanMembers: any = async (clanId: string) => {
   const response: any = await axios.get(API_URL + "/clan-management/clan/" + clanId, { withCredentials: true })

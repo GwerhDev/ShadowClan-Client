@@ -307,6 +307,140 @@
   font-family: 'Cinzel', serif;
 }
 
+/* ── Combat attributes ── */
+.attrs-section {
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+  width: 100%;
+}
+
+.attrs-title {
+  margin: 0;
+  font-size: .65rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .35);
+  font-family: 'Cinzel', serif;
+}
+
+.attrs-container {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 1.1rem;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 10px;
+}
+
+/* ── Radar SVG ── */
+.radar-svg {
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
+}
+
+.radar-grid {
+  fill: none;
+  stroke: rgba(255, 255, 255, .08);
+  stroke-width: 1;
+}
+
+.radar-axis {
+  stroke: rgba(255, 255, 255, .1);
+  stroke-width: 1;
+}
+
+.radar-fill {
+  fill: rgba(227, 210, 168, .18);
+  stroke: rgba(227, 210, 168, .7);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  transition: all .4s ease;
+}
+
+.radar-label {
+  font-size: 8.5px;
+  fill: rgba(255, 255, 255, .45);
+  font-family: 'Cinzel', serif;
+  letter-spacing: .04em;
+}
+
+/* ── Vertical stat list ── */
+.attrs-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 88px 1fr auto;
+  align-items: center;
+  gap: .55rem;
+}
+
+.stat-row-label {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255, 255, 255, .4);
+  font-family: 'Cinzel', serif;
+  white-space: nowrap;
+}
+
+.stat-row-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, .08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stat-row-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(227, 210, 168, .45), rgba(227, 210, 168, .85));
+  transition: width .5s ease;
+  min-width: 2px;
+}
+
+.stat-row-value {
+  font-size: .82rem;
+  font-family: 'Cinzel', serif;
+  color: rgba(227, 210, 168, .85);
+  font-weight: 600;
+  min-width: 42px;
+  text-align: right;
+}
+
+.stat-row-input {
+  width: 60px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(227, 210, 168, .35);
+  color: rgb(227, 210, 168);
+  font-family: 'Cinzel', serif;
+  font-size: .8rem;
+  text-align: right;
+  outline: none;
+  padding: 0;
+
+  &:focus { border-bottom-color: rgba(227, 210, 168, .7); }
+  &:disabled { opacity: .5; }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button { -webkit-appearance: none; }
+  -moz-appearance: textfield;
+}
+
+@media (max-width: 520px) {
+  .attrs-container { flex-direction: column; align-items: center; }
+  .radar-svg { width: 180px; height: 180px; }
+}
+
 /* ── Clan card ── */
 .clan-card {
   background: rgba(227, 210, 168, .04);

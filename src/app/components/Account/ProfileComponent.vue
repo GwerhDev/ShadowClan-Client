@@ -50,14 +50,61 @@ async function switchCharacter(id: string) {
 const editing = ref(false);
 const editSaving = ref(false);
 const editError = ref('');
-const editForm = ref({ name: '', currentClass: '', resonance: null as number | null });
+const editForm = ref({
+  name: '', currentClass: '', resonance: null as number | null,
+  armor: null as number | null, armorPenetration: null as number | null,
+  power: null as number | null, resistance: null as number | null,
+});
+
+const STAT_MAX = 10000;
+const RADAR_C  = 100;  // center of 200x200 SVG
+const RADAR_R  = 72;   // radius
+
+function statBar(val: number | null | undefined): number {
+  if (!val) return 0;
+  return Math.min(100, Math.round((val / STAT_MAX) * 100));
+}
+
+function gridPolygon(ratio: number): string {
+  const r = RADAR_R * ratio;
+  return `${RADAR_C},${RADAR_C - r} ${RADAR_C + r},${RADAR_C} ${RADAR_C},${RADAR_C + r} ${RADAR_C - r},${RADAR_C}`;
+}
+
+const radarPoints = computed(() => {
+  const src  = editing.value ? editForm.value : activeCharacter.value;
+  const norm = (v: number | null | undefined) => Math.min(1, Math.max(0, (v ?? 0) / STAT_MAX));
+  const arm  = norm(src.armor);            // top
+  const pen  = norm(src.armorPenetration); // bottom
+  const pot  = norm(src.power);            // left
+  const res  = norm(src.resistance);       // right
+  return [
+    `${RADAR_C},${RADAR_C - RADAR_R * arm}`,   // top
+    `${RADAR_C + RADAR_R * res},${RADAR_C}`,   // right
+    `${RADAR_C},${RADAR_C + RADAR_R * pen}`,   // bottom
+    `${RADAR_C - RADAR_R * pot},${RADAR_C}`,   // left
+  ].join(' ');
+});
+
+const statList = computed(() => {
+  const src = editing.value ? editForm.value : activeCharacter.value;
+  return [
+    { key: 'armor',            label: 'Armadura',     form: 'armor',            val: src.armor            ?? null },
+    { key: 'armorPenetration', label: 'Penetración',  form: 'armorPenetration', val: src.armorPenetration ?? null },
+    { key: 'power',            label: 'Potencia',     form: 'power',            val: src.power            ?? null },
+    { key: 'resistance',       label: 'Resistencia',  form: 'resistance',       val: src.resistance       ?? null },
+  ];
+});
 
 function startEdit() {
   const c = activeCharacter.value;
   editForm.value = {
-    name: c.name ?? '',
-    currentClass: c.currentClass ?? '',
-    resonance: c.resonance ?? null,
+    name:             c.name ?? '',
+    currentClass:     c.currentClass ?? '',
+    resonance:        c.resonance        ?? null,
+    armor:            c.armor            ?? null,
+    armorPenetration: c.armorPenetration ?? null,
+    power:            c.power            ?? null,
+    resistance:       c.resistance       ?? null,
   };
   editError.value = '';
   editing.value = true;
@@ -74,9 +121,13 @@ async function saveEdit() {
   editError.value = '';
   try {
     const payload: any = {
-      name: editForm.value.name.trim(),
-      currentClass: editForm.value.currentClass || undefined,
-      resonance: editForm.value.resonance ?? undefined,
+      name:             editForm.value.name.trim(),
+      currentClass:     editForm.value.currentClass     || undefined,
+      resonance:        editForm.value.resonance        ?? undefined,
+      armor:            editForm.value.armor            ?? undefined,
+      armorPenetration: editForm.value.armorPenetration ?? undefined,
+      power:            editForm.value.power            ?? undefined,
+      resistance:       editForm.value.resistance       ?? undefined,
     };
     await updateCharacter(activeCharacter.value._id, payload);
     await store.handleGetCharacter();
@@ -188,6 +239,47 @@ function charHasUnreadNotifications(char: any): boolean {
           </div>
         </div>
         <p v-if="editError" class="edit-error">{{ editError }}</p>
+
+        <!-- Combat attributes -->
+        <div class="attrs-section">
+          <h4 class="attrs-title">Atributos de combate</h4>
+          <div class="attrs-container">
+
+            <!-- Radar chart -->
+            <svg class="radar-svg" viewBox="0 0 200 200" aria-hidden="true">
+              <polygon v-for="r in [0.25, 0.5, 0.75, 1]" :key="r" :points="gridPolygon(r)" class="radar-grid" />
+              <line x1="100" y1="100" x2="100" y2="28"  class="radar-axis" />
+              <line x1="100" y1="100" x2="172" y2="100" class="radar-axis" />
+              <line x1="100" y1="100" x2="100" y2="172" class="radar-axis" />
+              <line x1="100" y1="100" x2="28"  y2="100" class="radar-axis" />
+              <polygon :points="radarPoints" class="radar-fill" />
+              <text x="100" y="18"  class="radar-label" text-anchor="middle">ARM</text>
+              <text x="196" y="104" class="radar-label" text-anchor="end">RES</text>
+              <text x="100" y="196" class="radar-label" text-anchor="middle">PEN</text>
+              <text x="4"   y="104" class="radar-label" text-anchor="start">POT</text>
+            </svg>
+
+            <!-- Vertical stat list -->
+            <div class="attrs-list">
+              <div class="stat-row" v-for="stat in statList" :key="stat.key">
+                <span class="stat-row-label">{{ stat.label }}</span>
+                <div class="stat-row-bar">
+                  <div class="stat-row-fill" :style="{ width: statBar(stat.val) + '%' }"></div>
+                </div>
+                <span v-if="!editing" class="stat-row-value">{{ stat.val?.toLocaleString('es') ?? '—' }}</span>
+                <input
+                  v-else
+                  type="number"
+                  class="stat-row-input"
+                  v-model.number="(editForm as any)[stat.form]"
+                  :disabled="editSaving"
+                  placeholder="—"
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
 
         <!-- Clan section -->
         <div v-if="activeCharacter.clan" class="clan-card">

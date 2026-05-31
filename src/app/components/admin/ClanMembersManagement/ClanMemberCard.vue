@@ -111,7 +111,7 @@ async function handleConfirmDelete() {
     <span>
       <div class="buttons-container">
         <button class="icon-button" v-if="isLeader || isOfficer" @click="handleEdit" title="Editar"><i class="fas fa-pen"></i></button>
-        <button class="icon-button icon-button--danger" v-if="role !== 'leader'" @click="handleDelete" title="Eliminar"><i class="fas fa-trash"></i></button>
+        <button class="icon-button icon-button--danger" v-if="role !== 'leader' && (isLeader || role === 'member')" @click="handleDelete" title="Eliminar"><i class="fas fa-trash"></i></button>
       </div>
     </span>
   </div>

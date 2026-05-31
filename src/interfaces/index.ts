@@ -3,8 +3,13 @@ export interface Character {
   name?: string;
   clan?: Clan;
   status?: string;
-  resonance?: number | undefined | null;
-  currentClass?: string;
+  resonance?:        number | undefined | null;
+  currentClass?:     string;
+  armor?:            number | null;
+  armorPenetration?: number | null;
+  power?:            number | null;
+  resistance?:       number | null;
+  whatsapp?:         string;
 }
 
 export interface Clan {

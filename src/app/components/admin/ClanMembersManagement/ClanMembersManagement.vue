@@ -1,6 +1,6 @@
 <style scoped lang="scss" src="./ClanMembersManagement.scss" />
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
 import CustomModal from '../../Modals/CustomModal.vue';
@@ -19,6 +19,7 @@ import {
   reviewClanRequest,
   bulkImportMembers,
   syncClanMembers,
+  getClanMembersPage,
 } from '../../../../middlewares/services';
 import { getCharacterByName } from '../../../../middlewares/services/characterService';
 
@@ -31,6 +32,17 @@ const clanId = computed(() => active.value?.clan?._id ?? active.value?.clan ?? n
 const clan    = ref<any>(null);
 const loading = ref(true);
 const error   = ref<string | null>(null);
+
+// ── Paginated members ──
+const members        = ref<any[]>([]);
+const membersPage    = ref(1);
+const membersHasMore = ref(false);
+const membersLoading = ref(false);
+const membersTotal   = ref(0);
+const searchQuery    = ref('');
+const sentinel       = ref<HTMLElement | null>(null);
+let   scrollObserver: IntersectionObserver | null = null;
+let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 const navItems = ['estado', 'nombre', 'rol', 'clase', 'resonancia', 'acciones'];
 
@@ -49,16 +61,25 @@ const isOfficer = computed(() => {
   return (clan.value.officer ?? []).some((o: any) => userCharIds.includes(String(o._id ?? o)));
 });
 
-const allMembers = computed(() => {
-  if (!clan.value) return [];
-  const result: Array<{ char: any; role: 'leader' | 'officer' | 'member' }> = [];
-  if (clan.value.leader) result.push({ char: clan.value.leader, role: 'leader' });
-  for (const o of clan.value.officer ?? []) result.push({ char: o, role: 'officer' });
-  for (const m of clan.value.member  ?? []) result.push({ char: m, role: 'member' });
-  return result;
+onMounted(() => {
+  loadClan();
+  scrollObserver = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && membersHasMore.value && !membersLoading.value) {
+      loadMembers(false);
+    }
+  }, { threshold: 0.1 });
 });
 
-onMounted(() => { loadClan(); });
+onUnmounted(() => { scrollObserver?.disconnect(); });
+
+watch(sentinel, (el) => {
+  if (el && scrollObserver) scrollObserver.observe(el);
+});
+
+watch(searchQuery, () => {
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => loadMembers(true), 500);
+});
 
 const pendingInvitations = ref<any[]>([]);
 
@@ -70,10 +91,31 @@ async function loadClan() {
     const data = await getClanMembers(clanId.value);
     clan.value = data;
     pendingInvitations.value = data.pendingInvitations ?? [];
+    await loadMembers(true);
   } catch {
     error.value = 'Error al cargar los miembros del clan.';
   } finally {
     loading.value = false;
+  }
+}
+
+async function loadMembers(reset: boolean) {
+  if (!clanId.value) return;
+  if (membersLoading.value) return;
+  if (reset) { membersPage.value = 1; members.value = []; membersHasMore.value = false; }
+  membersLoading.value = true;
+  try {
+    const res = await getClanMembersPage(clanId.value, {
+      page:  membersPage.value,
+      limit: 20,
+      q:     searchQuery.value || undefined,
+    });
+    members.value     = reset ? res.members : [...members.value, ...res.members];
+    membersTotal.value = res.total;
+    membersHasMore.value = res.hasMore;
+    if (res.hasMore) membersPage.value++;
+  } finally {
+    membersLoading.value = false;
   }
 }
 
@@ -351,13 +393,29 @@ function getClassName(value: string) {
       </button>
     </span>
 
-    <div v-if="!loading && (allMembers.length || pendingInvitations.length)">
-      <TableComponent :navItems="navItems">
+    <div v-if="!loading">
+      <div class="search-bar">
+        <div class="search-wrap">
+          <i class="fas fa-magnifying-glass search-icon"></i>
+          <input v-model="searchQuery" class="search-input" placeholder="Buscar por nombre..." />
+          <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''" title="Limpiar">
+            <i class="fas fa-xmark"></i>
+          </button>
+        </div>
+        <span v-if="membersTotal > 0" class="members-count">
+          <i class="fas fa-users"></i> {{ membersTotal }}
+        </span>
+      </div>
+
+      <TableComponent
+        v-if="members.length || pendingInvitations.length || membersLoading"
+        :navItems="navItems"
+      >
         <ClanMemberCard
-          v-for="{ char, role } in allMembers"
-          :key="char._id"
-          :char="char"
-          :role="role"
+          v-for="m in members"
+          :key="m._id"
+          :char="m"
+          :role="m.role"
           :clanId="clanId"
           :isLeader="isLeader"
           :isOfficer="isOfficer"
@@ -370,7 +428,19 @@ function getClassName(value: string) {
           :clanId="clanId"
           @refresh="loadClan"
         />
+        <div
+          v-if="membersLoading"
+          v-for="n in 5"
+          :key="'sk' + n"
+          class="member-skeleton-row"
+        >
+          <span v-for="c in 6" :key="c" class="skeleton-box skeleton-cell"></span>
+        </div>
       </TableComponent>
+
+      <p v-else-if="!membersLoading && searchQuery" class="empty-search">Sin resultados para "{{ searchQuery }}".</p>
+
+      <div ref="sentinel" class="sentinel"></div>
     </div>
 
     <div v-else-if="loading" class="skeleton-table-container">
