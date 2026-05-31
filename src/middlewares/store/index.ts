@@ -378,9 +378,9 @@ export const useStore = defineStore('store', {
       return false;
     },
 
-    async handleGetHistory(page: number = 1, type: 'all' | 'shadow_war' | 'accursed_tower' = 'all', append: boolean = false) {
+    async handleGetHistory(page: number = 1, type: 'all' | 'shadow_war' | 'accursed_tower' = 'all', append: boolean = false, q?: string) {
       try {
-        const res = await getHistory(page, type, this.currentCharacter ?? undefined);
+        const res = await getHistory(page, type, this.currentCharacter ?? undefined, q);
         const items: any[] = res.data ?? [];
         if (append) {
           this.admin.history = [...(this.admin.history ?? []), ...items];

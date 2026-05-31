@@ -8,11 +8,13 @@ import HistoryListCard from './HistoryListCard.vue';
 
 type HistoryFilter = 'all' | 'shadow_war' | 'accursed_tower';
 
-const currentPage = ref(1);
-const hasMore     = ref(true);
-const isFetching  = ref(false);
-const filter      = ref<HistoryFilter>('all');
-const sentinel    = ref<HTMLElement | null>(null);
+const currentPage   = ref(1);
+const hasMore       = ref(true);
+const isFetching    = ref(false);
+const filter        = ref<HistoryFilter>('all');
+const searchQuery   = ref('');
+const sentinel      = ref<HTMLElement | null>(null);
+let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 const store: any = useStore();
 const loading    = ref(true);
@@ -24,7 +26,7 @@ const loadMore = async () => {
   if (isFetching.value || !hasMore.value) return;
   isFetching.value = true;
   currentPage.value++;
-  const fetchedMore = await store.handleGetHistory(currentPage.value, filter.value, true);
+  const fetchedMore = await store.handleGetHistory(currentPage.value, filter.value, true, searchQuery.value || undefined);
   hasMore.value    = fetchedMore;
   isFetching.value = false;
 };
@@ -34,7 +36,7 @@ const fetchHistory = async () => {
   currentPage.value = 1;
   hasMore.value     = true;
   isFetching.value  = false;
-  const fetchedInitial = await store.handleGetHistory(1, filter.value, false);
+  const fetchedInitial = await store.handleGetHistory(1, filter.value, false, searchQuery.value || undefined);
   hasMore.value        = fetchedInitial;
   loading.value        = false;
 };
@@ -74,6 +76,11 @@ watch(() => store.currentCharacter, (newId, oldId) => {
   if (newId && newId !== oldId) fetchHistory();
 });
 
+watch(searchQuery, () => {
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(fetchHistory, 500);
+});
+
 const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
 </script>
 
@@ -82,47 +89,51 @@ const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
     <router-view v-if="route.params.shadowwar_id || route.params.tower_id" />
     <template v-else>
 
-      <div v-if="loading" class="skeleton-table-container">
-        <div class="skeleton-table-header skeleton-cols-5">
-          <div class="skeleton-box skeleton-header-item" v-for="n in 5" :key="n"></div>
-        </div>
-        <div class="skeleton-table-row skeleton-cols-5" v-for="n in 5" :key="n">
-          <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
+      <!-- Toolbar + table: always visible once mounted -->
+      <div class="history-toolbar">
+        <div class="search-wrap">
+          <i class="fas fa-magnifying-glass search-icon"></i>
+          <input v-model="searchQuery" class="search-input" placeholder="Buscar por clan enemigo..." />
+          <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
+            <i class="fas fa-xmark"></i>
+          </button>
         </div>
       </div>
 
-      <template v-else>
-        <TableComponent :navItems="navItems">
-          <template #header>
-            <li class="th-cell">
-              <select v-model="filter" @change="fetchHistory" class="type-filter-select" :class="{ active: filter !== 'all' }">
-                <option value="all">Todas</option>
-                <option value="shadow_war">Guerras Sombrías</option>
-                <option value="accursed_tower">Torres Malditas</option>
-              </select>
-            </li>
-            <li class="th-cell">fecha</li>
-            <li class="th-cell">enemigo</li>
-            <li class="th-cell">resultado</li>
-            <li class="th-cell th-cell--last">acciones</li>
-          </template>
+      <TableComponent :navItems="navItems">
+        <template #header>
+          <li class="th-cell">
+            <select v-model="filter" @change="fetchHistory" class="type-filter-select" :class="{ active: filter !== 'all' }">
+              <option value="all">Todas</option>
+              <option value="shadow_war">Guerras Sombrías</option>
+              <option value="accursed_tower">Torres Malditas</option>
+            </select>
+          </li>
+          <li class="th-cell">fecha</li>
+          <li class="th-cell">enemigo</li>
+          <li class="th-cell">resultado</li>
+          <li class="th-cell th-cell--last">acciones</li>
+        </template>
 
+        <!-- Skeleton rows during initial load or search fetch -->
+        <template v-if="loading || isFetching">
+          <div class="skeleton-table-row skeleton-cols-5" v-for="n in 6" :key="'sk' + n">
+            <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
+          </div>
+        </template>
+
+        <template v-else>
           <HistoryListCard
             v-for="item in store.admin.history"
             :key="item._id"
             :war="item"
           />
-
           <li v-if="!store.admin.history?.length" class="table-empty-row">
             <i class="fas fa-clock-rotate-left"></i>
-            <span>No hay historiales disponibles.</span>
+            <span>{{ searchQuery ? `Sin resultados para "${searchQuery}".` : 'No hay historiales disponibles.' }}</span>
           </li>
-
-          <div v-if="isFetching" class="skeleton-table-row skeleton-cols-5">
-            <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
-          </div>
-        </TableComponent>
-      </template>
+        </template>
+      </TableComponent>
 
       <div ref="sentinel" class="sentinel"></div>
 
@@ -132,4 +143,54 @@ const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
 
 <style scoped lang="scss">
 .sentinel { height: 1px; }
+
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  padding: .25rem 0 .75rem;
+}
+
+.search-wrap {
+  position: relative;
+  width: 280px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: .65rem;
+  font-size: .75rem;
+  color: rgba(255, 255, 255, .3);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 30px;
+  padding: 0 2rem 0 2rem;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, .85);
+  font-size: .82rem;
+  box-sizing: border-box;
+
+  &:focus { outline: none; border-color: rgba(227, 210, 168, .35); }
+  &::placeholder { color: rgba(255, 255, 255, .25); }
+}
+
+.search-clear {
+  position: absolute;
+  right: .5rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, .35);
+  cursor: pointer;
+  font-size: .75rem;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  &:hover { color: rgba(255, 255, 255, .7); }
+}
 </style>

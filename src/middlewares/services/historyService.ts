@@ -3,9 +3,9 @@ import { API_URL } from '../misc/const';
 
 const BASE = API_URL + '/clan-management';
 
-export const getHistory = async (page: number = 1, type: 'all' | 'shadow_war' | 'accursed_tower' = 'all', characterId?: string) =>
+export const getHistory = async (page: number = 1, type: 'all' | 'shadow_war' | 'accursed_tower' = 'all', characterId?: string, q?: string) =>
   axios
-    .get(`${BASE}/history`, { params: { page, type, characterId }, withCredentials: true })
+    .get(`${BASE}/history`, { params: { page, type, characterId, q: q || undefined }, withCredentials: true })
     .then(r => r.data);
 
 export const getAccursedTowerById = async (id: string, characterId?: string) =>
