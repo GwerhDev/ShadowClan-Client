@@ -151,16 +151,16 @@ const inputValue = computed({
           >
             {{ option.name }}
           </div>
-          <div v-if="!filteredOptions.length && searchQuery" class="suggestion-empty">
-            No se encontraron resultados.
-          </div>
-          <div
-            v-if="createLabel"
-            @mousedown.prevent="$emit('create')"
-            class="suggestion-item suggestion-item--create"
-          >
-            <i class="fas fa-plus"></i> {{ createLabel }}
-          </div>
+          <template v-if="!filteredOptions.length && searchQuery && !isFetching">
+            <div class="suggestion-empty">No se encontraron resultados.</div>
+            <div
+              v-if="createLabel"
+              @mousedown.prevent="$emit('create', searchQuery)"
+              class="suggestion-item suggestion-item--create"
+            >
+              <i class="fas fa-plus"></i> {{ createLabel }}
+            </div>
+          </template>
         </template>
       </div>
     </div>

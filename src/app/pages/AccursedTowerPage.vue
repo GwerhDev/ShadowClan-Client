@@ -3,6 +3,7 @@ import { onMounted, ref, computed, watch } from 'vue';
 import { useStore } from '../../middlewares/store';
 import AppLayout from '../layouts/AppLayout.vue';
 import EmptyState from '../components/common/EmptyState.vue';
+import UnclaimedClanNotice from '../components/common/UnclaimedClanNotice.vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const store: any = useStore();
@@ -13,6 +14,13 @@ const towerDate     = ref('');
 const enemyClanName = ref('');
 
 const towerWarList = computed(() => store.currentUser.towerWarList as any[]);
+
+const activeCharacter = computed(() => {
+  const chars = store.currentUser.userData?.character ?? [];
+  return (chars as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
+});
+const activeClan    = computed(() => activeCharacter.value?.clan ?? null);
+const clanUnclaimed = computed(() => activeClan.value?.status === 'unclaimed');
 
 // Build one sidebar tab per active tower
 const tabs = computed(() =>
@@ -63,6 +71,13 @@ onMounted(async () => {
         v-if="loading"
         icon="fas fa-spinner fa-spin"
         message="Cargando..."
+      />
+
+      <UnclaimedClanNotice
+        v-else-if="clanUnclaimed"
+        :character-id="activeCharacter?._id"
+        :clan-id="activeClan?._id ?? activeClan"
+        :clan-name="activeClan?.name ?? ''"
       />
 
       <EmptyState

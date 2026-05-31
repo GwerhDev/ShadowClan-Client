@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import SearchSelector from '../Selectors/SearchSelector.vue';
 import LinkCharacterForm from './LinkCharacterForm.vue';
-import { getMyCharacterClaims, getMyCharacterCreationRequests, searchClans } from '../../../middlewares/services';
+import { getMyCharacterClaims, getMyCharacterCreationRequests, searchClans, createClanCreationRequest, getMyClanCreationRequests } from '../../../middlewares/services';
 import { getSocket } from '../../../middlewares/socket';
 const store: any = useStore();
 
@@ -14,6 +14,13 @@ const submitting = ref(false);
 const requestStatus = ref<'idle' | 'success' | 'conflict' | 'error'>('idle');
 const myRequests = ref<any[]>([]);
 const pendingCharacterRequests = ref<any[]>([]);
+
+// Clan creation request
+const showClanCreationForm = ref(false);
+const newClanName           = ref('');
+const clanCreationSubmitting = ref(false);
+const clanCreationStatus    = ref<'idle' | 'success' | 'conflict' | 'error'>('idle');
+const pendingClanRequests   = ref<any[]>([]);
 
 const activeCharacter = computed(() => {
   const chars = store.currentUser.userData?.character;
@@ -27,6 +34,30 @@ const pendingRequests = computed(() =>
 
 async function fetchMyRequests() {
   myRequests.value = await store.handleGetClanRequests() ?? [];
+}
+
+async function fetchClanCreationRequests() {
+  try {
+    const all = await getMyClanCreationRequests();
+    pendingClanRequests.value = (all as any[]).filter(r => r.status === 'pending');
+  } catch { pendingClanRequests.value = []; }
+}
+
+async function submitClanCreationRequest() {
+  if (!newClanName.value.trim() || !activeCharacter.value) return;
+  clanCreationSubmitting.value = true;
+  clanCreationStatus.value = 'idle';
+  try {
+    await createClanCreationRequest(newClanName.value.trim(), activeCharacter.value._id);
+    clanCreationStatus.value = 'success';
+    newClanName.value = '';
+    showClanCreationForm.value = false;
+    await fetchClanCreationRequests();
+  } catch (e: any) {
+    clanCreationStatus.value = e?.response?.status === 409 ? 'conflict' : 'error';
+  } finally {
+    clanCreationSubmitting.value = false;
+  }
 }
 
 async function sendRequest() {
@@ -68,17 +99,28 @@ async function fetchPendingCharacterRequests() {
   ];
 }
 
+async function handleClanCreationReviewed(data: any) {
+  if (data.action === 'accept') {
+    // Refresh user data so the clan appears and the UI transitions out of walker view
+    await store.handleUserData();
+  } else {
+    pendingClanRequests.value = pendingClanRequests.value.filter((r: any) => r._id !== data.id);
+  }
+}
+
 onMounted(async () => {
-  await Promise.all([fetchMyRequests(), fetchPendingCharacterRequests()]);
+  await Promise.all([fetchMyRequests(), fetchPendingCharacterRequests(), fetchClanCreationRequests()]);
   const socket = getSocket();
   socket?.on('clan-request:reviewed', handleReviewed);
   socket?.on('character-request:reviewed', handleCharacterReviewed);
+  socket?.on('clan-creation-request:reviewed', handleClanCreationReviewed);
 });
 
 onUnmounted(() => {
   const socket = getSocket();
   socket?.off('clan-request:reviewed', handleReviewed);
   socket?.off('character-request:reviewed', handleCharacterReviewed);
+  socket?.off('clan-creation-request:reviewed', handleClanCreationReviewed);
 });
 </script>
 
@@ -178,23 +220,65 @@ onUnmounted(() => {
       <template v-else>
         <div class="search-section">
           <h4>unirse a un clan</h4>
-          <SearchSelector
-            v-model="selectedClanId"
-            :fetch-fn="searchClans"
-            placeholder="Buscar clan..."
-          />
-          <button
-            class="submit-btn"
-            :disabled="!selectedClanId || submitting"
-            @click="sendRequest"
-          >
-            <i class="fas fa-paper-plane"></i>
-            {{ submitting ? 'Enviando...' : 'Enviar solicitud' }}
-          </button>
 
-          <p v-if="requestStatus === 'success'"  class="feedback success">Solicitud enviada correctamente.</p>
-          <p v-if="requestStatus === 'conflict'" class="feedback warning">Ya tienes una solicitud pendiente para este clan.</p>
-          <p v-if="requestStatus === 'error'"    class="feedback error">Error al enviar la solicitud. Intenta de nuevo.</p>
+          <!-- Pending clan creation request -->
+          <div v-if="pendingClanRequests.length" class="pending-notice">
+            <i class="fas fa-clock"></i>
+            <p>Tu solicitud para crear el clan <strong>{{ pendingClanRequests[0].clanName }}</strong> está siendo revisada por los administradores.</p>
+          </div>
+
+          <template v-else>
+            <!-- Clan search (hidden when creation form is open) -->
+            <SearchSelector
+              v-if="!showClanCreationForm"
+              v-model="selectedClanId"
+              :fetch-fn="searchClans"
+              placeholder="Buscar clan..."
+              create-label="Solicitar creación de clan"
+              @create="(q) => { newClanName = q ?? ''; showClanCreationForm = true; clanCreationStatus = 'idle'; selectedClanId = ''; }"
+            />
+
+            <!-- Clan creation inline form (replaces selector) -->
+            <div v-if="showClanCreationForm" class="clan-creation-form">
+              <p class="clan-creation-hint">
+                <i class="fas fa-info-circle"></i>
+                Tu solicitud será revisada por los administradores.
+              </p>
+              <input
+                v-model="newClanName"
+                class="clan-creation-input"
+                placeholder="Nombre del clan..."
+                @keyup.enter="submitClanCreationRequest"
+                :disabled="clanCreationSubmitting"
+              />
+              <div class="clan-creation-actions">
+                <button class="submit-btn" :disabled="!newClanName.trim() || clanCreationSubmitting" @click="submitClanCreationRequest">
+                  <i class="fas fa-paper-plane"></i>
+                  {{ clanCreationSubmitting ? 'Enviando...' : 'Solicitar' }}
+                </button>
+                <button class="submit-btn submit-btn--ghost" @click="showClanCreationForm = false; newClanName = ''">
+                  Cancelar
+                </button>
+              </div>
+              <p v-if="clanCreationStatus === 'conflict'" class="feedback warning">Ya tienes una solicitud de clan pendiente.</p>
+              <p v-if="clanCreationStatus === 'error'"    class="feedback error">Error al enviar la solicitud.</p>
+            </div>
+
+            <!-- Join request -->
+            <button
+              v-if="!showClanCreationForm"
+              class="submit-btn"
+              :disabled="!selectedClanId || submitting"
+              @click="sendRequest"
+            >
+              <i class="fas fa-paper-plane"></i>
+              {{ submitting ? 'Enviando...' : 'Enviar solicitud' }}
+            </button>
+
+            <p v-if="requestStatus === 'success'"  class="feedback success">Solicitud enviada correctamente.</p>
+            <p v-if="requestStatus === 'conflict'" class="feedback warning">Ya tienes una solicitud pendiente para este clan.</p>
+            <p v-if="requestStatus === 'error'"    class="feedback error">Error al enviar la solicitud. Intenta de nuevo.</p>
+          </template>
         </div>
       </template>
 
@@ -430,6 +514,60 @@ $gold-mid: rgba(227, 210, 168, .5);
   &:disabled {
     opacity: .35;
     cursor: not-allowed;
+  }
+}
+
+/* ── Clan creation form ── */
+.clan-creation-form {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding: 1rem;
+  background: rgba(227, 210, 168, .04);
+  border: 1px solid $gold-dim;
+  border-radius: 8px;
+}
+
+.clan-creation-hint {
+  margin: 0;
+  font-size: .8rem;
+  color: rgba(255, 255, 255, .4);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  i { color: $gold; }
+}
+
+.clan-creation-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 .75rem;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, .85);
+  font-size: .85rem;
+  box-sizing: border-box;
+  font-family: 'Cinzel', serif;
+
+  &:focus { outline: none; border-color: $gold-mid; }
+  &::placeholder { color: rgba(255, 255, 255, .25); }
+  &:disabled { opacity: .5; }
+}
+
+.clan-creation-actions {
+  display: flex;
+  gap: .5rem;
+}
+
+.submit-btn--ghost {
+  border-color: rgba(255, 255, 255, .15);
+  color: rgba(255, 255, 255, .4);
+
+  &:hover {
+    background: rgba(255, 255, 255, .06);
+    border-color: rgba(255, 255, 255, .3);
+    color: rgba(255, 255, 255, .7);
   }
 }
 

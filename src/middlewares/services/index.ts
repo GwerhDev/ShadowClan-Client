@@ -195,6 +195,30 @@ export const createCharacterCreationRequest: any = async (formData: { name: stri
   return response;
 };
 
+export const createClanClaimRequest: any = async (data: { characterId: string; clanId: string; requestedRole: 'leader' | 'officer' }) => {
+  const response: any = await axios.post(API_URL + '/clan-claim-request', data, { withCredentials: true })
+    .then(r => r.data);
+  return response;
+};
+
+export const getMyClanClaimRequests: any = async () => {
+  const response: any = await axios.get(API_URL + '/clan-claim-request', { withCredentials: true })
+    .then(r => r.data);
+  return response;
+};
+
+export const createClanCreationRequest: any = async (clanName: string, characterId: string) => {
+  const response: any = await axios.post(API_URL + '/clan-creation-request', { clanName, characterId }, { withCredentials: true })
+    .then(r => r.data);
+  return response;
+};
+
+export const getMyClanCreationRequests: any = async () => {
+  const response: any = await axios.get(API_URL + '/clan-creation-request', { withCredentials: true })
+    .then(r => r.data);
+  return response;
+};
+
 export const getMyCharacterCreationRequests: any = async () => {
   const response: any = await axios.get(API_URL + '/character-creation-request', { withCredentials: true })
     .then(response => response.data);

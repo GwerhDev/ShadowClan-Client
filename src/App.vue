@@ -66,6 +66,17 @@ onMounted(async () => {
           store.clanEventModal = { type: 'removed', clanName: data.clanName ?? '' };
         });
       });
+      socket.on('clan:deleted', () => {
+        store.handleUserData().then(() => {
+          store.clanEventModal = { type: 'removed', clanName: '' };
+        });
+      });
+      socket.on('clan-creation-request:reviewed', (data: any) => {
+        if (data.action === 'accept') store.handleUserData();
+      });
+      socket.on('clan-claim-request:reviewed', (data: any) => {
+        if (data.action === 'accept') store.handleUserData();
+      });
       socket.on('character-request:reviewed', (data: any) => {
         store.addNotification({
           id: `${data.id}:char-reviewed`,
