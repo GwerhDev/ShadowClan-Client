@@ -455,7 +455,9 @@ export const useStore = defineStore('store', {
       // Reset clan-scoped state so it refetches for the new character
       this.currentUser.shadowWarData = null;
       this.currentUser.towerWarList  = [];
+      this.pendingRequestsCount      = 0; // reset before refetch
       this.handleFetchPendingInbox();
+      this.handleFetchPendingRequests(); // recalculate for the new active character
       this.handleGetNextShadowWar();
       this.handleGetActiveTowerWar();
     },

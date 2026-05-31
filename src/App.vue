@@ -35,8 +35,11 @@ onMounted(async () => {
       store.handleFetchPendingRequests();
       store.handleGetNextShadowWar();
       const socket = connectSocket();
-      socket.on('clan-request:new', () => {
-        store.pendingRequestsCount += 1;
+      socket.on('clan-request:new', (data: any) => {
+        // Only count if the notification targets the currently active character
+        if (!data.targetCharacterId || data.targetCharacterId === store.currentCharacter) {
+          store.pendingRequestsCount += 1;
+        }
       });
       socket.on('clan-invitation:new', (data: any) => {
         store.addNotification({
