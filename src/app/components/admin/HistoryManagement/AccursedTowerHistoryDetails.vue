@@ -290,15 +290,6 @@ async function saveEdit() {
   }
 }
 
-async function updateResult() {
-  if (!tower.value?._id) return;
-  try {
-    await updateAccursedTower(tower.value._id, { result: selectedResult.value });
-  } catch {
-    selectedResult.value = tower.value.result ?? 'pending';
-  }
-}
-
 async function toggleCompleted() {
   if (!tower.value?._id) return;
   saving.value = true;
