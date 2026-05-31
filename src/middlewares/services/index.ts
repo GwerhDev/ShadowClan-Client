@@ -234,7 +234,7 @@ export const createClanCharacter: any = async (clanId: string, formData: { name:
   return response;
 };
 
-export const updateClanMember: any = async (clanId: string, characterId: string, data: { currentClass?: string; resonance?: number; memberStatus?: string }) => {
+export const updateClanMember: any = async (clanId: string, characterId: string, data: { currentClass?: string; resonance?: number; memberStatus?: string; armor?: number; armorPenetration?: number; power?: number; resistance?: number }) => {
   const response: any = await axios.patch(
     API_URL + "/clan-management/clan/" + clanId + "/members/" + characterId,
     data,

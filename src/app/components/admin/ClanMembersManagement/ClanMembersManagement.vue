@@ -44,7 +44,7 @@ const sentinel       = ref<HTMLElement | null>(null);
 let   scrollObserver: IntersectionObserver | null = null;
 let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
-const navItems = ['estado', 'nombre', 'rol', 'clase', 'resonancia', 'acciones'];
+const navItems = ['estado', 'nombre', 'rol', 'clase', 'puntaje', 'acciones'];
 
 const isLeader = computed(() => {
   if (!clan.value) return false;
