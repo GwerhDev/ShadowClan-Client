@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref, computed } from 'vue';
-import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan } from '../../../../middlewares/services';
+import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan, saveClanRoster } from '../../../../middlewares/services';
+import CustomModal from '../../Modals/CustomModal.vue';
 import { Character, Match } from '../../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
@@ -53,6 +54,14 @@ const shadowWarData = computed(() => store.currentUser.shadowWarData);
 const chars  = computed(() => store.currentUser.userData?.character ?? []);
 const active = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
 const clanId = computed(() => active.value?.clan?._id ?? active.value?.clan ?? null);
+
+interface AlignmentSlot { name: string; data: any }
+interface SavedAlignments { last: any | null; custom: AlignmentSlot[] }
+const savedAlignments     = ref<SavedAlignments>({ last: null, custom: [] });
+const savingAlignment     = ref(false);
+const showSaveCustomModal = ref(false);
+const customAlignmentName = ref('');
+const customOverwriteIdx  = ref<number | null>(null);
 
 const shadowWarId  = ref<string | null>(null);
 const enemyClan    = ref('');   // for the active instance (read-only bar + edit mode)
@@ -217,6 +226,12 @@ onMounted(async () => {
         ...(clanData.officer ?? []),
         ...(clanData.member  ?? []),
       ];
+      if (clanData.savedShadowWarAlignments) {
+        savedAlignments.value = {
+          last:   clanData.savedShadowWarAlignments.last   ?? null,
+          custom: clanData.savedShadowWarAlignments.custom ?? [],
+        };
+      }
     }
 
     if (shadowWarData.value) {
@@ -350,6 +365,89 @@ const unassignMember = (categoryName: keyof typeof battleCategories.value, group
   battleCategories.value[categoryName][matchIndex][group].character[memberIndex] = undefined;
   updateShadowWarData();
 };
+
+// ── Saved alignment ──────────────────────────────────────────────────────────
+
+function buildSWData() {
+  const battleData: any = {};
+  for (const [cat, matches] of Object.entries(battleCategories.value)) {
+    battleData[cat] = (matches as any[]).map(match => ({
+      group1: { character: match.group1.character.map(toId).filter(Boolean) },
+      group2: { character: match.group2.character.map(toId).filter(Boolean) },
+    }));
+  }
+  return battleData;
+}
+
+async function saveLastAlignment() {
+  if (!clanId.value) return;
+  savingAlignment.value = true;
+  try {
+    const data = buildSWData();
+    await saveClanRoster(clanId.value, { type: 'shadow-war', slot: 'last', data });
+    savedAlignments.value.last = data;
+  } finally {
+    savingAlignment.value = false;
+  }
+}
+
+function openSaveCustomModal() {
+  customAlignmentName.value = '';
+  customOverwriteIdx.value  = null;
+  showSaveCustomModal.value = true;
+}
+
+async function confirmSaveCustom() {
+  if (!clanId.value || !customAlignmentName.value.trim()) return;
+  const isFull = savedAlignments.value.custom.length >= 3;
+  if (isFull && customOverwriteIdx.value === null) return;
+  savingAlignment.value = true;
+  try {
+    const data = buildSWData();
+    await saveClanRoster(clanId.value, {
+      type: 'shadow-war', slot: 'custom',
+      name: customAlignmentName.value.trim(),
+      customIndex: isFull ? customOverwriteIdx.value : undefined,
+      data,
+    });
+    const entry: AlignmentSlot = { name: customAlignmentName.value.trim(), data };
+    if (isFull && customOverwriteIdx.value !== null) savedAlignments.value.custom[customOverwriteIdx.value] = entry;
+    else savedAlignments.value.custom.push(entry);
+    showSaveCustomModal.value = false;
+  } finally {
+    savingAlignment.value = false;
+  }
+}
+
+async function deleteCustomAlignment(index: number) {
+  if (!clanId.value) return;
+  await saveClanRoster(clanId.value, { type: 'shadow-war', slot: 'custom', action: 'delete', customIndex: index });
+  savedAlignments.value.custom.splice(index, 1);
+}
+
+function applyAlignment(data: any) {
+  if (!data) return;
+  const findChar = (id: any) => clanMembers.value.find(c => String(c._id) === String(id));
+  const padChars = (ids: any[], size: number) => {
+    const chars = ids.map((id: any) => findChar(id));
+    while (chars.length < size) chars.push(undefined);
+    return chars.slice(0, size);
+  };
+  const result: any = {};
+  for (const cat of ['exalted', 'eminent', 'famed', 'proud'] as const) {
+    const saved = (data[cat] ?? []) as any[];
+    result[cat] = Array(3).fill(null).map((_, i) => {
+      const m = saved[i] ?? {};
+      return {
+        group1: { character: padChars(m.group1?.character ?? [], 4) },
+        group2: { character: padChars(m.group2?.character ?? [], 4) },
+        result: 'pending',
+      };
+    });
+  }
+  battleCategories.value = result;
+  updateShadowWarData();
+}
 
 // ── Drag & Drop ──────────────────────────────────────────────────────────────
 
@@ -530,6 +628,57 @@ function onDragEnd() {
         @character-selected="handleMemberSelected"
         @character-unassigned="handleMemberUnassigned"
       />
+
+      <!-- Alignment toolbar -->
+      <div class="roster-toolbar">
+        <div class="roster-toolbar-row">
+          <button class="btn-roster-action" :disabled="savingAlignment" @click="saveLastAlignment">
+            <i class="fas fa-clock-rotate-left"></i> Guardar última
+          </button>
+          <button class="btn-roster-action" :disabled="savingAlignment" @click="openSaveCustomModal">
+            <i class="fas fa-bookmark"></i> Guardar plantilla
+          </button>
+        </div>
+        <div v-if="savedAlignments.last || savedAlignments.custom.length > 0" class="roster-toolbar-row roster-toolbar-row--apply">
+          <span class="apply-label">Aplicar:</span>
+          <button v-if="savedAlignments.last" class="btn-roster-action btn-roster-action--apply" :disabled="savingAlignment" @click="applyAlignment(savedAlignments.last)">
+            <i class="fas fa-clock-rotate-left"></i> Última
+          </button>
+          <span v-for="(slot, i) in savedAlignments.custom" :key="i" class="alignment-chip">
+            <button class="btn-roster-action btn-roster-action--apply" :disabled="savingAlignment" :title="slot.name" @click="applyAlignment(slot.data)">
+              <i class="fas fa-bookmark"></i> {{ slot.name }}
+            </button>
+            <button class="btn-chip-delete" :disabled="savingAlignment" title="Eliminar plantilla" @click="deleteCustomAlignment(i)">
+              <i class="fas fa-times"></i>
+            </button>
+          </span>
+        </div>
+      </div>
+
+      <CustomModal v-if="showSaveCustomModal" title="Guardar plantilla" @close="showSaveCustomModal = false">
+        <div class="save-alignment-modal">
+          <div class="sam-field">
+            <label>Nombre</label>
+            <input v-model="customAlignmentName" maxlength="24" placeholder="Ej. Ofensiva" @keydown.enter="confirmSaveCustom" />
+          </div>
+          <div v-if="savedAlignments.custom.length >= 3" class="sam-overwrite">
+            <p>Ya tienes 3 plantillas. ¿Cuál reemplazas?</p>
+            <div class="sam-slots">
+              <button v-for="(slot, i) in savedAlignments.custom" :key="i" class="sam-slot" :class="{ active: customOverwriteIdx === i }" @click="customOverwriteIdx = i">
+                {{ slot.name }}
+              </button>
+            </div>
+          </div>
+          <div class="sam-actions">
+            <button class="btn-sam-confirm" :disabled="!customAlignmentName.trim() || (savedAlignments.custom.length >= 3 && customOverwriteIdx === null) || savingAlignment" @click="confirmSaveCustom">
+              <i class="fas fa-check"></i> Guardar
+            </button>
+            <button class="btn-sam-cancel" @click="showSaveCustomModal = false">
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+          </div>
+        </div>
+      </CustomModal>
 
       <!-- Battle categories -->
       <div

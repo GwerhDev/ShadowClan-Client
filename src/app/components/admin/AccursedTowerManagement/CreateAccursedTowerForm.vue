@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from '../../../../middlewares/store';
-import { getClanMembers, getAccursedTowers, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, createEnemyClan } from '../../../../middlewares/services';
+import { getClanMembers, getAccursedTowers, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, createEnemyClan, saveClanRoster } from '../../../../middlewares/services';
+import CustomModal from '../../Modals/CustomModal.vue';
 import { Character } from '../../../../interfaces';
 import AccursedTowerMemberCard from './AccursedTowerMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
@@ -30,6 +31,15 @@ const lastCreated      = ref<{ _id: string; name: string } | null>(null);
 const newTowerNumber  = ref<number | null>(null);
 const newDate         = ref('');
 const newEnemyClan    = ref('');
+
+// Saved alignments
+interface AlignmentSlot { name: string; data: any }
+interface SavedAlignments { last: any | null; custom: AlignmentSlot[] }
+const savedAlignments     = ref<SavedAlignments>({ last: null, custom: [] });
+const savingAlignment     = ref(false);
+const showSaveCustomModal = ref(false);
+const customAlignmentName = ref('');
+const customOverwriteIdx  = ref<number | null>(null);
 
 // Modals per instance
 const shareModalTower   = ref<any>(null);
@@ -193,6 +203,12 @@ onMounted(async () => {
         ...(clanData.officer ?? []),
         ...(clanData.member  ?? []),
       ];
+      if (clanData.savedAccursedTowerAlignments) {
+        savedAlignments.value = {
+          last:   clanData.savedAccursedTowerAlignments.last   ?? null,
+          custom: clanData.savedAccursedTowerAlignments.custom ?? [],
+        };
+      }
     }
   } finally {
     loading.value = false;
@@ -273,6 +289,72 @@ async function saveRoster() {
   // Sync back into list
   const idx = towerWars.value.findIndex(tw => tw._id === expandedId.value);
   if (idx !== -1) towerWars.value[idx] = updated;
+}
+
+function buildATData() {
+  const toIds = (arr: (Character|undefined)[]) => arr.map(c => c?._id ?? null).filter(Boolean);
+  return {
+    group1: toIds(localRoster.value.group1),
+    group2: toIds(localRoster.value.group2),
+    group3: toIds(localRoster.value.group3),
+  };
+}
+
+async function saveLastAlignment() {
+  if (!clanId.value || !expandedId.value) return;
+  savingAlignment.value = true;
+  try {
+    const data = buildATData();
+    await saveClanRoster(clanId.value, { type: 'accursed-tower', slot: 'last', data });
+    savedAlignments.value.last = data;
+  } finally {
+    savingAlignment.value = false;
+  }
+}
+
+function openSaveCustomModal() {
+  customAlignmentName.value = '';
+  customOverwriteIdx.value  = null;
+  showSaveCustomModal.value = true;
+}
+
+async function confirmSaveCustom() {
+  if (!clanId.value || !customAlignmentName.value.trim()) return;
+  const isFull = savedAlignments.value.custom.length >= 3;
+  if (isFull && customOverwriteIdx.value === null) return;
+  savingAlignment.value = true;
+  try {
+    const data = buildATData();
+    await saveClanRoster(clanId.value, {
+      type: 'accursed-tower', slot: 'custom',
+      name: customAlignmentName.value.trim(),
+      customIndex: isFull ? customOverwriteIdx.value : undefined,
+      data,
+    });
+    const entry: AlignmentSlot = { name: customAlignmentName.value.trim(), data };
+    if (isFull && customOverwriteIdx.value !== null) savedAlignments.value.custom[customOverwriteIdx.value] = entry;
+    else savedAlignments.value.custom.push(entry);
+    showSaveCustomModal.value = false;
+  } finally {
+    savingAlignment.value = false;
+  }
+}
+
+async function deleteCustomAlignment(index: number) {
+  if (!clanId.value) return;
+  await saveClanRoster(clanId.value, { type: 'accursed-tower', slot: 'custom', action: 'delete', customIndex: index });
+  savedAlignments.value.custom.splice(index, 1);
+}
+
+function applyAlignment(data: any) {
+  if (!data || !expandedId.value) return;
+  const findChar = (id: any) => clanMembers.value.find(c => String(c._id) === String(id)) as Character | undefined;
+  localRoster.value = {
+    group1: padGroup((data.group1 ?? []).map(findChar), 4),
+    group2: padGroup((data.group2 ?? []).map(findChar), 4),
+    group3: padGroup((data.group3 ?? []).map(findChar), 2),
+  };
+  saveRoster();
 }
 
 // ── Member selection ──────────────────────────────────────────────────────────
@@ -447,6 +529,55 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
 
         <!-- Roster (expanded) -->
         <div v-if="expandedId === instance._id" class="roster-section">
+          <div class="roster-toolbar">
+            <div class="roster-toolbar-row">
+              <button class="btn-roster-action" :disabled="savingAlignment" @click="saveLastAlignment">
+                <i class="fas fa-clock-rotate-left"></i> Guardar última
+              </button>
+              <button class="btn-roster-action" :disabled="savingAlignment" @click="openSaveCustomModal">
+                <i class="fas fa-bookmark"></i> Guardar plantilla
+              </button>
+            </div>
+            <div v-if="savedAlignments.last || savedAlignments.custom.length > 0" class="roster-toolbar-row roster-toolbar-row--apply">
+              <span class="apply-label">Aplicar:</span>
+              <button v-if="savedAlignments.last" class="btn-roster-action btn-roster-action--apply" :disabled="savingAlignment" @click="applyAlignment(savedAlignments.last)">
+                <i class="fas fa-clock-rotate-left"></i> Última
+              </button>
+              <span v-for="(slot, i) in savedAlignments.custom" :key="i" class="alignment-chip">
+                <button class="btn-roster-action btn-roster-action--apply" :disabled="savingAlignment" :title="slot.name" @click="applyAlignment(slot.data)">
+                  <i class="fas fa-bookmark"></i> {{ slot.name }}
+                </button>
+                <button class="btn-chip-delete" :disabled="savingAlignment" title="Eliminar plantilla" @click="deleteCustomAlignment(i)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </span>
+            </div>
+          </div>
+
+          <CustomModal v-if="showSaveCustomModal" title="Guardar plantilla" @close="showSaveCustomModal = false">
+            <div class="save-alignment-modal">
+              <div class="sam-field">
+                <label>Nombre</label>
+                <input v-model="customAlignmentName" maxlength="24" placeholder="Ej. Ofensiva" @keydown.enter="confirmSaveCustom" />
+              </div>
+              <div v-if="savedAlignments.custom.length >= 3" class="sam-overwrite">
+                <p>Ya tienes 3 plantillas. ¿Cuál reemplazas?</p>
+                <div class="sam-slots">
+                  <button v-for="(slot, i) in savedAlignments.custom" :key="i" class="sam-slot" :class="{ active: customOverwriteIdx === i }" @click="customOverwriteIdx = i">
+                    {{ slot.name }}
+                  </button>
+                </div>
+              </div>
+              <div class="sam-actions">
+                <button class="btn-sam-confirm" :disabled="!customAlignmentName.trim() || (savedAlignments.custom.length >= 3 && customOverwriteIdx === null) || savingAlignment" @click="confirmSaveCustom">
+                  <i class="fas fa-check"></i> Guardar
+                </button>
+                <button class="btn-sam-cancel" @click="showSaveCustomModal = false">
+                  <i class="fas fa-times"></i> Cancelar
+                </button>
+              </div>
+            </div>
+          </CustomModal>
           <div class="groups-layout">
 
             <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="group-section">
