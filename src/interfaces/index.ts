@@ -9,6 +9,7 @@ export interface Character {
   armorPenetration?: number | null;
   power?:            number | null;
   resistance?:       number | null;
+  score?:            number | null;
   whatsapp?:         string;
 }
 

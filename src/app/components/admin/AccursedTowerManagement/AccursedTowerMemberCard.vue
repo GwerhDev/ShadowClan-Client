@@ -16,7 +16,7 @@ defineProps({
       <ClassImage :current-class="character.currentClass" />
       <div class="character-details">
         <span class="character-name">{{ character.name }}</span>
-        <span class="resonance">{{ character.resonance }}</span>
+        <span class="resonance">{{ character!.score?.toLocaleString('es') ?? '—' }}</span>
       </div>
     </div>
     <div v-else class="empty-card">

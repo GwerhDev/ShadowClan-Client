@@ -65,7 +65,6 @@ const handleFocus = () => {
 const handleBlur = () => {
   setTimeout(() => {
     showDropdown.value = false;
-    if (!props.modelValue && searchQuery.value) searchQuery.value = '';
   }, 150);
 };
 

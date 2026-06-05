@@ -28,7 +28,7 @@ const getClassImage = (className: string | undefined) => {
       <i v-else class="fas fa-question"></i>
       <div class="member-details">
         <h4 class="character-name">{{ character!.name }}</h4>
-        <p class="resonance">{{ character!.resonance }}</p>
+        <p class="resonance">{{ character!.score?.toLocaleString('es') ?? '—' }}</p>
       </div>
       <h4 v-if="character!.clan?.name" class="clan-name" :title="character!.clan?.name">{{ character!.clan?.name }}</h4>
     </div>

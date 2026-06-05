@@ -50,7 +50,7 @@ const status = computed<'confirmed' | 'pending' | null>(() => {
         <span class="character-meta">
           <span class="class-name">{{ getClassName(character.currentClass) }}</span>
           <span class="separator">·</span>
-          <span class="resonance">{{ character.resonance }}</span>
+          <span class="resonance">{{ character.score?.toLocaleString('es') ?? '—' }}</span>
         </span>
       </div>
       <button

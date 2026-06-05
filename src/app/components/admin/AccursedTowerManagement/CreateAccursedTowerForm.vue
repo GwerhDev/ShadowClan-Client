@@ -19,10 +19,12 @@ const towerWars    = ref<any[]>([]);
 const clanMembers  = ref<Character[]>([]);
 
 // Create clan modal
-const showCreateClanModal = ref(false);
-const newClanName         = ref('');
-const creatingClan        = ref(false);
-const createClanError     = ref('');
+const showConfirmModal = ref(false);
+const pendingClanName  = ref('');
+const createTarget     = ref<'new' | 'edit'>('new');
+const creatingClan     = ref(false);
+const createClanError  = ref('');
+const lastCreated      = ref<{ _id: string; name: string } | null>(null);
 
 // Create form
 const newTowerNumber  = ref<number | null>(null);
@@ -151,14 +153,23 @@ const assignedIds = computed(() => {
 
 // ── Load ──────────────────────────────────────────────────────────────────────
 
-async function handleCreateClan() {
-  if (!newClanName.value.trim()) return;
-  creatingClan.value   = true;
+function handleOpenConfirm(query: string, target: 'new' | 'edit') {
+  pendingClanName.value  = query;
+  createTarget.value     = target;
+  createClanError.value  = '';
+  showConfirmModal.value = true;
+}
+
+async function handleConfirmCreate() {
+  creatingClan.value    = true;
   createClanError.value = '';
   try {
-    await createEnemyClan(newClanName.value.trim());
-    showCreateClanModal.value = false;
-    newClanName.value = '';
+    const created = await createEnemyClan(pendingClanName.value.trim());
+    lastCreated.value = { _id: created._id, name: created.name };
+    if (createTarget.value === 'new') newEnemyClan.value = created._id;
+    else editValues.value.enemyClan = created._id;
+    showConfirmModal.value = false;
+    pendingClanName.value  = '';
   } catch (err: any) {
     createClanError.value = err?.response?.data?.message ?? 'Error al crear el clan.';
   } finally {
@@ -335,7 +346,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
         </div>
         <div class="field-col field-col--grow">
           <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
-          <SearchSelector v-model="newEnemyClan" :fetch-fn="searchClans" placeholder="Buscar clan..." create-label="Crear clan enemigo" @create="showCreateClanModal = true" />
+          <SearchSelector v-model="newEnemyClan" :fetch-fn="searchClans" :selected-label="lastCreated?.name" placeholder="Buscar clan..." create-label="Crear clan enemigo" @create="(q) => handleOpenConfirm(q, 'new')" />
         </div>
         <button class="btn-create" :disabled="!newTowerNumber || !newDate || saving" @click="createInstance">
           <i class="fas fa-plus"></i> Crear
@@ -375,7 +386,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
               </div>
               <div class="field-col field-col--grow">
                 <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
-                <SearchSelector v-model="editValues.enemyClan" :fetch-fn="searchClans" :selected-label="instance.enemyClan?.name" placeholder="Buscar clan..." create-label="Crear clan enemigo" @create="showCreateClanModal = true" />
+                <SearchSelector v-model="editValues.enemyClan" :fetch-fn="searchClans" :selected-label="lastCreated?.name ?? instance.enemyClan?.name" placeholder="Buscar clan..." create-label="Crear clan enemigo" @create="(q) => handleOpenConfirm(q, 'edit')" />
               </div>
               <div class="instance-actions">
                 <button class="btn-save" :disabled="saving" @click="saveEdit(instance)">
@@ -514,7 +525,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
 
     <!-- Create clan modal -->
     <Teleport to="body">
-      <div v-if="showCreateClanModal" class="create-clan-overlay" @click.self="showCreateClanModal = false">
+      <div v-if="showConfirmModal" class="create-clan-overlay" @click.self="showConfirmModal = false">
         <div class="create-clan-modal">
           <h4 class="create-clan-title">Crear clan enemigo</h4>
           <div v-if="!isLeaderOrOfficer" class="create-clan-denied">
@@ -522,20 +533,15 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
             <p>Solo líderes u oficiales pueden crear clanes.</p>
           </div>
           <template v-else>
-            <input
-              class="create-clan-input"
-              type="text"
-              v-model="newClanName"
-              placeholder="Nombre del clan"
-              @keydown.enter="handleCreateClan"
-              @keydown.esc="showCreateClanModal = false"
-            />
+            <p class="create-clan-confirm-text">
+              ¿Crear el clan <strong>{{ pendingClanName }}</strong>?
+            </p>
             <p v-if="createClanError" class="create-clan-error">{{ createClanError }}</p>
             <div class="create-clan-actions">
-              <button class="btn-create-clan" :disabled="!newClanName.trim() || creatingClan" @click="handleCreateClan">
+              <button class="btn-create-clan" :disabled="creatingClan" @click="handleConfirmCreate">
                 <i class="fas fa-check"></i> Crear
               </button>
-              <button class="btn-cancel-modal" @click="showCreateClanModal = false; createClanError = ''">
+              <button class="btn-cancel-modal" @click="showConfirmModal = false; createClanError = ''">
                 <i class="fas fa-times"></i> Cancelar
               </button>
             </div>

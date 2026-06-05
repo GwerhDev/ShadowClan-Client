@@ -1,6 +1,6 @@
 <style scoped lang="scss" src="./ClanMemberCard.scss" />
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { classes } from '../../../../middlewares/misc/const';
 import { removeClanMember, updateMemberRole, updateClanMember } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
@@ -40,11 +40,6 @@ onMounted(() => {
   };
 });
 
-function score(c: any): number {
-  return (c.resonance ?? 0) + (c.armor ?? 0) + (c.armorPenetration ?? 0) + (c.power ?? 0) + (c.resistance ?? 0);
-}
-
-const displayScore = computed(() => score(props.char));
 
 function getClassImage(value: string) { return classes.find(c => c.value === value)?.image ?? ''; }
 function getClassName(value: string)  { return classes.find(c => c.value === value)?.name ?? value; }
@@ -124,7 +119,7 @@ async function handleConfirmDelete() {
     </span>
     <span>
       <button class="score-btn" @click="showStats = true" :title="'Ver atributos'">
-        {{ displayScore > 0 ? displayScore.toLocaleString('es') : '—' }}
+        {{ (props.char.score ?? 0) > 0 ? (props.char.score ?? 0).toLocaleString('es') : '—' }}
       </button>
     </span>
     <span>
@@ -185,7 +180,7 @@ async function handleConfirmDelete() {
         :src="getClassImage(char.currentClass)" :alt="getClassName(char.currentClass)" width="30" />
       <span v-else class="no-class">—</span>
     </span>
-    <span><p>{{ displayScore > 0 ? displayScore.toLocaleString('es') : '—' }}</p></span>
+    <span><p>{{ (props.char.score ?? 0) > 0 ? (props.char.score ?? 0).toLocaleString('es') : '—' }}</p></span>
     <span>
       <div class="buttons-container">
         <button class="icon-button icon-button--confirm" @click="handleConfirmDelete" title="Confirmar eliminación"><i class="fas fa-check"></i></button>
@@ -217,7 +212,7 @@ async function handleConfirmDelete() {
         <span class="stats-value stats-value--total">
           {{ editionActive
             ? Object.values(editStats).reduce((s: number, v) => s + (v !== '' ? Number(v) : 0), 0).toLocaleString('es')
-            : displayScore > 0 ? displayScore.toLocaleString('es') : '—'
+            : (props.char.score ?? 0) > 0 ? (props.char.score ?? 0).toLocaleString('es') : '—'
           }}
         </span>
       </div>
