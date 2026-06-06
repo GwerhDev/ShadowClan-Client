@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref, computed } from 'vue';
-import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan, saveClanRoster } from '../../../../middlewares/services';
+import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan, saveClanRoster, autoAssignRoster } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { Character, Match } from '../../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
@@ -59,6 +59,7 @@ interface AlignmentSlot { name: string; data: any }
 interface SavedAlignments { last: any | null; custom: AlignmentSlot[] }
 const savedAlignments     = ref<SavedAlignments>({ last: null, custom: [] });
 const savingAlignment     = ref(false);
+const autoAssigning       = ref(false);
 const showSaveCustomModal = ref(false);
 const customAlignmentName = ref('');
 const customOverwriteIdx  = ref<number | null>(null);
@@ -449,6 +450,22 @@ function applyAlignment(data: any) {
   updateShadowWarData();
 }
 
+async function autoAssign() {
+  if (!clanId.value) return;
+  autoAssigning.value = true;
+  try {
+    const result = await autoAssignRoster(clanId.value, 'shadow-war');
+    applyAlignment(result);
+  } finally {
+    autoAssigning.value = false;
+  }
+}
+
+function resetAlignment() {
+  resetBattleCategories();
+  updateShadowWarData();
+}
+
 // ── Drag & Drop ──────────────────────────────────────────────────────────────
 
 interface SlotRef {
@@ -632,11 +649,17 @@ function onDragEnd() {
       <!-- Alignment toolbar -->
       <div class="roster-toolbar">
         <div class="roster-toolbar-row">
-          <button class="btn-roster-action" :disabled="savingAlignment" @click="saveLastAlignment">
+          <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="saveLastAlignment">
             <i class="fas fa-clock-rotate-left"></i> Guardar última
           </button>
-          <button class="btn-roster-action" :disabled="savingAlignment" @click="openSaveCustomModal">
+          <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="openSaveCustomModal">
             <i class="fas fa-bookmark"></i> Guardar plantilla
+          </button>
+          <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="autoAssign">
+            <i class="fas fa-bolt"></i> Auto-asignar
+          </button>
+          <button class="btn-roster-action btn-roster-action--reset" :disabled="savingAlignment || autoAssigning" @click="resetAlignment">
+            <i class="fas fa-trash-alt"></i> Resetear
           </button>
         </div>
         <div v-if="savedAlignments.last || savedAlignments.custom.length > 0" class="roster-toolbar-row roster-toolbar-row--apply">

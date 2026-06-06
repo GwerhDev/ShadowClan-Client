@@ -663,6 +663,17 @@ input[type="date"] {
       color: rgba(227, 210, 168, .9);
     }
   }
+
+  &--reset {
+    border-color: rgba(229, 115, 115, .2);
+    color: rgba(229, 115, 115, .45);
+
+    &:hover:not(:disabled) {
+      background: rgba(229, 115, 115, .07);
+      border-color: rgba(229, 115, 115, .4);
+      color: rgba(229, 115, 115, .85);
+    }
+  }
 }
 
 // ── Save alignment modal ──────────────────────────────────────────────────────

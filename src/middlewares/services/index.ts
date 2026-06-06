@@ -347,6 +347,18 @@ export const saveClanRoster = async (clanId: string, payload: {
   await axios.patch(API_URL + `/clan-management/clan/${clanId}/saved-roster`, payload, { withCredentials: true });
 };
 
+export const autoAssignRoster = async (
+  clanId: string,
+  type: 'accursed-tower' | 'shadow-war',
+): Promise<any> => {
+  const r = await axios.post(
+    API_URL + `/clan-management/clan/${clanId}/auto-assign`,
+    { type },
+    { withCredentials: true },
+  );
+  return r.data;
+};
+
 export const bulkImportMembers: any = async (clanId: string, file: File) => {
   const formData = new FormData();
   formData.append('file', file);

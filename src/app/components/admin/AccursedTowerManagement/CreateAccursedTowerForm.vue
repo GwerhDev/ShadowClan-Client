@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from '../../../../middlewares/store';
-import { getClanMembers, getAccursedTowers, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, createEnemyClan, saveClanRoster } from '../../../../middlewares/services';
+import { getClanMembers, getAccursedTowers, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, createEnemyClan, saveClanRoster, autoAssignRoster } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { Character } from '../../../../interfaces';
 import AccursedTowerMemberCard from './AccursedTowerMemberCard.vue';
@@ -37,6 +37,7 @@ interface AlignmentSlot { name: string; data: any }
 interface SavedAlignments { last: any | null; custom: AlignmentSlot[] }
 const savedAlignments     = ref<SavedAlignments>({ last: null, custom: [] });
 const savingAlignment     = ref(false);
+const autoAssigning       = ref(false);
 const showSaveCustomModal = ref(false);
 const customAlignmentName = ref('');
 const customOverwriteIdx  = ref<number | null>(null);
@@ -357,6 +358,26 @@ function applyAlignment(data: any) {
   saveRoster();
 }
 
+async function autoAssign() {
+  if (!clanId.value || !expandedId.value) return;
+  autoAssigning.value = true;
+  try {
+    const result = await autoAssignRoster(clanId.value, 'accursed-tower');
+    applyAlignment(result);
+  } finally {
+    autoAssigning.value = false;
+  }
+}
+
+function resetRoster() {
+  localRoster.value = {
+    group1: Array(4).fill(undefined),
+    group2: Array(4).fill(undefined),
+    group3: Array(2).fill(undefined),
+  };
+  saveRoster();
+}
+
 // ── Member selection ──────────────────────────────────────────────────────────
 
 function openModal(group: 'group1'|'group2'|'group3', index: number) {
@@ -531,11 +552,17 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
         <div v-if="expandedId === instance._id" class="roster-section">
           <div class="roster-toolbar">
             <div class="roster-toolbar-row">
-              <button class="btn-roster-action" :disabled="savingAlignment" @click="saveLastAlignment">
+              <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="saveLastAlignment">
                 <i class="fas fa-clock-rotate-left"></i> Guardar última
               </button>
-              <button class="btn-roster-action" :disabled="savingAlignment" @click="openSaveCustomModal">
+              <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="openSaveCustomModal">
                 <i class="fas fa-bookmark"></i> Guardar plantilla
+              </button>
+              <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="autoAssign">
+                <i class="fas fa-bolt"></i> Auto-asignar
+              </button>
+              <button class="btn-roster-action btn-roster-action--reset" :disabled="savingAlignment || autoAssigning" @click="resetRoster">
+                <i class="fas fa-trash-alt"></i> Resetear
               </button>
             </div>
             <div v-if="savedAlignments.last || savedAlignments.custom.length > 0" class="roster-toolbar-row roster-toolbar-row--apply">
