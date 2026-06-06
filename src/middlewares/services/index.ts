@@ -180,7 +180,7 @@ export const reviewClanRequest: any = async (id: string, action: 'accept' | 'rej
 export { createShadowWar, getActiveShadowWar, getShadowWarById, updateShadowWar, updateShadowWarClan, getShadowWars, confirmShadowWar, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, respondToShadowWar, respondToPublicShadowWar } from './shadowWarService';
 export { getClanPosts, createClanPost, updateClanPost, deleteClanPost } from './clanPostService';
 export { getClans, createClan, updateClan, deleteClan, searchClans } from './clanService';
-export { getAccursedTowers, getActiveAccursedTower, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchEnemyClans, createEnemyClan, respondToTowerWar } from './towerWarService';
+export { getAccursedTowers, getAccursedTowerManagement, getActiveAccursedTower, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchEnemyClans, createEnemyClan, respondToTowerWar, respondToPublicTowerWar } from './towerWarService';
 export { getHistory, getAccursedTowerById } from './historyService';
 
 export const createCharacterClaim: any = async (characterId: string) => {

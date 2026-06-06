@@ -32,6 +32,7 @@ export interface storeState {
     currentAccursedTower: any;
   },
   currentCharacter: string | null,
+  lastUpdatedTower: any,
   warbands: any,
   notifications: { id: string; type: string; targetType: 'user' | 'character'; targetId: string | null; data: any; read: boolean }[],
   pendingInboxCount: number,

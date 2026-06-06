@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from '../../../../middlewares/store';
-import { getClanMembers, getAccursedTowers, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, createEnemyClan, saveClanRoster, autoAssignRoster } from '../../../../middlewares/services';
+import { getClanMembers, getAccursedTowers, getAccursedTowerManagement, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, createEnemyClan, saveClanRoster, autoAssignRoster, respondToTowerWar } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { Character } from '../../../../interfaces';
 import AccursedTowerMemberCard from './AccursedTowerMemberCard.vue';
@@ -162,6 +162,30 @@ const assignedIds = computed(() => {
   return Array.from(ids);
 });
 
+const expandedTower = computed(() => towerWars.value.find((t: any) => t._id === expandedId.value) ?? null);
+const confirmedIds = computed<string[]>(() =>
+  (expandedTower.value?.confirmed ?? []).map((c: any) => String(c?._id ?? c))
+);
+const declinedIds = computed<string[]>(() =>
+  (expandedTower.value?.declined ?? []).map((c: any) => String(c?._id ?? c))
+);
+
+const respondingCharId = ref<string | null>(null);
+
+async function handleRespond(action: 'confirm' | 'pending' | 'decline', charId: string) {
+  if (!expandedId.value || !charId || respondingCharId.value) return;
+  respondingCharId.value = charId;
+  try {
+    await respondToTowerWar(expandedId.value, charId, action);
+    const fresh = await getAccursedTowerManagement(expandedId.value, store.currentCharacter ?? undefined);
+    if (fresh) {
+      const idx = towerWars.value.findIndex((t: any) => t._id === expandedId.value);
+      if (idx !== -1) towerWars.value[idx] = fresh;
+    }
+  } catch { /* silently ignore */ }
+  finally { respondingCharId.value = null; }
+}
+
 // ── Load ──────────────────────────────────────────────────────────────────────
 
 function handleOpenConfirm(query: string, target: 'new' | 'edit') {
@@ -188,7 +212,7 @@ async function handleConfirmCreate() {
   }
 }
 
-onMounted(async () => {
+async function loadData() {
   loading.value = true;
   try {
     const [wars, clanData] = await Promise.all([
@@ -213,6 +237,29 @@ onMounted(async () => {
     }
   } finally {
     loading.value = false;
+  }
+}
+
+onMounted(loadData);
+
+watch(() => store.currentCharacter, (charId) => {
+  if (!charId) return;
+  editingId.value = null;
+  loadData();
+});
+
+watch(() => store.lastUpdatedTower, (tower: any) => {
+  if (!tower?._id) return;
+  const towerId = String(tower._id);
+  const idx = towerWars.value.findIndex((t: any) => String(t._id) === towerId);
+  if (idx === -1) return;
+  towerWars.value[idx] = tower;
+  if (expandedId.value === towerId) {
+    localRoster.value = {
+      group1: padGroup(tower.roster?.group1, 4),
+      group2: padGroup(tower.roster?.group2, 4),
+      group3: padGroup(tower.roster?.group3, 2),
+    };
   }
 });
 
@@ -279,7 +326,7 @@ function toggleExpand(instance: any) {
 async function saveRoster() {
   if (!expandedId.value) return;
   const toIds = (arr: (Character|undefined)[]) =>
-    arr.map(c => c?._id ?? null).filter(Boolean);
+    arr.map(c => c?._id ?? null);
   const updated = await updateAccursedTower(expandedId.value, {
     roster: {
       group1: toIds(localRoster.value.group1),
@@ -293,7 +340,7 @@ async function saveRoster() {
 }
 
 function buildATData() {
-  const toIds = (arr: (Character|undefined)[]) => arr.map(c => c?._id ?? null).filter(Boolean);
+  const toIds = (arr: (Character|undefined)[]) => arr.map(c => c?._id ?? null);
   return {
     group1: toIds(localRoster.value.group1),
     group2: toIds(localRoster.value.group2),
@@ -638,8 +685,13 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
                   <AccursedTowerMemberCard
                     :character="localRoster[grp][n-1]"
                     :show-unassign-button="!!localRoster[grp][n-1]"
+                    :confirmed-ids="confirmedIds"
+                    :declined-ids="declinedIds"
+                    :can-confirm="String(localRoster[grp][n-1]?._id) === store.currentCharacter"
+                    :confirming="respondingCharId === String(localRoster[grp][n-1]?._id)"
                     @click="openModal(grp, n-1)"
                     @unassign="unassign(grp, n-1)"
+                    @respond="(action) => handleRespond(action, String(localRoster[grp][n-1]?._id))"
                   />
                 </div>
               </div>
@@ -666,8 +718,13 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
                   <AccursedTowerMemberCard
                     :character="localRoster.group3[n-1]"
                     :show-unassign-button="!!localRoster.group3[n-1]"
+                    :confirmed-ids="confirmedIds"
+                    :declined-ids="declinedIds"
+                    :can-confirm="String(localRoster.group3[n-1]?._id) === store.currentCharacter"
+                    :confirming="respondingCharId === String(localRoster.group3[n-1]?._id)"
                     @click="openModal('group3', n-1)"
                     @unassign="unassign('group3', n-1)"
+                    @respond="(action) => handleRespond(action, String(localRoster.group3[n-1]?._id))"
                   />
                 </div>
               </div>

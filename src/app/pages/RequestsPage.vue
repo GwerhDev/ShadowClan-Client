@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useStore } from '../../middlewares/store';
-import { getClanInvitations, reviewClanInvitation, confirmShadowWar } from '../../middlewares/services';
+import { getClanInvitations, reviewClanInvitation, respondToPublicShadowWar, respondToPublicTowerWar } from '../../middlewares/services';
 import { classes } from '../../middlewares/misc/const';
 import AppLayout from '../layouts/AppLayout.vue';
 
@@ -34,11 +34,18 @@ const shadowWarAssignments = computed(() =>
     .map((n: any) => ({ type: 'shadowwar-assignment', raw: { ...n.data, _notifId: n.id } }))
 );
 
+const towerAssignments = computed(() =>
+  (store.notifications as any[])
+    .filter((n: any) => n.type === 'tower-assignment' && String(n.targetId) === String(store.currentCharacter))
+    .map((n: any) => ({ type: 'tower-assignment', raw: { ...n.data, _notifId: n.id } }))
+);
+
 const allItems = computed(() => [
   ...visibleInvitations.value.map(inv => ({ type: 'clan-invitation', raw: inv })),
   ...reviewedRequests.value,
   ...reviewedCharacterRequests.value,
   ...shadowWarAssignments.value,
+  ...towerAssignments.value,
 ]);
 
 watch(
@@ -102,6 +109,7 @@ function itemTitle(item: { type: string; raw: any }): string {
   if (item.type === 'clan-request-reviewed') return item.raw.clan?.name ?? '—';
   if (item.type === 'character-request-reviewed') return item.raw.character?.name ?? '—';
   if (item.type === 'shadowwar-assignment') return item.raw.characterName ?? '—';
+  if (item.type === 'tower-assignment') return item.raw.characterName ?? '—';
   return '—';
 }
 
@@ -114,6 +122,7 @@ function itemSubtitle(item: { type: string; raw: any }): string {
     return item.raw.action === 'accept' ? `${label} aprobada` : `${label} rechazada`;
   }
   if (item.type === 'shadowwar-assignment') return 'Asignación — Guerra Sombría';
+  if (item.type === 'tower-assignment') return 'Asignación — Torre Maldita';
   return '—';
 }
 
@@ -121,8 +130,26 @@ async function confirmWarAssignment(item: { type: string; raw: any }) {
   processingId.value = item.raw._notifId;
   actionError.value = '';
   try {
-    await confirmShadowWar(item.raw.shadowWarId);
+    await respondToPublicShadowWar(item.raw.shadowWarId, item.raw.characterId, 'confirm');
     await store.handleGetNextShadowWar();
+    const notif = (store.notifications as any[]).find((n: any) => n.id === item.raw._notifId);
+    if (notif) { notif.read = true; }
+    store.decrementPendingInboxCount();
+    selected.value = null;
+    showDetail.value = false;
+  } catch (e: any) {
+    actionError.value = e?.response?.data?.message ?? 'Error al confirmar la participación.';
+  } finally {
+    processingId.value = null;
+  }
+}
+
+async function confirmTowerAssignment(item: { type: string; raw: any }) {
+  processingId.value = item.raw._notifId;
+  actionError.value = '';
+  try {
+    await respondToPublicTowerWar(item.raw.towerId, item.raw.characterId, 'confirm');
+    await store.handleGetActiveTowerWar();
     const notif = (store.notifications as any[]).find((n: any) => n.id === item.raw._notifId);
     if (notif) { notif.read = true; }
     store.decrementPendingInboxCount();
@@ -178,6 +205,7 @@ function dismissReviewedRequest(notifId: string) {
                     item.type === 'clan-invitation'           ? 'fas fa-envelope'
                     : item.type === 'clan-request-reviewed'  ? (item.raw.action === 'accept' ? 'fas fa-check' : 'fas fa-times')
                     : item.type === 'shadowwar-assignment'   ? 'fas fa-sword'
+                    : item.type === 'tower-assignment'       ? 'fas fa-chess-rook'
                     : item.raw.action === 'accept'           ? 'fas fa-user-check' : 'fas fa-user-times'
                   "></i>
                 </div>
@@ -306,6 +334,40 @@ function dismissReviewedRequest(notifId: string) {
                   <button class="req-btn accept"
                     :disabled="processingId === selected.raw._notifId"
                     @click="confirmWarAssignment(selected)">
+                    <i class="fas fa-check"></i>
+                    {{ processingId === selected.raw._notifId ? 'Confirmando...' : 'Confirmar participación' }}
+                  </button>
+                  <button class="req-btn ghost" @click="dismissReviewedRequest(selected.raw._notifId)">
+                    Descartar
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="selected.type === 'tower-assignment'">
+              <div class="req-detail-content">
+                <div class="req-detail-header">
+                  <div class="req-detail-type request">
+                    <i class="fas fa-chess-rook"></i>
+                    <span>Asignación — Torre Maldita</span>
+                  </div>
+                </div>
+
+                <div class="req-detail-clan">
+                  <i class="fas fa-chess-rook req-clan-icon"></i>
+                  <div>
+                    <h2 class="req-clan-name">{{ selected.raw.characterName ?? '—' }}</h2>
+                    <p class="req-clan-sub">ha sido asignado a la próxima Torre Maldita</p>
+                    <p v-if="selected.raw.towerNumber" class="req-clan-sub">Torre #{{ selected.raw.towerNumber }}</p>
+                  </div>
+                </div>
+
+                <p v-if="actionError" class="req-error">{{ actionError }}</p>
+
+                <div class="req-detail-actions">
+                  <button class="req-btn accept"
+                    :disabled="processingId === selected.raw._notifId"
+                    @click="confirmTowerAssignment(selected)">
                     <i class="fas fa-check"></i>
                     {{ processingId === selected.raw._notifId ? 'Confirmando...' : 'Confirmar participación' }}
                   </button>
@@ -472,6 +534,11 @@ $border: rgba(255, 255, 255, .07);
   &.shadowwar-assignment {
     background: rgba(227, 210, 168, .08);
     color: rgb(227, 210, 168);
+  }
+
+  &.tower-assignment {
+    background: rgba(200, 140, 255, .08);
+    color: rgba(200, 140, 255, .9);
   }
 }
 

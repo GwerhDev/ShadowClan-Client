@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from '../../../middlewares/store';
+import { respondToPublicTowerWar } from '../../../middlewares/services';
 import ShadowWarMemberCard from '../ShadowWar/ShadowWarMemberCard.vue';
 import EmptyState from '../common/EmptyState.vue';
 
@@ -11,7 +12,6 @@ const route      = useRoute();
 const towerWarList = computed(() => store.currentUser.towerWarList as any[]);
 const error        = computed(() => store.currentUser.towerWarError);
 
-// Resolve the tower matching the current route param
 const towerWar = computed(() => {
   const id = route.params.accursedtower_id as string;
   return towerWarList.value.find((tw: any) => tw._id === id) ?? null;
@@ -27,8 +27,27 @@ function padGroup(arr: any[] | undefined, size: number): (any | undefined)[] {
 
 const isMemberLinked = (character: any) => {
   if (!character?._id || !store.currentCharacter) return false;
-  return character._id === store.currentCharacter;
+  return String(character._id) === String(store.currentCharacter);
 };
+
+const confirmedIds = computed<string[]>(() =>
+  (towerWar.value?.confirmed ?? []).map((id: any) => String(id?._id ?? id))
+);
+const declinedIds = computed<string[]>(() =>
+  (towerWar.value?.declined ?? []).map((id: any) => String(id?._id ?? id))
+);
+
+const respondingCharId = ref<string | null>(null);
+
+async function handleRespond(action: 'confirm' | 'pending' | 'decline', charId: string) {
+  if (!towerWar.value?._id || !charId || respondingCharId.value) return;
+  respondingCharId.value = charId;
+  try {
+    await respondToPublicTowerWar(towerWar.value._id, charId, action);
+    await store.handleGetActiveTowerWar();
+  } catch { /* silently ignore */ }
+  finally { respondingCharId.value = null; }
+}
 </script>
 
 <template>
@@ -43,6 +62,7 @@ const isMemberLinked = (character: any) => {
     />
 
     <div v-else class="main-content-wrapper">
+
       <div class="content-section">
 
         <!-- Grupos 1 y 2 lado a lado -->
@@ -55,7 +75,11 @@ const isMemberLinked = (character: any) => {
                 :key="idx"
                 :character="character"
                 :is-linked="isMemberLinked(character)"
-                :confirmed-ids="[]"
+                :confirmed-ids="confirmedIds"
+                :declined-ids="declinedIds"
+                :can-confirm="isMemberLinked(character)"
+                :confirming="respondingCharId === character?._id"
+                @respond="(action) => handleRespond(action, character?._id)"
               />
             </div>
           </div>
@@ -70,7 +94,11 @@ const isMemberLinked = (character: any) => {
               :key="idx"
               :character="character"
               :is-linked="isMemberLinked(character)"
-              :confirmed-ids="[]"
+              :confirmed-ids="confirmedIds"
+              :declined-ids="declinedIds"
+              :can-confirm="isMemberLinked(character)"
+              :confirming="respondingCharId === character?._id"
+              @respond="(action) => handleRespond(action, character?._id)"
             />
           </div>
         </div>

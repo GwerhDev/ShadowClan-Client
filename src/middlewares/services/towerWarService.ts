@@ -6,6 +6,9 @@ const BASE = API_URL + '/clan-management/accursed-tower';
 export const getAccursedTowers = async (characterId?: string) =>
   axios.get(BASE, { params: { characterId }, withCredentials: true }).then(r => r.data);
 
+export const getAccursedTowerManagement = async (id: string, characterId?: string) =>
+  axios.get(BASE + '/' + id, { params: characterId ? { characterId } : {}, withCredentials: true }).then(r => r.data);
+
 export const getActiveAccursedTower = async (characterId?: string) =>
   axios.get(API_URL + '/accursed-tower/active', { params: { characterId }, withCredentials: true }).then(r => r.data);
 
@@ -27,5 +30,8 @@ export const searchEnemyClans = async (q: string) =>
 export const createEnemyClan = async (name: string, characterId?: string) =>
   axios.post(BASE + '/clans', { name, ...(characterId ? { characterId } : {}) }, { withCredentials: true }).then(r => r.data);
 
-export const respondToTowerWar = async (towerId: string, characterId: string) =>
-  axios.post(BASE + `/${towerId}/respond`, { characterId }, { withCredentials: true }).then(r => r.data);
+export const respondToTowerWar = async (towerId: string, characterId: string, action: 'confirm' | 'pending' | 'decline' = 'confirm') =>
+  axios.post(BASE + `/${towerId}/respond`, { characterId, action }, { withCredentials: true }).then(r => r.data);
+
+export const respondToPublicTowerWar = async (towerId: string, characterId: string, action: 'confirm' | 'pending' | 'decline' = 'confirm') =>
+  axios.post(API_URL + `/accursed-tower/${towerId}/respond`, { characterId, action }, { withCredentials: true }).then(r => r.data);

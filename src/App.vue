@@ -105,8 +105,18 @@ onMounted(async () => {
         store.handleGetNextShadowWar();
         store.handleGetShadowWars?.();
       });
-      socket.on('tower:updated', () => {
-        store.handleGetAccursedTowers?.();
+      socket.on('tower:assigned', (data: any) => {
+        store.addNotification({
+          id: data.id,
+          type: 'tower-assignment',
+          targetType: 'character',
+          targetId: data.characterId ? String(data.characterId) : null,
+          data,
+        });
+      });
+      socket.on('tower:updated', ({ towerId }: any) => {
+        store.handleGetAccursedTowers?.(towerId);
+        store.handleGetActiveTowerWar();
       });
     }
   } finally {

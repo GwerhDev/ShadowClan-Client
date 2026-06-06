@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
-import { getClanPosts, deleteClanPost, updateClanPost, respondToShadowWar, respondToTowerWar } from '../../../middlewares/services';
+import { getClanPosts, deleteClanPost, updateClanPost, respondToPublicShadowWar, respondToPublicTowerWar } from '../../../middlewares/services';
 import { classes } from '../../../middlewares/misc/const';
 import shadowWarBanner     from '../../../assets/png/shadow-war-banner.png';
 import accursedTowerBanner from '../../../assets/png/accursed-tower-banner.png';
@@ -107,7 +107,19 @@ function formatDate(iso: string) {
 const respondingId = ref<string | null>(null);
 
 function isConfirmed(post: any): boolean {
-  return (post.instanceConfirmed ?? []).includes(store.currentCharacter);
+  const charId = store.currentCharacter;
+  if (!charId) return false;
+  if (post.source === 'shadow_war') {
+    const sw = store.currentUser.shadowWarData;
+    if (sw && String(sw._id) === String(post.referenceId))
+      return (sw.confirmed ?? []).some((c: any) => String(c?._id ?? c) === charId);
+  }
+  if (post.source === 'accursed_tower') {
+    const tower = (store.currentUser.towerWarList as any[])
+      .find((t: any) => String(t._id) === String(post.referenceId));
+    if (tower) return (tower.confirmed ?? []).some((c: any) => String(c?._id ?? c) === charId);
+  }
+  return (post.instanceConfirmed ?? []).includes(charId);
 }
 
 async function respondToCall(post: any) {
@@ -115,9 +127,11 @@ async function respondToCall(post: any) {
   respondingId.value = post._id;
   try {
     if (post.source === 'shadow_war') {
-      await respondToShadowWar(String(post.referenceId), store.currentCharacter);
+      await respondToPublicShadowWar(String(post.referenceId), store.currentCharacter, 'confirm');
+      store.handleGetNextShadowWar?.();
     } else {
-      await respondToTowerWar(String(post.referenceId), store.currentCharacter);
+      await respondToPublicTowerWar(String(post.referenceId), store.currentCharacter, 'confirm');
+      store.handleGetActiveTowerWar?.();
     }
     const idx = posts.value.findIndex(p => p._id === post._id);
     if (idx !== -1) {

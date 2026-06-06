@@ -365,8 +365,8 @@ const updateShadowWarData = async () => {
   for (const [cat, matches] of Object.entries(battleCategories.value)) {
     battleData[cat] = (matches as any[]).map(match => ({
       result: match.result,
-      group1: { character: match.group1.character.map(toId).filter(Boolean) },
-      group2: { character: match.group2.character.map(toId).filter(Boolean) },
+      group1: { character: match.group1.character.map(toId) },
+      group2: { character: match.group2.character.map(toId) },
     }));
   }
 
@@ -403,8 +403,8 @@ function buildSWData() {
   const battleData: any = {};
   for (const [cat, matches] of Object.entries(battleCategories.value)) {
     battleData[cat] = (matches as any[]).map(match => ({
-      group1: { character: match.group1.character.map(toId).filter(Boolean) },
-      group2: { character: match.group2.character.map(toId).filter(Boolean) },
+      group1: { character: match.group1.character.map(toId) },
+      group2: { character: match.group2.character.map(toId) },
     }));
   }
   return battleData;

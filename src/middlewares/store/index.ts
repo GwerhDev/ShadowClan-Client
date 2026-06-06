@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getActiveShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById, deactivateAccursedTower, closeShadowWarManagement } from '../services';
+import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getActiveShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById, deactivateAccursedTower, closeShadowWarManagement, getAccursedTowerManagement } from '../services';
 import { storeState } from '../../interfaces/storeState';
 import { ShadowWar } from '../../interfaces';
 import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
@@ -41,6 +41,7 @@ export const useStore = defineStore('store', {
       currentAccursedTower: null,
     },
     currentCharacter: "",
+    lastUpdatedTower: null as any,
     warbands: null,
     notifications: [],
     pendingInboxCount: 0,
@@ -134,6 +135,14 @@ export const useStore = defineStore('store', {
       } catch (error: any) {
         this.setTowerWarError(error.message);
       }
+    },
+
+    async handleGetAccursedTowers(towerId?: string) {
+      if (!towerId) return;
+      try {
+        const fresh = await getAccursedTowerManagement(towerId, this.currentCharacter ?? undefined);
+        if (fresh) this.lastUpdatedTower = fresh;
+      } catch { /* ignore */ }
     },
 
     async handleUserData() {
