@@ -17,6 +17,8 @@ const props = defineProps({
 
 defineEmits<{
   (e: 'respond', action: 'confirm' | 'decline' | 'pending'): void;
+  (e: 'click'): void;
+  (e: 'unassign'): void;
 }>();
 
 const getClassName = (className: string | undefined) =>
