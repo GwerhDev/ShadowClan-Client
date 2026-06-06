@@ -824,6 +824,14 @@ input[type="date"] {
   }
 }
 
+.group-avg-score {
+  font-size: .6rem;
+  font-weight: 400;
+  font-family: inherit;
+  color: rgba(227, 210, 168, .45);
+  margin-left: .25rem;
+}
+
 // ── Save alignment modal ──────────────────────────────────────────────────────
 
 .save-alignment-modal {

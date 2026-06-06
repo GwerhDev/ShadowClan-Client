@@ -466,6 +466,13 @@ function resetAlignment() {
   updateShadowWarData();
 }
 
+function groupAvgScore(chars: any[]): string {
+  const scored = (chars ?? []).filter((c: any) => c?.score != null)
+  if (!scored.length) return '—'
+  const avg = scored.reduce((s: number, c: any) => s + c.score, 0) / scored.length
+  return avg.toLocaleString('es', { maximumFractionDigits: 0 })
+}
+
 // ── Drag & Drop ──────────────────────────────────────────────────────────────
 
 interface SlotRef {
@@ -724,7 +731,10 @@ function onDragEnd() {
         <!-- Card body (collapsible) -->
         <div v-if="expandedCategories.includes(String(categoryName))" class="battle-card-body">
           <div v-for="(match, matchIndex) in category" :key="matchIndex" class="battle-match">
-            <h5 class="match-title">Partida {{ matchIndex + 1 }}</h5>
+            <h5 class="match-title">
+              Partida {{ matchIndex + 1 }}
+              <span class="group-avg-score">⌀ {{ groupAvgScore([...match.group1.character, ...match.group2.character]) }}</span>
+            </h5>
             <div class="match-groups">
               <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="group">
                 <label><h5>{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }}</h5></label>

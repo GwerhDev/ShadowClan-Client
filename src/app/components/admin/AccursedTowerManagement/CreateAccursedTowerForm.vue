@@ -358,6 +358,15 @@ function applyAlignment(data: any) {
   saveRoster();
 }
 
+function instanceAvgScore(roster: { group1?: any[]; group2?: any[]; group3?: any[] } | undefined): string {
+  if (!roster) return '—'
+  const all = [...(roster.group1 ?? []), ...(roster.group2 ?? []), ...(roster.group3 ?? [])]
+    .filter(c => c?.score != null)
+  if (!all.length) return '—'
+  const avg = all.reduce((s: number, c: any) => s + (c.score ?? 0), 0) / all.length
+  return avg.toLocaleString('es', { maximumFractionDigits: 0 })
+}
+
 async function autoAssign() {
   if (!clanId.value || !expandedId.value) return;
   autoAssigning.value = true;
@@ -509,6 +518,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
               <span class="instance-tower-name">Torre {{ instance.towerNumber }}</span>
               <span class="instance-date">{{ formatDate(instance.date) }}</span>
               <span v-if="instance.enemyClan" class="instance-enemy">vs {{ instance.enemyClan.name }}</span>
+              <span class="instance-avg-score">⌀ {{ instanceAvgScore(instance.roster) }}</span>
             </div>
             <div class="instance-actions" @click.stop>
               <button class="btn-share-trigger" @click="shareModalTower = instance">

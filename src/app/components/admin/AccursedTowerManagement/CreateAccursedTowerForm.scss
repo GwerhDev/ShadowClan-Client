@@ -520,6 +520,13 @@ input[type="date"] {
   font-family: inherit;
 }
 
+.instance-avg-score {
+  font-size: .65rem;
+  font-weight: 500;
+  color: rgba(227, 210, 168, .5);
+  margin-left: .5rem;
+}
+
 .cards-grid {
   display: flex;
   flex-direction: column;
