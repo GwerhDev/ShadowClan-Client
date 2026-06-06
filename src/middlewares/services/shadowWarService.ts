@@ -19,15 +19,17 @@ export const getShadowWarById: any = async (id: string, characterId?: string) =>
   return response;
 };
 
-export const updateShadowWar: any = async (id: string, formData: any) => {
-  const response: any = await axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, formData, { withCredentials: true })
+export const updateShadowWar: any = async (id: string, formData: any, characterId?: string) => {
+  const body = characterId ? { ...formData, characterId } : formData;
+  const response: any = await axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, body, { withCredentials: true })
     .then(response => response.data)
   return response;
 };
 
 // Clan-management-scoped update (leader/officer)
-export const updateShadowWarClan: any = async (id: string, formData: any) => {
-  const response: any = await axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, formData, { withCredentials: true })
+export const updateShadowWarClan: any = async (id: string, formData: any, characterId?: string) => {
+  const body = characterId ? { ...formData, characterId } : formData;
+  const response: any = await axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, body, { withCredentials: true })
     .then(response => response.data)
   return response;
 };
@@ -43,15 +45,16 @@ export const createShadowWarManagement: any = async (date: string, enemyClan?: s
 };
 
 // Close/delete a shadow war instance (leader/officer)
-export const closeShadowWarManagement: any = async (id: string) => {
-  const response: any = await axios.delete(API_URL + `/clan-management/shadow-wars/${id}`, { withCredentials: true })
+export const closeShadowWarManagement: any = async (id: string, characterId?: string) => {
+  const params = characterId ? { characterId } : {};
+  const response: any = await axios.delete(API_URL + `/clan-management/shadow-wars/${id}`, { params, withCredentials: true })
     .then(response => response.data)
   return response;
 };
 
 // Mark a shadow war instance as completed (leader/officer)
-export const completeShadowWarManagement: any = async (id: string) =>
-  axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, { completed: true }, { withCredentials: true })
+export const completeShadowWarManagement: any = async (id: string, characterId?: string) =>
+  axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, { completed: true, ...(characterId ? { characterId } : {}) }, { withCredentials: true })
     .then(r => r.data);
 
 export const getActiveShadowWar: any = async (characterId?: string) => {

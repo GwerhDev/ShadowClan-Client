@@ -54,6 +54,15 @@
             </button>
           </template>
 
+          <template v-else-if="attendanceMode">
+            <button class="ctx-confirm-btn" @click="saveAttendance" :disabled="saving">
+              <i class="fas fa-check"></i> Guardar asistencia
+            </button>
+            <button class="ctx-cancel-btn" @click="cancelAttendance">
+              <i class="fas fa-times"></i>
+            </button>
+          </template>
+
           <div v-else class="ctx-wrapper">
             <button class="btn-dots" @click.stop="toggleCtx">
               <i class="fas fa-ellipsis-v"></i>
@@ -64,6 +73,9 @@
                 <div class="ctx-menu-fixed" :style="{ top: ctxPos.top + 'px', left: ctxPos.left + 'px', transform: 'translateX(-100%)' }">
                   <button class="ctx-item" @click="openEdit">
                     <i class="fas fa-pen"></i> Editar
+                  </button>
+                  <button class="ctx-item" @click="openAttendance">
+                    <i class="fas fa-clipboard-list"></i> Registrar asistencia
                   </button>
                   <button class="ctx-item" @click="toggleCompleted" :disabled="saving">
                     <i :class="tower?.completed ? 'fas fa-rotate-left' : 'fas fa-flag-checkered'"></i>
@@ -117,12 +129,60 @@
         </div>
       </div>
 
-      <div v-if="tower.roster" class="tower-roster-grid">
+      <!-- View toggle (Planificada / Final) -->
+      <div v-if="!editing && !attendanceMode && hasFinalRoster" class="view-toggle">
+        <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'planned' }]" @click="viewMode = 'planned'">Planificada</button>
+        <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'final' }]" @click="viewMode = 'final'">Final</button>
+      </div>
+
+      <!-- Attendance edit mode -->
+      <div v-if="attendanceMode && editFinalRoster" class="tower-roster-grid">
+        <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="battle-section">
+          <h5 class="battle-title">{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }}</h5>
+          <div class="group-chars" style="flex-wrap:wrap;gap:.3rem;display:flex;align-items:center;padding:.25rem 0">
+            <span
+              v-for="(char, idx) in editFinalRoster[grp]"
+              :key="idx"
+              class="char-chip"
+            >
+              {{ char?.name ?? '—' }}
+              <button class="char-chip-remove" @click.stop="removeFromFinalGroup(grp, idx)">
+                <i class="fas fa-times"></i>
+              </button>
+            </span>
+            <button class="add-char-btn" @click="openMemberPickerAT(grp)" title="Agregar">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="battle-section tower-group3">
+          <h5 class="battle-title">Grupo 3</h5>
+          <div class="group-chars" style="flex-wrap:wrap;gap:.3rem;display:flex;align-items:center;padding:.25rem 0">
+            <span
+              v-for="(char, idx) in editFinalRoster.group3"
+              :key="idx"
+              class="char-chip"
+            >
+              {{ char?.name ?? '—' }}
+              <button class="char-chip-remove" @click.stop="removeFromFinalGroup('group3', idx)">
+                <i class="fas fa-times"></i>
+              </button>
+            </span>
+            <button class="add-char-btn" @click="openMemberPickerAT('group3')" title="Agregar">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Read mode roster -->
+      <div v-else-if="tower.roster" class="tower-roster-grid">
         <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="battle-section">
           <h5 class="battle-title">{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }}</h5>
           <div class="matches-list">
             <div
-              v-for="(character, idx) in padGroup(tower.roster[grp], groupSizes[grp])"
+              v-for="(character, idx) in padGroup(displayRoster?.[grp], groupSizes[grp])"
               :key="idx"
               class="roster-slot"
               :class="{ 'roster-slot--empty': !character }"
@@ -130,6 +190,9 @@
               <template v-if="character">
                 <span class="roster-name">{{ character.name }}</span>
                 <span class="roster-class">{{ character.currentClass || '—' }}</span>
+                <span v-if="viewMode === 'planned' && isAbsent(String(character._id))" class="absence-badge" style="font-size:.6rem">
+                  <i class="fas fa-user-slash"></i>
+                </span>
               </template>
               <span v-else class="roster-empty-label">No asignado</span>
             </div>
@@ -140,7 +203,7 @@
           <h5 class="battle-title">Grupo 3</h5>
           <div class="matches-list">
             <div
-              v-for="(character, idx) in padGroup(tower.roster.group3, groupSizes.group3)"
+              v-for="(character, idx) in padGroup(displayRoster?.group3, groupSizes.group3)"
               :key="idx"
               class="roster-slot"
               :class="{ 'roster-slot--empty': !character }"
@@ -148,12 +211,24 @@
               <template v-if="character">
                 <span class="roster-name">{{ character.name }}</span>
                 <span class="roster-class">{{ character.currentClass || '—' }}</span>
+                <span v-if="viewMode === 'planned' && isAbsent(String(character._id))" class="absence-badge" style="font-size:.6rem">
+                  <i class="fas fa-user-slash"></i>
+                </span>
               </template>
               <span v-else class="roster-empty-label">No asignado</span>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Member picker for attendance edit -->
+      <MemberSelectionModal
+        v-if="showMemberPicker && attendanceMode"
+        :characters="clanMembers"
+        :assigned-member-ids="assignedIdsForPickerAT"
+        @close="showMemberPicker = false"
+        @character-selected="handleMemberSelectedAT"
+      />
 
     </template>
   </div>
@@ -182,8 +257,9 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from '../../../../middlewares/store';
-import { updateAccursedTower, searchClans, createEnemyClan } from '../../../../middlewares/services';
+import { updateAccursedTower, searchClans, createEnemyClan, getClanMembers } from '../../../../middlewares/services';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
+import MemberSelectionModal from '../ShadowWarManagement/MemberSelectionModal.vue';
 
 const route  = useRoute();
 const router = useRouter();
@@ -204,7 +280,7 @@ async function handleCreateClan() {
   createClanError.value = '';
   try {
     const name    = newClanName.value.trim();
-    const created = await createEnemyClan(name);
+    const created = await createEnemyClan(name, store.currentCharacter);
     editEnemyClan.value       = created._id;
     editEnemyClanName.value   = name;
     showCreateClanModal.value = false;
@@ -215,14 +291,20 @@ async function handleCreateClan() {
     creatingClan.value = false;
   }
 }
-const showCtx        = ref(false);
-const ctxPos         = ref({ top: 0, left: 0 });
-const confirmDelete  = ref(false);
-const editing        = ref(false);
-const selectedResult = ref('pending');
-const editDate       = ref('');
-const editEnemyClan  = ref('');
-const editTowerNumber = ref<number | null>(null);
+const showCtx          = ref(false);
+const ctxPos           = ref({ top: 0, left: 0 });
+const confirmDelete    = ref(false);
+const editing          = ref(false);
+const attendanceMode   = ref(false);
+const viewMode         = ref<'planned' | 'final'>('planned');
+const selectedResult   = ref('pending');
+const editDate         = ref('');
+const editEnemyClan    = ref('');
+const editTowerNumber  = ref<number | null>(null);
+const editFinalRoster  = ref<{ group1: any[]; group2: any[]; group3: any[] } | null>(null);
+const clanMembers      = ref<any[]>([]);
+const showMemberPicker = ref(false);
+const memberPickerGroup = ref<'group1' | 'group2' | 'group3'>('group1');
 
 const tower = computed(() => store.admin.currentAccursedTower);
 
@@ -233,8 +315,22 @@ const towerResults = [
   { value: 'pending', text: 'Pendiente' },
 ];
 
-const resultLabel = computed(() => towerResults.find(r => r.value === selectedResult.value)?.text ?? '');
-const groupSizes = { group1: 4, group2: 4, group3: 2 } as const;
+const resultLabel    = computed(() => towerResults.find(r => r.value === selectedResult.value)?.text ?? '');
+const groupSizes     = { group1: 4, group2: 4, group3: 2 } as const;
+const confirmedIds   = computed(() => new Set((tower.value?.confirmed ?? []).map((c: any) => String(c?._id ?? c))));
+const hasFinalRoster = computed(() => !!(tower.value as any)?.finalRoster);
+const displayRoster  = computed(() => {
+  if (viewMode.value === 'final' && hasFinalRoster.value) return (tower.value as any).finalRoster;
+  return tower.value?.roster;
+});
+const assignedIdsForPickerAT = computed(() => {
+  if (!editFinalRoster.value) return [];
+  return [
+    ...(editFinalRoster.value.group1 ?? []),
+    ...(editFinalRoster.value.group2 ?? []),
+    ...(editFinalRoster.value.group3 ?? []),
+  ].map((c: any) => String(c?._id ?? c)).filter(Boolean);
+});
 
 function padGroup(arr: any[] | undefined, size: number): (any | undefined)[] {
   const result = [...(arr ?? [])];
@@ -273,6 +369,73 @@ function cancelEdit() {
   confirmDelete.value = false;
 }
 
+async function openAttendance() {
+  const t = tower.value;
+  const source = (t as any)?.finalRoster ?? t?.roster ?? { group1: [], group2: [], group3: [] };
+  editFinalRoster.value = JSON.parse(JSON.stringify(source));
+  showCtx.value = false;
+
+  if ((t as any)?.clan) {
+    try {
+      const data = await getClanMembers((t as any).clan);
+      clanMembers.value = [
+        ...(data.leader  ? [data.leader]  : []),
+        ...(data.officer ?? []),
+        ...(data.member  ?? []),
+      ];
+    } catch { clanMembers.value = []; }
+  }
+
+  attendanceMode.value = true;
+}
+
+function cancelAttendance() {
+  attendanceMode.value = false;
+  editFinalRoster.value = null;
+}
+
+function openMemberPickerAT(group: 'group1' | 'group2' | 'group3') {
+  memberPickerGroup.value = group;
+  showMemberPicker.value = true;
+}
+
+function handleMemberSelectedAT(character: any) {
+  if (!editFinalRoster.value) return;
+  const chars = editFinalRoster.value[memberPickerGroup.value];
+  const id = character._id ?? character;
+  if (!chars.find((c: any) => (c?._id ?? c) === id)) {
+    chars.push(character);
+  }
+  showMemberPicker.value = false;
+}
+
+function removeFromFinalGroup(group: 'group1' | 'group2' | 'group3', idx: number) {
+  editFinalRoster.value?.[group].splice(idx, 1);
+}
+
+async function saveAttendance() {
+  if (!tower.value?._id) return;
+  saving.value = true;
+  try {
+    const cleanRoster = {
+      group1: (editFinalRoster.value?.group1 ?? []).filter(Boolean).map((c: any) => c?._id ?? c),
+      group2: (editFinalRoster.value?.group2 ?? []).filter(Boolean).map((c: any) => c?._id ?? c),
+      group3: (editFinalRoster.value?.group3 ?? []).filter(Boolean).map((c: any) => c?._id ?? c),
+    };
+    await updateAccursedTower(tower.value._id, { finalRoster: cleanRoster }, store.currentCharacter);
+    await store.handleGetAccursedTowerDetails(tower.value._id);
+    attendanceMode.value  = false;
+    editFinalRoster.value = null;
+    viewMode.value = 'final';
+  } finally {
+    saving.value = false;
+  }
+}
+
+function isAbsent(charId: string): boolean {
+  return !confirmedIds.value.has(charId);
+}
+
 async function saveEdit() {
   if (!tower.value?._id) return;
   saving.value = true;
@@ -282,7 +445,7 @@ async function saveEdit() {
       date:        editDate.value || undefined,
       enemyClan:   editEnemyClan.value || null,
       result:      selectedResult.value,
-    });
+    }, store.currentCharacter);
     await store.handleGetAccursedTowerDetails(tower.value._id);
     editing.value = false;
   } finally {
@@ -296,7 +459,7 @@ async function toggleCompleted() {
   showCtx.value = false;
   try {
     const newCompleted = !tower.value.completed;
-    await updateAccursedTower(tower.value._id, { completed: newCompleted });
+    await updateAccursedTower(tower.value._id, { completed: newCompleted }, store.currentCharacter);
     await store.handleGetAccursedTowerDetails(tower.value._id);
     if (newCompleted) router.push('/management/history');
   } finally {

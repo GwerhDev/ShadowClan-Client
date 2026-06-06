@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, Ref, computed } from 'vue';
+import { ref, onMounted, Ref, computed, watch } from 'vue';
 import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan, saveClanRoster, autoAssignRoster, respondToShadowWar } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { Character, Match } from '../../../../interfaces';
@@ -32,7 +32,7 @@ async function handleConfirmCreate() {
   creatingClan.value    = true;
   createClanError.value = '';
   try {
-    const created = await createEnemyClan(pendingClanName.value.trim());
+    const created = await createEnemyClan(pendingClanName.value.trim(), store.currentCharacter);
     lastCreated.value = { _id: created._id, name: created.name };
     if (createTarget.value === 'new') {
       newEnemyClan.value = created._id;
@@ -230,6 +230,18 @@ const applyBattleData = (battle: any) => {
   battleCategories.value.proud   = proud   || battleCategories.value.proud;
 };
 
+// Reflect remote changes from other officers editing the same instance
+watch(shadowWarData, (newVal) => {
+  if (!newVal) return;
+  const incomingId = String(newVal._id ?? '');
+  if (!incomingId || !shadowWarId.value || shadowWarId.value !== incomingId) return;
+  applyBattleData(newVal.battle);
+  if (!editing.value && newVal.enemyClan) {
+    const ecId = typeof newVal.enemyClan === 'object' ? (newVal.enemyClan._id ?? '') : newVal.enemyClan;
+    if (ecId) enemyClan.value = ecId;
+  }
+});
+
 onMounted(async () => {
   loading.value = true;
   try {
@@ -286,7 +298,7 @@ const closeInstance = async () => {
   if (!shadowWarId.value) return;
   saving.value = true;
   try {
-    await closeShadowWarManagement(shadowWarId.value);
+    await closeShadowWarManagement(shadowWarId.value, store.currentCharacter);
     store.setShadowWarData(null);
     shadowWarId.value = null;
     enemyClan.value   = '';
@@ -301,7 +313,7 @@ const completeInstance = async () => {
   if (!shadowWarId.value) return;
   saving.value = true;
   try {
-    await completeShadowWarManagement(shadowWarId.value);
+    await completeShadowWarManagement(shadowWarId.value, store.currentCharacter);
     store.setShadowWarData(null);
     shadowWarId.value = null;
     enemyClan.value   = '';
@@ -333,7 +345,7 @@ const saveEdit = async () => {
   try {
     const formData: any = { enemyClan: enemyClan.value || null };
     if (editDate.value) formData.date = editDate.value;
-    const updated = await updateShadowWarClan(shadowWarId.value, formData);
+    const updated = await updateShadowWarClan(shadowWarId.value, formData, store.currentCharacter);
     if (updated) store.setShadowWarData(updated);
     editing.value = false;
   } finally {
@@ -362,7 +374,7 @@ const updateShadowWarData = async () => {
     enemyClan: enemyClan.value || null,
     battle: battleData,
   };
-  const updated = await updateShadowWarClan(shadowWarId.value, formData);
+  const updated = await updateShadowWarClan(shadowWarId.value, formData, store.currentCharacter);
   if (updated) store.setShadowWarData(updated);
 };
 

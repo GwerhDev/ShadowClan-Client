@@ -55,6 +55,15 @@
             </button>
           </template>
 
+          <template v-else-if="attendanceMode">
+            <button class="ctx-confirm-btn" @click="saveAttendance" :disabled="saving">
+              <i class="fas fa-check"></i> Guardar asistencia
+            </button>
+            <button class="ctx-cancel-btn" @click="cancelAttendance">
+              <i class="fas fa-times"></i>
+            </button>
+          </template>
+
           <div v-else class="ctx-wrapper">
             <button class="btn-dots" @click.stop="toggleCtx">
               <i class="fas fa-ellipsis-v"></i>
@@ -65,6 +74,9 @@
                 <div class="ctx-menu-fixed" :style="{ top: ctxPos.top + 'px', left: ctxPos.left + 'px', transform: 'translateX(-100%)' }">
                   <button class="ctx-item" @click="openEdit">
                     <i class="fas fa-pen"></i> Editar
+                  </button>
+                  <button class="ctx-item" @click="openAttendance">
+                    <i class="fas fa-clipboard-list"></i> Registrar asistencia
                   </button>
                   <button class="ctx-item" @click="toggleCompleted" :disabled="saving">
                     <i :class="currentShadowWar?.completed ? 'fas fa-rotate-left' : 'fas fa-flag-checkered'"></i>
@@ -120,18 +132,25 @@
         </div>
       </div>
 
-      <!-- Battles – EDIT mode -->
-      <div v-if="editing && editBattle" class="battles-grid">
-        <div v-for="(catMatches, cat) in editBattle" :key="cat" class="battle-section">
+      <!-- View toggle (Planificada / Final) -->
+      <div v-if="!editing && !attendanceMode && hasFinalBattle" class="view-toggle">
+        <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'planned' }]" @click="viewMode = 'planned'">Planificada</button>
+        <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'final' }]" @click="viewMode = 'final'">Final</button>
+      </div>
+
+      <!-- Battles – EDIT / ATTENDANCE mode (shared UI) -->
+      <div v-if="(editing && editBattle) || (attendanceMode && editFinalBattle)" class="battles-grid">
+        <div v-for="(catMatches, cat) in (attendanceMode ? editFinalBattle : editBattle)" :key="cat" class="battle-section">
           <h5 class="battle-title">Batalla {{ translateBattle(String(cat)) }}</h5>
           <div class="matches-list">
             <div v-for="(match, mIdx) in (catMatches as any[])" :key="mIdx" class="match-edit-card">
 
               <div class="match-edit-header">
                 <span class="match-label">Partida {{ mIdx + 1 }}</span>
-                <select v-model="match.result" class="match-result-select">
+                <select v-if="!attendanceMode" v-model="match.result" class="match-result-select">
                   <option v-for="opt in matchResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
                 </select>
+                <span v-else :class="['result-chip', `result-${match.result}`]" style="font-size:.65rem">{{ translateResult(match.result) }}</span>
               </div>
 
               <div v-for="grp in ['group1', 'group2'] as const" :key="grp" class="group-edit">
@@ -161,11 +180,11 @@
       <!-- Battles – READ mode -->
       <div v-else class="battles-grid">
         <div
-          v-for="(matches, battleType) in currentShadowWar.battle"
+          v-for="(matches, battleType) in displayBattle"
           :key="battleType"
           class="battle-section"
         >
-          <h5 class="battle-title">Batalla {{ translateBattle(battleType) }}</h5>
+          <h5 class="battle-title">Batalla {{ translateBattle(String(battleType)) }}</h5>
           <div class="matches-list">
             <div
               v-for="(match, index) in matches"
@@ -180,6 +199,12 @@
                   participantes
                 </span>
               </div>
+              <span
+                v-if="viewMode === 'planned' && absenceCount(match) > 0"
+                class="absence-badge"
+              >
+                <i class="fas fa-user-slash"></i> {{ absenceCount(match) }}
+              </span>
               <span :class="['result-chip', `result-${match.result}`]">{{ translateResult(match.result) }}</span>
               <i class="fas fa-chevron-right match-arrow"></i>
             </div>
@@ -195,7 +220,7 @@
       @close="closeMembersModal"
     />
     <MatchDetailsModal
-      v-if="showMatchDetailsModal && !editing"
+      v-if="showMatchDetailsModal && !editing && !attendanceMode"
       :match="selectedMatch"
       @close="closeMatchDetailsModal"
     />
@@ -275,7 +300,7 @@ async function handleCreateClan() {
   createClanError.value = '';
   try {
     const name = newClanName.value.trim();
-    const created = await createEnemyClan(name);
+    const created = await createEnemyClan(name, (store as any).currentCharacter);
     editEnemyClan.value       = created._id;
     editEnemyClanName.value   = name;
     showCreateClanModal.value = false;
@@ -288,9 +313,12 @@ async function handleCreateClan() {
 }
 const confirmDelete         = ref(false);
 const editing               = ref(false);
+const attendanceMode        = ref(false);
+const viewMode              = ref<'planned' | 'final'>('planned');
 const editDate              = ref('');
 const editEnemyClan         = ref('');
 const editBattle            = ref<any>(null);
+const editFinalBattle       = ref<any>(null);
 const clanMembers           = ref<any[]>([]);
 const showMemberPicker      = ref(false);
 const memberPickerCtx       = ref<{ cat: string; matchIdx: number; group: 'group1'|'group2' } | null>(null);
@@ -311,6 +339,12 @@ const matchResults = [
 
 const resultLabel           = computed(() => shadowWarResults.find(r => r.value === selectedResult.value)?.text ?? '');
 const confirmedMembersCount = computed(() => currentShadowWar.value?.confirmed?.length ?? 0);
+const confirmedIds          = computed(() => new Set((currentShadowWar.value?.confirmed ?? []).map((c: any) => String(c?._id ?? c))));
+const hasFinalBattle        = computed(() => !!(currentShadowWar.value as any)?.finalBattle);
+const displayBattle         = computed(() => {
+  if (viewMode.value === 'final' && hasFinalBattle.value) return (currentShadowWar.value as any).finalBattle;
+  return currentShadowWar.value?.battle;
+});
 
 const formattedDateDisplay = computed(() => {
   const d = currentShadowWar.value?.date;
@@ -320,9 +354,10 @@ const formattedDateDisplay = computed(() => {
 });
 
 const assignedIdsForPicker = computed(() => {
-  if (!editBattle.value || !memberPickerCtx.value) return [];
+  const battle = attendanceMode.value ? editFinalBattle.value : editBattle.value;
+  if (!battle || !memberPickerCtx.value) return [];
   const { cat, matchIdx } = memberPickerCtx.value;
-  const m = editBattle.value[cat]?.[matchIdx];
+  const m = battle[cat]?.[matchIdx];
   if (!m) return [];
   return [
     ...(m.group1.character ?? []).map((c: any) => c?._id ?? c),
@@ -367,8 +402,15 @@ function cancelEdit() {
   confirmDelete.value = false;
 }
 
+function absenceCount(match: any): number {
+  const chars = [...(match.group1?.character ?? []), ...(match.group2?.character ?? [])];
+  return chars.filter(c => c && !confirmedIds.value.has(String(c?._id ?? c))).length;
+}
+
+function getActiveBattle() { return attendanceMode.value ? editFinalBattle.value : editBattle.value; }
+
 function removeParticipant(cat: string, matchIdx: number, group: 'group1'|'group2', charIdx: number) {
-  editBattle.value[cat][matchIdx][group].character.splice(charIdx, 1);
+  getActiveBattle()[cat][matchIdx][group].character.splice(charIdx, 1);
 }
 
 function openMemberPicker(cat: string, matchIdx: number, group: 'group1'|'group2') {
@@ -379,12 +421,61 @@ function openMemberPicker(cat: string, matchIdx: number, group: 'group1'|'group2
 function handleMemberSelected(character: any) {
   if (!memberPickerCtx.value) return;
   const { cat, matchIdx, group } = memberPickerCtx.value;
-  const chars: any[] = editBattle.value[cat][matchIdx][group].character;
+  const chars: any[] = getActiveBattle()[cat][matchIdx][group].character;
   const id = character._id ?? character;
   if (!chars.find((c: any) => (c?._id ?? c) === id)) {
     chars.push(character);
   }
   showMemberPicker.value = false;
+}
+
+async function openAttendance() {
+  const sw = currentShadowWar.value;
+  const source = (sw as any)?.finalBattle ?? sw?.battle ?? {};
+  editFinalBattle.value = JSON.parse(JSON.stringify(source));
+  showCtx.value = false;
+
+  if ((sw as any)?.clan) {
+    try {
+      const data = await getClanMembers((sw as any).clan);
+      clanMembers.value = [
+        ...(data.leader  ? [data.leader]  : []),
+        ...(data.officer ?? []),
+        ...(data.member  ?? []),
+      ];
+    } catch { clanMembers.value = []; }
+  }
+
+  attendanceMode.value = true;
+}
+
+function cancelAttendance() {
+  attendanceMode.value  = false;
+  editFinalBattle.value = null;
+}
+
+async function saveAttendance() {
+  if (!currentShadowWar.value?._id) return;
+  saving.value = true;
+  try {
+    const cleanBattle = JSON.parse(JSON.stringify(editFinalBattle.value));
+    for (const cat of Object.keys(cleanBattle)) {
+      for (const match of cleanBattle[cat]) {
+        match.group1.character = (match.group1.character ?? []).filter(Boolean).map((c: any) => c?._id ?? c);
+        match.group2.character = (match.group2.character ?? []).filter(Boolean).map((c: any) => c?._id ?? c);
+      }
+    }
+    await updateShadowWarClan(currentShadowWar.value._id, {
+      finalBattle: cleanBattle,
+      characterId: store.currentCharacter,
+    });
+    await store.handleGetShadowWar(currentShadowWar.value._id);
+    attendanceMode.value  = false;
+    editFinalBattle.value = null;
+    viewMode.value = 'final';
+  } finally {
+    saving.value = false;
+  }
 }
 
 async function saveEdit() {
@@ -432,7 +523,7 @@ async function handleDelete() {
   if (!currentShadowWar.value?._id) return;
   saving.value = true;
   try {
-    await closeShadowWarManagement(currentShadowWar.value._id);
+    await closeShadowWarManagement(currentShadowWar.value._id, (store as any).currentCharacter);
     store.admin.history = (store.admin.history ?? []).filter((w: any) => w._id !== currentShadowWar.value!._id);
     if (store.currentUser.shadowWarData?._id === currentShadowWar.value._id) {
       store.currentUser.shadowWarData = null;

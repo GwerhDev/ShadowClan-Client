@@ -575,6 +575,56 @@
   &:hover { border-color: rgba(255, 255, 255, .45); color: rgba(255, 255, 255, .7); }
 }
 
+// ── View toggle (Planificada / Final) ─────────────────────────────────────────
+
+.view-toggle {
+  display: flex;
+  gap: .35rem;
+  padding: .25rem;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.toggle-btn {
+  padding: .3rem .85rem;
+  height: 30px;
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, .45);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+
+  &:hover { color: rgba(255, 255, 255, .75); }
+
+  &--active {
+    background: rgba(227, 210, 168, .1);
+    border-color: rgba(227, 210, 168, .25);
+    color: rgba(227, 210, 168, .9);
+  }
+}
+
+// ── Absence badge ──────────────────────────────────────────────────────────────
+
+.absence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .1rem .45rem;
+  background: rgba(239, 68, 68, .1);
+  border: 1px solid rgba(239, 68, 68, .2);
+  border-radius: 999px;
+  font-size: .65rem;
+  color: #f87171;
+  white-space: nowrap;
+}
+
 // ── Animation ─────────────────────────────────────────────────────────────────
 
 @keyframes pulse {

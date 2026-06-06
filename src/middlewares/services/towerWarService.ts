@@ -12,20 +12,20 @@ export const getActiveAccursedTower = async (characterId?: string) =>
 export const createAccursedTower = async (towerNumber: number, date: string, enemyClan?: string | null, characterId?: string) =>
   axios.post(BASE, { towerNumber, date, enemyClan: enemyClan || null, characterId }, { withCredentials: true }).then(r => r.data);
 
-export const updateAccursedTower = async (id: string, data: { towerNumber?: number; date?: string; roster?: any; enemyClan?: string | null; result?: string; completed?: boolean }) =>
-  axios.patch(BASE + '/' + id, data, { withCredentials: true }).then(r => r.data);
+export const updateAccursedTower = async (id: string, data: { towerNumber?: number; date?: string; roster?: any; finalRoster?: any; enemyClan?: string | null; result?: string; completed?: boolean }, characterId?: string) =>
+  axios.patch(BASE + '/' + id, { ...data, ...(characterId ? { characterId } : {}) }, { withCredentials: true }).then(r => r.data);
 
-export const deactivateAccursedTower = async (id: string) =>
-  axios.delete(BASE + '/' + id, { withCredentials: true }).then(r => r.data);
+export const deactivateAccursedTower = async (id: string, characterId?: string) =>
+  axios.delete(BASE + '/' + id, { params: characterId ? { characterId } : {}, withCredentials: true }).then(r => r.data);
 
-export const completeAccursedTower = async (id: string) =>
-  axios.patch(BASE + '/' + id, { completed: true }, { withCredentials: true }).then(r => r.data);
+export const completeAccursedTower = async (id: string, characterId?: string) =>
+  axios.patch(BASE + '/' + id, { completed: true, ...(characterId ? { characterId } : {}) }, { withCredentials: true }).then(r => r.data);
 
 export const searchEnemyClans = async (q: string) =>
   axios.get(BASE + '/clans', { params: { q }, withCredentials: true }).then(r => r.data);
 
-export const createEnemyClan = async (name: string) =>
-  axios.post(BASE + '/clans', { name }, { withCredentials: true }).then(r => r.data);
+export const createEnemyClan = async (name: string, characterId?: string) =>
+  axios.post(BASE + '/clans', { name, ...(characterId ? { characterId } : {}) }, { withCredentials: true }).then(r => r.data);
 
 export const respondToTowerWar = async (towerId: string, characterId: string) =>
   axios.post(BASE + `/${towerId}/respond`, { characterId }, { withCredentials: true }).then(r => r.data);

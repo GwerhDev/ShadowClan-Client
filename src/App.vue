@@ -101,6 +101,13 @@ onMounted(async () => {
           data,
         });
       });
+      socket.on('shadowwar:updated', () => {
+        store.handleGetNextShadowWar();
+        store.handleGetShadowWars?.();
+      });
+      socket.on('tower:updated', () => {
+        store.handleGetAccursedTowers?.();
+      });
     }
   } finally {
     authDone.value = true;

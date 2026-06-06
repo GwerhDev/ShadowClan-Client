@@ -88,7 +88,7 @@ async function saveEdit(instance: any) {
       towerNumber: editValues.value.towerNumber ?? undefined,
       date:        editValues.value.date || undefined,
       enemyClan:   editValues.value.enemyClan || null,
-    });
+    }, store.currentCharacter);
     const idx = towerWars.value.findIndex(tw => tw._id === instance._id);
     if (idx !== -1) towerWars.value[idx] = updated;
     editingId.value = null;
@@ -175,7 +175,7 @@ async function handleConfirmCreate() {
   creatingClan.value    = true;
   createClanError.value = '';
   try {
-    const created = await createEnemyClan(pendingClanName.value.trim());
+    const created = await createEnemyClan(pendingClanName.value.trim(), store.currentCharacter);
     lastCreated.value = { _id: created._id, name: created.name };
     if (createTarget.value === 'new') newEnemyClan.value = created._id;
     else editValues.value.enemyClan = created._id;
@@ -238,7 +238,7 @@ async function createInstance() {
 async function deactivate(id: string) {
   saving.value = true;
   try {
-    await deactivateAccursedTower(id);
+    await deactivateAccursedTower(id, store.currentCharacter);
     towerWars.value = towerWars.value.filter(tw => tw._id !== id);
     if (expandedId.value === id) expandedId.value = null;
   } finally {
@@ -249,7 +249,7 @@ async function deactivate(id: string) {
 async function complete(id: string) {
   saving.value = true;
   try {
-    await completeAccursedTower(id);
+    await completeAccursedTower(id, store.currentCharacter);
     towerWars.value = towerWars.value.filter(tw => tw._id !== id);
     if (expandedId.value === id) expandedId.value = null;
   } finally {
@@ -286,7 +286,7 @@ async function saveRoster() {
       group2: toIds(localRoster.value.group2),
       group3: toIds(localRoster.value.group3),
     },
-  });
+  }, store.currentCharacter);
   // Sync back into list
   const idx = towerWars.value.findIndex(tw => tw._id === expandedId.value);
   if (idx !== -1) towerWars.value[idx] = updated;
