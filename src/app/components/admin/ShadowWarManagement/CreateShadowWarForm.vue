@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref, computed } from 'vue';
-import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan, saveClanRoster, autoAssignRoster } from '../../../../middlewares/services';
+import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan, saveClanRoster, autoAssignRoster, respondToShadowWar } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { Character, Match } from '../../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
@@ -137,6 +137,24 @@ const confirmedIds = computed<string[]>(() => {
   const confirmed = shadowWarData.value?.confirmed ?? [];
   return confirmed.map((c: any) => (typeof c === 'string' ? c : c._id));
 });
+
+const declinedIds = computed<string[]>(() => {
+  const declined = shadowWarData.value?.declined ?? [];
+  return declined.map((c: any) => (typeof c === 'string' ? c : c._id));
+});
+
+const respondingCharId = ref<string | null>(null);
+
+async function handleRespond(action: 'confirm' | 'decline' | 'pending', characterId: string) {
+  if (!shadowWarId.value || !characterId) return;
+  respondingCharId.value = characterId;
+  try {
+    await respondToShadowWar(shadowWarId.value, characterId, action);
+    await store.handleGetNextShadowWar();
+  } finally {
+    respondingCharId.value = null;
+  }
+}
 
 const assignedMemberIds = computed(() => {
   const ids = new Set<string>();
@@ -758,8 +776,12 @@ function onDragEnd() {
                       :character="match[grp].character[n - 1]"
                       :show-unassign-button="!!match[grp].character[n - 1]"
                       :confirmed-ids="confirmedIds"
+                      :declined-ids="declinedIds"
+                      :can-confirm="String(match[grp].character[n - 1]?._id) === store.currentCharacter"
+                      :confirming="respondingCharId === String(match[grp].character[n - 1]?._id)"
                       @click="openMemberSelection(categoryName, grp, matchIndex, n - 1)"
                       @unassign="unassignMember(categoryName, grp, matchIndex, n - 1)"
+                      @respond="(action) => handleRespond(action, String(match[grp].character[n - 1]?._id))"
                     />
                   </div>
                 </div>

@@ -86,6 +86,53 @@
     color: rgba(255, 255, 255, .2);
   }
 
+  .respond-actions {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    flex-shrink: 0;
+  }
+
+  .respond-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .1);
+    color: rgba(255, 255, 255, .3);
+    font-size: .68rem;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+
+    &:disabled { opacity: .4; cursor: not-allowed; }
+
+    &--confirm {
+      &:hover:not(:disabled), &.active {
+        background: rgba(76, 175, 80, .12);
+        border-color: rgba(129, 199, 132, .55);
+        color: #81c784;
+      }
+    }
+
+    &--pending {
+      &:hover:not(:disabled), &.active {
+        background: rgba(255, 193, 7, .1);
+        border-color: rgba(255, 193, 7, .45);
+        color: rgba(255, 193, 7, .9);
+      }
+    }
+
+    &--decline {
+      &:hover:not(:disabled), &.active {
+        background: rgba(229, 115, 115, .1);
+        border-color: rgba(229, 115, 115, .5);
+        color: rgba(229, 115, 115, .9);
+      }
+    }
+  }
 
   .empty-card {
     display: flex;

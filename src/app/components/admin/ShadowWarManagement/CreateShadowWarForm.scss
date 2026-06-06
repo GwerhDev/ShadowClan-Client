@@ -574,13 +574,15 @@ input[type="date"] {
 
 .match-groups {
   display: grid;
-  grid-template-columns: 2fr 2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1rem;
   padding-inline: 1rem;
 
-  @media (max-width: 600px) {
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: .5rem;
+    padding-inline: .25rem;
   }
 }
 

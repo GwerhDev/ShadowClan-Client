@@ -18,6 +18,10 @@ const props = defineProps({
     type: Array as PropType<string[]>,
     default: () => []
   },
+  declinedIds: {
+    type: Array as PropType<string[]>,
+    default: () => []
+  },
   canConfirm: {
     type: Boolean,
     default: false,
@@ -28,15 +32,18 @@ const props = defineProps({
   },
 });
 
-defineEmits(['confirm']);
+defineEmits<{
+  (e: 'respond', action: 'confirm' | 'decline' | 'pending'): void;
+}>();
 
 const getClassName = (className: string | undefined) =>
   classes.find(c => c.value === className)?.name ?? (className ?? '');
 
-const status = computed<'confirmed' | 'pending' | null>(() => {
+const status = computed<'confirmed' | 'declined' | 'pending' | null>(() => {
   const id = props.character?._id;
   if (!id) return null;
   if (props.confirmedIds.includes(id)) return 'confirmed';
+  if (props.declinedIds.includes(id))  return 'declined';
   return 'pending';
 });
 </script>
@@ -53,15 +60,29 @@ const status = computed<'confirmed' | 'pending' | null>(() => {
           <span class="resonance">{{ character.score?.toLocaleString('es') ?? '—' }}</span>
         </span>
       </div>
-      <button
-        v-if="canConfirm && status === 'pending'"
-        class="confirm-btn"
-        :disabled="confirming"
-        @click.stop="$emit('confirm')"
-        title="Confirmar participación"
-      >
-        <i :class="confirming ? 'fas fa-spinner fa-spin' : 'fas fa-check'"></i>
-      </button>
+      <div v-if="canConfirm" class="respond-actions" @click.stop>
+        <button
+          class="respond-btn respond-btn--confirm"
+          :class="{ active: status === 'confirmed' }"
+          :disabled="confirming"
+          title="Confirmar participación"
+          @click="$emit('respond', 'confirm')"
+        ><i class="fas fa-check"></i></button>
+        <button
+          class="respond-btn respond-btn--pending"
+          :class="{ active: status === 'pending' }"
+          :disabled="confirming"
+          title="Marcar como pendiente"
+          @click="$emit('respond', 'pending')"
+        ><i class="fas fa-clock"></i></button>
+        <button
+          class="respond-btn respond-btn--decline"
+          :class="{ active: status === 'declined' }"
+          :disabled="confirming"
+          title="Declinar participación"
+          @click="$emit('respond', 'decline')"
+        ><i class="fas fa-times"></i></button>
+      </div>
       <ConfirmStatusIcon v-else :status="status" />
     </div>
     <div v-else class="empty-card">

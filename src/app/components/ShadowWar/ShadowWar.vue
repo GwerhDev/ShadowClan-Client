@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';
-import { confirmShadowWar } from '../../../middlewares/services';
+import { respondToPublicShadowWar } from '../../../middlewares/services';
 
 const store: any = useStore();
 
@@ -27,6 +27,11 @@ const confirmedIds = computed<string[]>(() => {
   return confirmed.map((c: any) => (typeof c === 'string' ? c : c._id));
 });
 
+const declinedIds = computed<string[]>(() => {
+  const declined = shadowWarData.value?.declined ?? [];
+  return declined.map((c: any) => (typeof c === 'string' ? c : c._id));
+});
+
 type MemberOrId = { _id: string; currentClass?: string; name?: string; resonance?: number; [key: string]: any } | undefined;
 
 const getPaddedMembers = (members: MemberOrId[] | undefined): MemberOrId[] => {
@@ -40,16 +45,16 @@ const isMemberLinked = (character: MemberOrId) => {
   return character._id === store.currentCharacter;
 };
 
-const confirming = ref(false);
+const respondingCharId = ref<string | null>(null);
 
-async function handleConfirm() {
-  if (!shadowWarData.value?._id || confirming.value) return;
-  confirming.value = true;
+async function handleRespond(action: 'confirm' | 'decline' | 'pending', charId: string) {
+  if (!shadowWarData.value?._id || !charId || respondingCharId.value) return;
+  respondingCharId.value = charId;
   try {
-    await confirmShadowWar(shadowWarData.value._id);
+    await respondToPublicShadowWar(shadowWarData.value._id, charId, action);
     await store.handleGetNextShadowWar();
   } catch { /* silently ignore */ }
-  finally  { confirming.value = false; }
+  finally { respondingCharId.value = null; }
 }
 </script>
 
@@ -83,9 +88,10 @@ async function handleConfirm() {
                           <ShadowWarMemberCard v-for="(character, index) in getPaddedMembers(match.group1.character)"
                             :key="index" :character="character" :is-linked="isMemberLinked(character)"
                             :confirmed-ids="confirmedIds"
+                            :declined-ids="declinedIds"
                             :can-confirm="isMemberLinked(character)"
-                            :confirming="confirming"
-                            @confirm="handleConfirm" />
+                            :confirming="respondingCharId === character?._id"
+                            @respond="(action) => handleRespond(action, character!._id)" />
                         </template>
                       </div>
                     </div>
@@ -99,9 +105,10 @@ async function handleConfirm() {
                           <ShadowWarMemberCard v-for="(character, index) in getPaddedMembers(match.group2.character)"
                             :key="index" :character="character" :is-linked="isMemberLinked(character)"
                             :confirmed-ids="confirmedIds"
+                            :declined-ids="declinedIds"
                             :can-confirm="isMemberLinked(character)"
-                            :confirming="confirming"
-                            @confirm="handleConfirm" />
+                            :confirming="respondingCharId === character?._id"
+                            @respond="(action) => handleRespond(action, character!._id)" />
                         </template>
                       </div>
                     </div>

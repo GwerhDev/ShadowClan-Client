@@ -66,5 +66,8 @@ export const confirmShadowWar: any = async (shadowWarId: string) => {
   return response;
 };
 
-export const respondToShadowWar = async (shadowWarId: string, characterId: string) =>
-  axios.post(API_URL + `/clan-management/shadow-wars/${shadowWarId}/respond`, { characterId }, { withCredentials: true }).then(r => r.data);
+export const respondToShadowWar = async (shadowWarId: string, characterId: string, action: 'confirm' | 'decline' | 'pending' = 'confirm') =>
+  axios.post(API_URL + `/clan-management/shadow-wars/${shadowWarId}/respond`, { characterId, action }, { withCredentials: true }).then(r => r.data);
+
+export const respondToPublicShadowWar = async (shadowWarId: string, characterId: string, action: 'confirm' | 'decline' | 'pending' = 'confirm') =>
+  axios.post(API_URL + `/shadow-war/${shadowWarId}/respond`, { characterId, action }, { withCredentials: true }).then(r => r.data);
