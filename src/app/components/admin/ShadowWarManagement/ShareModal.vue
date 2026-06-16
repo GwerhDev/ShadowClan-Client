@@ -194,9 +194,9 @@ async function copyText() {
 
       <div v-for="cat in battleCategories" :key="cat.key" class="img-tpl__cat">
         <div class="img-tpl__cat-title">BATALLA {{ cat.label.toUpperCase() }}</div>
-        <div v-for="(match, i) in cat.matches" :key="i" class="img-tpl__match">
-          <div class="img-tpl__match-label">Partida {{ (i as number) + 1 }}</div>
-          <div class="img-tpl__groups">
+        <div class="img-tpl__matches">
+          <div v-for="(match, i) in cat.matches" :key="i" class="img-tpl__match">
+            <div class="img-tpl__match-label">Partida {{ (i as number) + 1 }}</div>
             <div class="img-tpl__group">
               <div class="img-tpl__group-head">Grupo 1</div>
               <template v-if="match.g1.length">
@@ -204,7 +204,7 @@ async function copyText() {
               </template>
               <div v-else class="img-tpl__empty">—</div>
             </div>
-            <div class="img-tpl__group">
+            <div class="img-tpl__group img-tpl__group--second">
               <div class="img-tpl__group-head">Grupo 2</div>
               <template v-if="match.g2.length">
                 <div v-for="name in match.g2" :key="name" class="img-tpl__char">{{ name }}</div>
@@ -378,7 +378,7 @@ async function copyText() {
 }
 
 .img-tpl {
-  width: 400px;
+  width: 460px;
   background: #0f0e16;
   padding: 16px 16px 12px;
   font-family: 'Cinzel', serif;
@@ -420,41 +420,50 @@ async function copyText() {
     margin-bottom: 5px;
   }
 
+  &__matches {
+    display: flex;
+    gap: 6px;
+  }
+
   &__match {
+    flex: 1;
     background: rgba(255, 255, 255, .04);
     border: 1px solid rgba(255, 255, 255, .08);
     border-radius: 4px;
-    padding: 7px 10px;
-    margin-bottom: 4px;
+    padding: 7px 8px;
   }
 
   &__match-label {
-    font-size: .56rem;
+    font-size: .54rem;
     letter-spacing: .08em;
     text-transform: uppercase;
     color: rgba(255, 255, 255, .32);
     margin-bottom: 5px;
   }
 
-  &__groups { display: flex; gap: 8px; }
-
-  &__group { flex: 1; }
+  &__group {
+    &--second {
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 1px solid rgba(255, 255, 255, .06);
+    }
+  }
 
   &__group-head {
-    font-size: .58rem;
+    font-size: .55rem;
     letter-spacing: .06em;
     text-transform: uppercase;
     color: rgba(227, 210, 168, .55);
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
 
   &__char {
-    font-size: .78rem;
+    font-size: .75rem;
     color: rgba(255, 255, 255, .92);
-    line-height: 1.55;
+    line-height: 1.5;
   }
 
-  &__empty { font-size: .72rem; color: rgba(255, 255, 255, .25); }
+  &__empty { font-size: .7rem; color: rgba(255, 255, 255, .25); }
 
   &__no-data {
     font-size: .78rem;
