@@ -168,7 +168,7 @@ async function copyText() {
         <div v-for="grp in rosterGroups" :key="grp.label" class="img-tpl__group">
           <div class="img-tpl__group-head">{{ grp.label }}</div>
           <div v-for="name in grp.chars" :key="name" class="img-tpl__char">{{ name }}</div>
-          <div v-if="!grp.chars.length" class="img-tpl__empty">—</div>
+          <div v-if="!grp.chars.length" class="img-tpl__empty">No asignado</div>
         </div>
       </div>
 

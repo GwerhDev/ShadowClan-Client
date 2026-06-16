@@ -202,14 +202,14 @@ async function copyText() {
               <template v-if="match.g1.length">
                 <div v-for="name in match.g1" :key="name" class="img-tpl__char">{{ name }}</div>
               </template>
-              <div v-else class="img-tpl__empty">—</div>
+              <div v-else class="img-tpl__empty">No asignado</div>
             </div>
             <div class="img-tpl__group img-tpl__group--second">
               <div class="img-tpl__group-head">Grupo 2</div>
               <template v-if="match.g2.length">
                 <div v-for="name in match.g2" :key="name" class="img-tpl__char">{{ name }}</div>
               </template>
-              <div v-else class="img-tpl__empty">—</div>
+              <div v-else class="img-tpl__empty">No asignado</div>
             </div>
           </div>
         </div>
