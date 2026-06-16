@@ -440,15 +440,15 @@ input[type="date"] {
   font-weight: 600;
   letter-spacing: .05em;
   background: transparent;
-  border: 1px solid rgba(37, 211, 102, .35);
-  color: rgb(37, 211, 102);
+  border: 1px solid rgba(227, 210, 168, .35);
+  color: rgb(227, 210, 168);
   border-radius: 6px;
   cursor: pointer;
   transition: background .15s, border-color .15s;
 
   &:hover {
-    background: rgba(37, 211, 102, .08);
-    border-color: rgba(37, 211, 102, .6);
+    background: rgba(227, 210, 168, .08);
+    border-color: rgba(227, 210, 168, .6);
   }
 
   i { font-size: .8rem; }

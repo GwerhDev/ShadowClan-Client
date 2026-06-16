@@ -658,7 +658,7 @@ function onDragEnd() {
         <!-- WhatsApp + Publicar: fila separada, siempre a la derecha -->
         <div v-if="!editing" class="instance-action-row">
           <button class="btn-share-trigger" @click="showShareModal = true">
-            <i class="fab fa-whatsapp"></i> WhatsApp
+            <i class="fas fa-share-nodes"></i> Compartir
           </button>
           <button class="btn-publish-trigger" @click="emit('publish')">
             <i class="fas fa-paper-plane"></i> Publicar

@@ -569,7 +569,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
             </div>
             <div class="instance-actions" @click.stop>
               <button class="btn-share-trigger" @click="shareModalTower = instance">
-                <i class="fab fa-whatsapp"></i> WhatsApp
+                <i class="fas fa-share-nodes"></i> Compartir
               </button>
               <button class="btn-publish-trigger" @click="publishModalTower = instance">
                 <i class="fas fa-paper-plane"></i> Publicar
