@@ -378,7 +378,7 @@ async function copyText() {
 }
 
 .img-tpl {
-  width: 460px;
+  width: 580px;
   background: #0f0e16;
   padding: 16px 16px 12px;
   font-family: 'Cinzel', serif;
