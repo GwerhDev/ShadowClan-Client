@@ -30,6 +30,13 @@ const categoryLabels: Record<string, string> = {
   proud:   'Imponente',
 };
 
+const categoryPoints: Record<string, string> = {
+  exalted: '8pts',
+  eminent: '4pts',
+  famed:   '3pts',
+  proud:   '1pt',
+};
+
 const formattedDate = computed(() => {
   const d = shadowWarData.value?.date;
   if (!d) return '—';
@@ -193,24 +200,17 @@ async function copyText() {
       </div>
 
       <div v-for="cat in battleCategories" :key="cat.key" class="img-tpl__cat">
-        <div class="img-tpl__cat-title">BATALLA {{ cat.label.toUpperCase() }}</div>
+        <div class="img-tpl__cat-title">
+          BATALLA {{ cat.label.toUpperCase() }}
+          <span class="img-tpl__cat-pts">{{ categoryPoints[cat.key] }}</span>
+        </div>
         <div class="img-tpl__matches">
           <div v-for="(match, i) in cat.matches" :key="i" class="img-tpl__match">
             <div class="img-tpl__match-label">Partida {{ (i as number) + 1 }}</div>
-            <div class="img-tpl__group">
-              <div class="img-tpl__group-head">Grupo 1</div>
-              <template v-if="match.g1.length">
-                <div v-for="name in match.g1" :key="name" class="img-tpl__char">{{ name }}</div>
-              </template>
-              <div v-else class="img-tpl__empty">No asignado</div>
-            </div>
-            <div class="img-tpl__group img-tpl__group--second">
-              <div class="img-tpl__group-head">Grupo 2</div>
-              <template v-if="match.g2.length">
-                <div v-for="name in match.g2" :key="name" class="img-tpl__char">{{ name }}</div>
-              </template>
-              <div v-else class="img-tpl__empty">No asignado</div>
-            </div>
+            <template v-if="match.g1.length || match.g2.length">
+              <div v-for="name in [...match.g1, ...match.g2]" :key="name" class="img-tpl__char">{{ name }}</div>
+            </template>
+            <div v-else class="img-tpl__empty">No asignado</div>
           </div>
         </div>
       </div>
@@ -413,11 +413,25 @@ async function copyText() {
   &__cat { margin-bottom: 10px; }
 
   &__cat-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: .58rem;
     letter-spacing: .14em;
     text-transform: uppercase;
     color: rgba(227, 210, 168, .65);
     margin-bottom: 5px;
+  }
+
+  &__cat-pts {
+    font-size: .58rem;
+    letter-spacing: .06em;
+    color: rgba(227, 210, 168, .9);
+    background: rgba(227, 210, 168, .1);
+    border: 1px solid rgba(227, 210, 168, .2);
+    border-radius: 3px;
+    padding: 0 4px;
+    line-height: 1.5;
   }
 
   &__matches {
@@ -439,22 +453,6 @@ async function copyText() {
     text-transform: uppercase;
     color: rgba(255, 255, 255, .32);
     margin-bottom: 5px;
-  }
-
-  &__group {
-    &--second {
-      margin-top: 6px;
-      padding-top: 5px;
-      border-top: 1px solid rgba(255, 255, 255, .06);
-    }
-  }
-
-  &__group-head {
-    font-size: .55rem;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: rgba(227, 210, 168, .55);
-    margin-bottom: 2px;
   }
 
   &__char {
