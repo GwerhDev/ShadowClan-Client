@@ -13,4 +13,5 @@ export const classes = [
   { name: "Nigromante", value: "necromancer", image: "https://blz-contentstack-images.akamaized.net/v3/assets/blt77f4425de611b362/blt98e1e1105822157d/64b045d7e052526a87ff673f/class-icons_necromancer2.svg" },
   { name: "Tempest", value: "tempest", image: "https://blz-contentstack-images.akamaized.net/v3/assets/blt77f4425de611b362/blt0149b32287c8c5c7/663ab7846c90795f7544bece/class-icons_tempest3.svg" },
   { name: "Arcanista", value: "wizard", image: "https://blz-contentstack-images.akamaized.net/v3/assets/blt77f4425de611b362/bltb1877f62e0edfd8e/64b045d7e052522a71ff6743/class-icons_wizard2.svg" },
+  { name: "Conjurador", value: "warlock", image: "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/bltab1bd974b2f95311/6a183999aa35a058a9fe3a21/class-icon_warlock_static.svg" },
 ];
