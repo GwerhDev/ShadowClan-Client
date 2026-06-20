@@ -33,7 +33,7 @@ const categoryLabels: Record<string, string> = {
 const categoryPoints: Record<string, string> = {
   exalted: '8pts',
   eminent: '4pts',
-  famed:   '3pts',
+  famed:   '2pts',
   proud:   '1pt',
 };
 
