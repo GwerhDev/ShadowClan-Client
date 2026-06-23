@@ -672,6 +672,15 @@
 
 .drag-slot {
   border-radius: 8px;
+  transition: opacity .15s, box-shadow .15s;
+
+  &[draggable="true"] {
+    cursor: grab;
+    &:active { cursor: grabbing; }
+  }
+
+  &.is-dragging { opacity: .35; }
+  &.drag-over   { box-shadow: 0 0 0 2px var(--color-primary); }
 }
 
 // ── Attendance modal ──────────────────────────────────────────────────────────

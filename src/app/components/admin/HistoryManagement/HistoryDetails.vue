@@ -192,7 +192,21 @@
                 <div v-for="grp in (['group1', 'group2'] as const)" :key="grp" class="group">
                   <label><h5>{{ grp === 'group1' ? 'Grupo 1' : 'Grupo 2' }}</h5></label>
                   <div class="character-cards-grid">
-                    <div v-for="n in 4" :key="n" class="drag-slot">
+                    <div
+                      v-for="n in 4"
+                      :key="n"
+                      class="drag-slot"
+                      :class="{
+                        'is-dragging': dragSource && slotKey(dragSource) === slotKey({ cat: String(battleType), matchIdx: mIdx, group: grp, memberIndex: n - 1 }),
+                        'drag-over':   dragOverKey === slotKey({ cat: String(battleType), matchIdx: mIdx, group: grp, memberIndex: n - 1 })
+                      }"
+                      :draggable="formationEditCats.includes(String(battleType)) && !!formationEditBuffer[String(battleType)]?.[mIdx]?.[grp]?.character?.[n - 1]"
+                      @dragstart="onDragStart($event, { cat: String(battleType), matchIdx: mIdx, group: grp, memberIndex: n - 1 })"
+                      @dragover.prevent="onDragOver($event, { cat: String(battleType), matchIdx: mIdx, group: grp, memberIndex: n - 1 })"
+                      @dragleave="onDragLeave"
+                      @drop="onDrop({ cat: String(battleType), matchIdx: mIdx, group: grp, memberIndex: n - 1 })"
+                      @dragend="onDragEnd"
+                    >
                       <ShadowWarMemberCard
                         :character="formationEditCats.includes(String(battleType))
                           ? formationEditBuffer[String(battleType)][mIdx][grp].character[n - 1]
@@ -347,6 +361,39 @@ const editResultValue = ref('');
 const formationEditCats   = ref<string[]>([]);
 const formationEditBuffer = ref<Record<string, any>>({});
 const selectionContext    = ref<{ cat: string; matchIdx: number; group: 'group1'|'group2'; memberIndex: number } | null>(null);
+
+// Drag and drop
+interface SlotRef { cat: string; matchIdx: number; group: 'group1'|'group2'; memberIndex: number; }
+const dragSource  = ref<SlotRef | null>(null);
+const dragOverKey = ref<string | null>(null);
+function slotKey(s: SlotRef) { return `${s.cat}-${s.matchIdx}-${s.group}-${s.memberIndex}`; }
+function getDragChar(s: SlotRef) { return formationEditBuffer.value[s.cat]?.[s.matchIdx]?.[s.group]?.character?.[s.memberIndex]; }
+function setDragChar(s: SlotRef, char: any) { formationEditBuffer.value[s.cat][s.matchIdx][s.group].character[s.memberIndex] = char; }
+function onDragStart(e: DragEvent, slot: SlotRef) {
+  if (!getDragChar(slot)) { e.preventDefault(); return; }
+  dragSource.value = slot;
+  e.dataTransfer!.effectAllowed = 'move';
+}
+function onDragOver(e: DragEvent, slot: SlotRef) {
+  e.preventDefault();
+  e.dataTransfer!.dropEffect = 'move';
+  dragOverKey.value = slotKey(slot);
+}
+function onDragLeave() { dragOverKey.value = null; }
+async function onDrop(slot: SlotRef) {
+  dragOverKey.value = null;
+  if (!dragSource.value) return;
+  const src = dragSource.value;
+  dragSource.value = null;
+  if (slotKey(src) === slotKey(slot)) return;
+  const srcChar = getDragChar(src);
+  const tgtChar = getDragChar(slot);
+  setDragChar(src, tgtChar);
+  setDragChar(slot, srcChar);
+  await autoSave(slot.cat);
+  if (src.cat !== slot.cat) await autoSave(src.cat);
+}
+function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
 
 const shadowWarResults = [
   { value: 'victory', text: 'Victoria' },
