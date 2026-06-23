@@ -138,12 +138,6 @@
         </div>
       </div>
 
-      <!-- View toggle -->
-      <div class="view-toggle">
-        <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'planned' }]" @click="viewMode = 'planned'">Planificada</button>
-        <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'final' }]" @click="viewMode = 'final'">Final</button>
-      </div>
-
       <!-- Battles -->
       <div class="battles-section">
         <div v-for="(matches, battleType) in displayBattle" :key="battleType" class="battle-card">
@@ -172,7 +166,7 @@
                 Partida {{ mIdx + 1 }}
                 <div class="match-title-actions">
                   <span
-                    v-if="viewMode === 'planned' && absenceCount(match) > 0"
+                    v-if="absenceCount(match) > 0"
                     class="absence-badge"
                   >
                     <i class="fas fa-user-slash"></i> {{ absenceCount(match) }}
@@ -349,7 +343,6 @@ const createClanError       = ref('');
 const editEnemyClanName     = ref('');
 const confirmDelete         = ref(false);
 const editing    = ref(false);
-const viewMode   = ref<'planned' | 'final'>('planned');
 const editDate   = ref('');
 const editEnemyClan = ref('');
 const clanMembers   = ref<any[]>([]);
@@ -405,22 +398,10 @@ const resultLabel       = computed(() => shadowWarResults.find(r => r.value === 
 const confirmedIds      = computed(() => new Set((currentShadowWar.value?.confirmed ?? []).map((c: any) => String(c?._id ?? c))));
 const confirmedIdsArray = computed(() => [...confirmedIds.value]);
 const declinedIdsArray  = computed(() => ((currentShadowWar.value as any)?.declined ?? []).map((c: any) => String(c?._id ?? c)));
-const hasFinalBattle = computed(() => {
-  const fb = (currentShadowWar.value as any)?.finalBattle;
-  if (!fb) return false;
-  return Object.values(fb).some((arr: any) => arr?.length > 0);
-});
-
-const displayBattle = computed(() => {
-  if (viewMode.value === 'final' && hasFinalBattle.value) return (currentShadowWar.value as any).finalBattle;
-  return currentShadowWar.value?.battle;
-});
+const displayBattle = computed(() => currentShadowWar.value?.battle);
 
 const attendanceMembers = computed(() => {
-  const sw = currentShadowWar.value as any;
-  const battle = sw?.finalBattle && Object.values(sw.finalBattle).some((a: any) => a?.length > 0)
-    ? sw.finalBattle
-    : sw?.battle;
+  const battle = currentShadowWar.value?.battle;
   if (!battle) return [];
   const seen = new Set<string>();
   const members: any[] = [];
@@ -467,13 +448,6 @@ watch(currentShadowWar, (val) => {
   if (val) selectedResult.value = val.result;
 }, { immediate: true });
 
-watch(viewMode, (mode) => {
-  formationEditCats.value = [];
-  formationEditBuffer.value = {};
-  if (mode === 'final') {
-    for (const cat of expandedCategories.value) openFormationEdit(cat);
-  }
-});
 
 function toggleCategory(cat: string) {
   const idx = expandedCategories.value.indexOf(cat);
@@ -482,7 +456,7 @@ function toggleCategory(cat: string) {
     cancelFormationEdit(cat);
   } else {
     expandedCategories.value.push(cat);
-    if (viewMode.value === 'final') openFormationEdit(cat);
+    openFormationEdit(cat);
   }
 }
 
@@ -524,7 +498,6 @@ async function openEdit() {
   const sw = currentShadowWar.value;
   editDate.value      = sw?.date ? new Date(sw.date).toISOString().slice(0, 10) : '';
   editEnemyClan.value = sw?.enemyClan?._id ?? '';
-  viewMode.value      = 'final';
   showCtx.value       = false;
   editing.value       = true;
 }
@@ -567,11 +540,8 @@ async function saveResult() {
 // Formation editing
 async function openFormationEdit(cat: string) {
   if (formationEditCats.value.includes(cat)) return;
-  const sw = currentShadowWar.value as any;
-  const source = viewMode.value === 'final' && hasFinalBattle.value
-    ? (sw?.finalBattle ?? sw?.battle)
-    : sw?.battle;
-  formationEditBuffer.value[cat] = JSON.parse(JSON.stringify(source?.[cat] ?? []));
+  const battle = currentShadowWar.value?.battle as any;
+  formationEditBuffer.value[cat] = JSON.parse(JSON.stringify(battle?.[cat] ?? []));
   formationEditCats.value.push(cat);
   if (!expandedCategories.value.includes(cat)) expandedCategories.value.push(cat);
   await loadClanMembers();
@@ -594,9 +564,7 @@ async function saveFormationEdit(cat: string) {
   if (!currentShadowWar.value?._id) return;
   saving.value = true;
   try {
-    const sw     = currentShadowWar.value as any;
-    const source = viewMode.value === 'final' ? 'finalBattle' : 'battle';
-    const raw    = sw[source] ?? sw.battle ?? {};
+    const raw = (currentShadowWar.value?.battle as any) ?? {};
     const fullBattle: Record<string, any[]> = {};
     for (const c of Object.keys(raw)) {
       fullBattle[c] = c === cat
@@ -604,16 +572,12 @@ async function saveFormationEdit(cat: string) {
         : (raw[c] ?? []).map(cleanMatch);
     }
     await updateShadowWarClan(currentShadowWar.value._id, {
-      [source]:    fullBattle,
+      battle:      fullBattle,
       characterId: store.currentCharacter,
     });
     await store.handleGetShadowWar(currentShadowWar.value._id);
-    // Refresh buffer from fresh data (keep edit mode open)
-    const fresh = currentShadowWar.value as any;
-    const freshSource = viewMode.value === 'final'
-      ? (fresh?.finalBattle ?? fresh?.battle)
-      : fresh?.battle;
-    if (freshSource?.[cat]) formationEditBuffer.value[cat] = JSON.parse(JSON.stringify(freshSource[cat]));
+    const freshBattle = (currentShadowWar.value?.battle as any);
+    if (freshBattle?.[cat]) formationEditBuffer.value[cat] = JSON.parse(JSON.stringify(freshBattle[cat]));
   } finally {
     saving.value = false;
   }
