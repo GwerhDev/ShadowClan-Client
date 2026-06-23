@@ -1,1 +1,1 @@
-export const environment: any = process.env.NODE_ENV;
+export const environment: string = import.meta.env.MODE;
