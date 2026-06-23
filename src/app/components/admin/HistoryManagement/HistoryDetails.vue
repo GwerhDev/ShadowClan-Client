@@ -484,10 +484,12 @@ watch(currentShadowWar, (val) => {
   if (val) selectedResult.value = val.result;
 }, { immediate: true });
 
-watch(viewMode, () => {
-  // Cancel any open formation edits when switching tabs
+watch(viewMode, (mode) => {
   formationEditCats.value = [];
   formationEditBuffer.value = {};
+  if (mode === 'final') {
+    for (const cat of expandedCategories.value) openFormationEdit(cat);
+  }
 });
 
 function toggleCategory(cat: string) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PropType, ref, computed } from 'vue';
+import { PropType, ref, computed, onMounted } from 'vue';
 import { Character } from '../../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import CustomModal from '../../Modals/CustomModal.vue';
@@ -33,7 +33,10 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'character-selected', 'character-unassigned']);
 
-const search = ref('');
+const search      = ref('');
+const searchInput = ref<HTMLInputElement | null>(null);
+
+onMounted(() => searchInput.value?.focus());
 
 const filteredCharacters = computed(() => {
   const q = search.value.trim().toLowerCase();
@@ -58,7 +61,7 @@ const handleCardClick = (character: Character) => {
 
     <div class="member-search-bar">
       <i class="fas fa-search"></i>
-      <input v-model="search" type="text" placeholder="Buscar miembro..." />
+      <input ref="searchInput" v-model="search" type="text" placeholder="Buscar miembro..." />
     </div>
 
     <div v-if="filteredCharacters.length" class="characters-selection-grid">
