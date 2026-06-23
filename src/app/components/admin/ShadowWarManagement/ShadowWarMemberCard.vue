@@ -13,6 +13,7 @@ const props = defineProps({
   assignedIds:        { type: Array as PropType<string[]>, default: () => [] },
   canConfirm:         { type: Boolean, default: false },
   confirming:         { type: Boolean, default: false },
+  readonly:           { type: Boolean, default: false },
 });
 
 defineEmits<{
@@ -35,7 +36,7 @@ const status = computed<'confirmed' | 'declined' | 'pending' | null>(() => {
 </script>
 
 <template>
-  <div class="character-card" @click="$emit('click')">
+  <div class="character-card" :class="{ 'character-card--readonly': readonly && !character }" @click="!readonly || character ? $emit('click') : undefined">
     <div v-if="character" class="character-info">
       <button v-if="showUnassignButton" class="unassign-button" @click.stop="$emit('unassign')">×</button>
       <ClassImage :current-class="character.currentClass" />
@@ -73,8 +74,8 @@ const status = computed<'confirmed' | 'declined' | 'pending' | null>(() => {
       <ConfirmStatusIcon v-else :status="status" />
     </div>
     <div v-else class="empty-card">
-      <span>+</span>
-      <span>Asignar</span>
+      <i :class="readonly ? 'fas fa-ban' : 'fas fa-plus'"></i>
+      <span>{{ readonly ? 'No asignado' : 'Asignar' }}</span>
     </div>
   </div>
 </template>

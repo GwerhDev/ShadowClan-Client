@@ -143,13 +143,28 @@
     width: 100%;
     color: rgba(255, 255, 255, .22);
 
-    span:first-child {
-      font-size: 1.4rem;
+    i {
+      font-size: 1.1rem;
       line-height: 1;
     }
 
-    span:last-child {
+    span {
       font-size: .68rem;
+    }
+  }
+
+  &--readonly {
+    cursor: default;
+
+    &:hover {
+      border-color: rgba(255, 255, 255, .1);
+      background: rgba(255, 255, 255, .04);
+    }
+
+    .empty-card {
+      color: rgba(255, 255, 255, .15);
+
+      i { font-size: .9rem; }
     }
   }
 }
