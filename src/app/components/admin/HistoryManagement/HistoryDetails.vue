@@ -140,8 +140,8 @@
 
       <!-- View toggle -->
       <div class="view-toggle">
-        <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'final' }]" @click="viewMode = 'final'">Final</button>
         <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'planned' }]" @click="viewMode = 'planned'">Planificada</button>
+        <button :class="['toggle-btn', { 'toggle-btn--active': viewMode === 'final' }]" @click="viewMode = 'final'">Final</button>
       </div>
 
       <!-- Battles -->
@@ -349,7 +349,7 @@ const createClanError       = ref('');
 const editEnemyClanName     = ref('');
 const confirmDelete         = ref(false);
 const editing    = ref(false);
-const viewMode   = ref<'planned' | 'final'>('final');
+const viewMode   = ref<'planned' | 'final'>('planned');
 const editDate   = ref('');
 const editEnemyClan = ref('');
 const clanMembers   = ref<any[]>([]);
@@ -595,7 +595,7 @@ async function saveFormationEdit(cat: string) {
   saving.value = true;
   try {
     const sw     = currentShadowWar.value as any;
-    const source = viewMode.value === 'final' && hasFinalBattle.value ? 'finalBattle' : 'battle';
+    const source = viewMode.value === 'final' ? 'finalBattle' : 'battle';
     const raw    = sw[source] ?? sw.battle ?? {};
     const fullBattle: Record<string, any[]> = {};
     for (const c of Object.keys(raw)) {
@@ -610,7 +610,7 @@ async function saveFormationEdit(cat: string) {
     await store.handleGetShadowWar(currentShadowWar.value._id);
     // Refresh buffer from fresh data (keep edit mode open)
     const fresh = currentShadowWar.value as any;
-    const freshSource = viewMode.value === 'final' && hasFinalBattle.value
+    const freshSource = viewMode.value === 'final'
       ? (fresh?.finalBattle ?? fresh?.battle)
       : fresh?.battle;
     if (freshSource?.[cat]) formationEditBuffer.value[cat] = JSON.parse(JSON.stringify(freshSource[cat]));
