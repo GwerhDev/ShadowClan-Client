@@ -515,6 +515,12 @@
   gap: .4rem;
 }
 
+.battle-saving-icon {
+  font-size: .8rem;
+  color: rgba(227, 210, 168, .5);
+  animation: fa-spin .7s linear infinite;
+}
+
 .btn-edit-formation {
   display: inline-flex;
   align-items: center;

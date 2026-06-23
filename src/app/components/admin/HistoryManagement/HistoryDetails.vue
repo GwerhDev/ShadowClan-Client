@@ -151,22 +151,10 @@
             <div class="battle-card-meta">
               <i class="fas fa-swords"></i>
               <span class="battle-card-name">Batalla {{ translateBattle(String(battleType)) }}</span>
-              <span v-if="!formationEditCats.includes(String(battleType))" class="battle-card-count">
-                {{ matchScoreSummary(String(battleType), matches as any[]) }}
-              </span>
+              <span class="battle-card-count">{{ matchScoreSummary(String(battleType), matches as any[]) }}</span>
             </div>
             <div class="battle-card-actions" @click.stop>
-              <template v-if="formationEditCats.includes(String(battleType))">
-                <button class="ctx-confirm-btn" @click="saveFormationEdit(String(battleType))" :disabled="saving">
-                  <i class="fas fa-check"></i> Guardar
-                </button>
-                <button class="ctx-cancel-btn" @click="cancelFormationEdit(String(battleType))">
-                  <i class="fas fa-times"></i>
-                </button>
-              </template>
-              <button v-else-if="viewMode === 'final'" class="btn-edit-formation" @click="openFormationEdit(String(battleType))">
-                <i class="fas fa-pen"></i> Editar
-              </button>
+              <i v-if="saving && formationEditCats.includes(String(battleType))" class="fas fa-circle-notch fa-spin battle-saving-icon"></i>
               <button class="btn-expand" @click="toggleCategory(String(battleType))">
                 <i :class="expandedCategories.includes(String(battleType)) ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
               </button>
@@ -184,7 +172,7 @@
                 Partida {{ mIdx + 1 }}
                 <div class="match-title-actions">
                   <span
-                    v-if="viewMode === 'planned' && !formationEditCats.includes(String(battleType)) && absenceCount(match) > 0"
+                    v-if="viewMode === 'planned' && absenceCount(match) > 0"
                     class="absence-badge"
                   >
                     <i class="fas fa-user-slash"></i> {{ absenceCount(match) }}
@@ -193,6 +181,7 @@
                     v-if="formationEditCats.includes(String(battleType))"
                     v-model="formationEditBuffer[String(battleType)][mIdx].result"
                     class="match-result-select"
+                    @change="autoSave(String(battleType))"
                   >
                     <option v-for="opt in matchResults" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
                   </select>
@@ -456,8 +445,13 @@ watch(viewMode, () => {
 
 function toggleCategory(cat: string) {
   const idx = expandedCategories.value.indexOf(cat);
-  if (idx >= 0) expandedCategories.value.splice(idx, 1);
-  else expandedCategories.value.push(cat);
+  if (idx >= 0) {
+    expandedCategories.value.splice(idx, 1);
+    cancelFormationEdit(cat);
+  } else {
+    expandedCategories.value.push(cat);
+    if (viewMode.value === 'final') openFormationEdit(cat);
+  }
 }
 
 const POINTS_PER_MATCH: Record<string, number> = {
@@ -540,6 +534,7 @@ async function saveResult() {
 
 // Formation editing
 async function openFormationEdit(cat: string) {
+  if (formationEditCats.value.includes(cat)) return;
   const sw = currentShadowWar.value as any;
   const source = viewMode.value === 'final' && hasFinalBattle.value
     ? (sw?.finalBattle ?? sw?.battle)
@@ -581,10 +576,19 @@ async function saveFormationEdit(cat: string) {
       characterId: store.currentCharacter,
     });
     await store.handleGetShadowWar(currentShadowWar.value._id);
-    cancelFormationEdit(cat);
+    // Refresh buffer from fresh data (keep edit mode open)
+    const fresh = currentShadowWar.value as any;
+    const freshSource = viewMode.value === 'final' && hasFinalBattle.value
+      ? (fresh?.finalBattle ?? fresh?.battle)
+      : fresh?.battle;
+    if (freshSource?.[cat]) formationEditBuffer.value[cat] = JSON.parse(JSON.stringify(freshSource[cat]));
   } finally {
     saving.value = false;
   }
+}
+
+async function autoSave(cat: string) {
+  await saveFormationEdit(cat);
 }
 
 function openSlotSelection(cat: string, matchIdx: number, group: 'group1'|'group2', memberIndex: number) {
@@ -592,16 +596,18 @@ function openSlotSelection(cat: string, matchIdx: number, group: 'group1'|'group
   showMemberPicker.value = true;
 }
 
-function handleMemberSelected(character: any) {
+async function handleMemberSelected(character: any) {
   if (!selectionContext.value) return;
   const { cat, matchIdx, group, memberIndex } = selectionContext.value;
   formationEditBuffer.value[cat][matchIdx][group].character[memberIndex] = character;
   showMemberPicker.value = false;
   selectionContext.value = null;
+  await autoSave(cat);
 }
 
-function unassignSlot(cat: string, matchIdx: number, group: 'group1'|'group2', memberIndex: number) {
+async function unassignSlot(cat: string, matchIdx: number, group: 'group1'|'group2', memberIndex: number) {
   formationEditBuffer.value[cat][matchIdx][group].character[memberIndex] = undefined;
+  await autoSave(cat);
 }
 
 function openAttendance() {
