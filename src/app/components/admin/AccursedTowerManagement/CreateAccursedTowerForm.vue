@@ -4,8 +4,8 @@ import { useStore } from '../../../../middlewares/store';
 import { getClanMembers, getAccursedTowers, getAccursedTowerManagement, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, createEnemyClan, saveClanRoster, autoAssignRoster, respondToTowerWar } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { Character } from '../../../../interfaces';
-import AccursedTowerMemberCard from './AccursedTowerMemberCard.vue';
-import MemberSelectionModal from './MemberSelectionModal.vue';
+import ShadowWarMemberCard from '../ShadowWarManagement/ShadowWarMemberCard.vue';
+import MemberSelectionModal from '../ShadowWarManagement/MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
 import AccursedTowerShareModal from './AccursedTowerShareModal.vue';
 import AccursedTowerPublishModal from './AccursedTowerPublishModal.vue';
@@ -682,7 +682,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
                   @drop="onDrop(grp, n-1)"
                   @dragend="onDragEnd"
                 >
-                  <AccursedTowerMemberCard
+                  <ShadowWarMemberCard
                     :character="localRoster[grp][n-1]"
                     :show-unassign-button="!!localRoster[grp][n-1]"
                     :confirmed-ids="confirmedIds"
@@ -715,7 +715,7 @@ function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
                   @drop="onDrop('group3', n-1)"
                   @dragend="onDragEnd"
                 >
-                  <AccursedTowerMemberCard
+                  <ShadowWarMemberCard
                     :character="localRoster.group3[n-1]"
                     :show-unassign-button="!!localRoster.group3[n-1]"
                     :confirmed-ids="confirmedIds"

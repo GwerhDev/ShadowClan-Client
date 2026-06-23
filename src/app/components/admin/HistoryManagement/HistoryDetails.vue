@@ -214,6 +214,8 @@
                         :show-unassign-button="formationEditCats.includes(String(battleType)) && !!formationEditBuffer[String(battleType)][mIdx][grp].character[n - 1]"
                         :readonly="!formationEditCats.includes(String(battleType))"
                         :confirmed-ids="confirmedIdsArray"
+                        :declined-ids="declinedIdsArray"
+                        :assigned-ids="assignedMemberIds"
                         @click="formationEditCats.includes(String(battleType))
                           ? openSlotSelection(String(battleType), mIdx, grp, n - 1)
                           : undefined"
@@ -244,9 +246,12 @@
     <MemberSelectionModal
       v-if="showMemberPicker"
       :characters="clanMembers"
-      :assigned-member-ids="assignedIdsForPicker"
+      :assigned-member-ids="assignedMemberIds"
+      :confirmed-ids="confirmedIdsArray"
+      :assigned-details="assignedMemberDetails"
       @close="showMemberPicker = false"
       @character-selected="handleMemberSelected($event)"
+      @character-unassigned="handleMemberUnassigned($event)"
     />
 
     <!-- Attendance modal -->
@@ -318,6 +323,7 @@ import ClassImage from '../../common/ClassImage.vue';
 import { useStore } from '../../../../middlewares/store';
 import { searchClans, closeShadowWarManagement, updateShadowWarClan, getClanMembers, createEnemyClan } from '../../../../middlewares/services';
 import { classes } from '../../../../middlewares/misc/const';
+import { useSWFormationEdit } from '../../../composables/useFormationEdit';
 
 const getClassName = (cls: string | undefined) => classes.find(c => c.value === cls)?.name ?? (cls ?? '');
 
@@ -347,7 +353,6 @@ const viewMode   = ref<'planned' | 'final'>('final');
 const editDate   = ref('');
 const editEnemyClan = ref('');
 const clanMembers   = ref<any[]>([]);
-const showMemberPicker      = ref(false);
 const expandedCategories    = ref<string[]>([] as string[]);
 
 // Attendance modal
@@ -360,27 +365,15 @@ const editResultValue = ref('');
 // Formation editing — per category
 const formationEditCats   = ref<string[]>([]);
 const formationEditBuffer = ref<Record<string, any>>({});
-const selectionContext    = ref<{ cat: string; matchIdx: number; group: 'group1'|'group2'; memberIndex: number } | null>(null);
 
-// Drag and drop
-interface SlotRef { cat: string; matchIdx: number; group: 'group1'|'group2'; memberIndex: number; }
-const dragSource  = ref<SlotRef | null>(null);
-const dragOverKey = ref<string | null>(null);
-function slotKey(s: SlotRef) { return `${s.cat}-${s.matchIdx}-${s.group}-${s.memberIndex}`; }
-function getDragChar(s: SlotRef) { return formationEditBuffer.value[s.cat]?.[s.matchIdx]?.[s.group]?.character?.[s.memberIndex]; }
-function setDragChar(s: SlotRef, char: any) { formationEditBuffer.value[s.cat][s.matchIdx][s.group].character[s.memberIndex] = char; }
-function onDragStart(e: DragEvent, slot: SlotRef) {
-  if (!getDragChar(slot)) { e.preventDefault(); return; }
-  dragSource.value = slot;
-  e.dataTransfer!.effectAllowed = 'move';
-}
-function onDragOver(e: DragEvent, slot: SlotRef) {
-  e.preventDefault();
-  e.dataTransfer!.dropEffect = 'move';
-  dragOverKey.value = slotKey(slot);
-}
-function onDragLeave() { dragOverKey.value = null; }
-async function onDrop(slot: SlotRef) {
+const {
+  dragSource, dragOverKey, slotKey, getDragChar, setDragChar,
+  onDragStart, onDragOver, onDragLeave, onDragEnd,
+  assignedMemberIds, assignedMemberDetails,
+  selectionContext, openSlotSelection: _openSlotSelection,
+} = useSWFormationEdit(() => formationEditBuffer.value);
+
+async function onDrop(slot: { cat: string; matchIdx: number; group: 'group1'|'group2'; memberIndex: number }) {
   dragOverKey.value = null;
   if (!dragSource.value) return;
   const src = dragSource.value;
@@ -393,7 +386,6 @@ async function onDrop(slot: SlotRef) {
   await autoSave(slot.cat);
   if (src.cat !== slot.cat) await autoSave(src.cat);
 }
-function onDragEnd() { dragSource.value = null; dragOverKey.value = null; }
 
 const shadowWarResults = [
   { value: 'victory', text: 'Victoria' },
@@ -409,9 +401,10 @@ const matchResults = [
   { value: 'pending', text: 'Pendiente'},
 ];
 
-const resultLabel    = computed(() => shadowWarResults.find(r => r.value === selectedResult.value)?.text ?? '');
-const confirmedIds   = computed(() => new Set((currentShadowWar.value?.confirmed ?? []).map((c: any) => String(c?._id ?? c))));
+const resultLabel       = computed(() => shadowWarResults.find(r => r.value === selectedResult.value)?.text ?? '');
+const confirmedIds      = computed(() => new Set((currentShadowWar.value?.confirmed ?? []).map((c: any) => String(c?._id ?? c))));
 const confirmedIdsArray = computed(() => [...confirmedIds.value]);
+const declinedIdsArray  = computed(() => ((currentShadowWar.value as any)?.declined ?? []).map((c: any) => String(c?._id ?? c)));
 const hasFinalBattle = computed(() => {
   const fb = (currentShadowWar.value as any)?.finalBattle;
   if (!fb) return false;
@@ -469,16 +462,6 @@ const formattedDateDisplay = computed(() => {
   return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
 });
 
-const assignedIdsForPicker = computed(() => {
-  if (!selectionContext.value) return [];
-  const { cat, matchIdx } = selectionContext.value;
-  const m = formationEditBuffer.value[cat]?.[matchIdx];
-  if (!m) return [];
-  return [
-    ...(m.group1.character ?? []).map((c: any) => c?._id ?? c),
-    ...(m.group2.character ?? []).map((c: any) => c?._id ?? c),
-  ].filter(Boolean);
-});
 
 watch(currentShadowWar, (val) => {
   if (val) selectedResult.value = val.result;
@@ -640,8 +623,10 @@ async function autoSave(cat: string) {
   await saveFormationEdit(cat);
 }
 
+const showMemberPicker = ref(false);
+
 function openSlotSelection(cat: string, matchIdx: number, group: 'group1'|'group2', memberIndex: number) {
-  selectionContext.value = { cat, matchIdx, group, memberIndex };
+  _openSlotSelection({ cat, matchIdx, group, memberIndex });
   showMemberPicker.value = true;
 }
 
@@ -652,6 +637,14 @@ async function handleMemberSelected(character: any) {
   showMemberPicker.value = false;
   selectionContext.value = null;
   await autoSave(cat);
+}
+
+async function handleMemberUnassigned(characterId: string) {
+  const detail = assignedMemberDetails.value[characterId];
+  if (!detail) return;
+  const { category, matchIndex, group, memberIndex } = detail;
+  formationEditBuffer.value[category][matchIndex][group].character[memberIndex] = undefined;
+  await autoSave(category);
 }
 
 async function unassignSlot(cat: string, matchIdx: number, group: 'group1'|'group2', memberIndex: number) {
