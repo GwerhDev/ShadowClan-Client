@@ -7,10 +7,12 @@ import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import MemberSelectionModal from './MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
 import ShareModal from './ShareModal.vue';
+import FormacionesModal from './FormacionesModal.vue';
 import { useStore } from '../../../../middlewares/store';
 
 const emit = defineEmits(['publish']);
-const showShareModal = ref(false);
+const showShareModal      = ref(false);
+const showFormacionesModal = ref(false);
 const store: any = useStore();
 
 const showConfirmModal  = ref(false);
@@ -656,10 +658,13 @@ function onDragEnd() {
             </button>
           </div>
         </div>
-        <!-- WhatsApp + Publicar: fila separada, siempre a la derecha -->
+        <!-- WhatsApp + Formaciones + Publicar: fila separada, siempre a la derecha -->
         <div v-if="!editing" class="instance-action-row">
           <button class="btn-share-trigger" @click="showShareModal = true">
             <i class="fas fa-share-nodes"></i> Compartir
+          </button>
+          <button class="btn-share-trigger" @click="showFormacionesModal = true">
+            <i class="fas fa-layer-group"></i> Formaciones
           </button>
           <button class="btn-publish-trigger" @click="emit('publish')">
             <i class="fas fa-paper-plane"></i> Publicar
@@ -807,6 +812,15 @@ function onDragEnd() {
     </template>
 
     <ShareModal v-if="showShareModal" @close="showShareModal = false" />
+    <FormacionesModal
+      v-if="showFormacionesModal"
+      :saved-alignments="savedAlignments"
+      :clan-members="clanMembers"
+      :clan-id="clanId"
+      :character-id="store.currentCharacter"
+      @apply="applyAlignment"
+      @close="showFormacionesModal = false"
+    />
 
   </div>
 

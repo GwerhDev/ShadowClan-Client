@@ -14,20 +14,20 @@ const props = defineProps<{
   defaultTab?: string;
 }>();
 
-defineEmits(['close']);
+const emit = defineEmits<{ close: []; 'tab-change': [key: string] }>();
 
 const activeTab = ref(props.defaultTab ?? props.tabs[0]?.key ?? '');
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="tab-modal-overlay" @click.self="$emit('close')">
+    <div class="tab-modal-overlay" @click.self="emit('close')">
       <div class="tab-modal-container">
 
         <div class="tab-modal-header">
           <img :src="diabloImg" alt="" class="tab-modal-header__icon" />
           <h2 class="tab-modal-header__title">{{ title }}</h2>
-          <button class="tab-modal-header__close" @click="$emit('close')">
+          <button class="tab-modal-header__close" @click="emit('close')">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -38,7 +38,7 @@ const activeTab = ref(props.defaultTab ?? props.tabs[0]?.key ?? '');
               v-for="tab in tabs"
               :key="tab.key"
               :class="['tab-nav-btn', { 'tab-nav-btn--active': activeTab === tab.key }]"
-              @click="activeTab = tab.key"
+              @click="activeTab = tab.key; emit('tab-change', tab.key)"
             >
               <i v-if="tab.icon" :class="tab.icon"></i>
               <span>{{ tab.label }}</span>
