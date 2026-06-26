@@ -811,6 +811,7 @@ function onDragEnd() {
       :clan-members="clanMembers"
       :clan-id="clanId"
       :character-id="store.currentCharacter"
+      :current-war-id="shadowWarId"
       @apply="applyAlignment"
       @rename-template="renameCustomAlignment"
       @delete-template="deleteCustomAlignment"

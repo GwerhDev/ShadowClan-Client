@@ -9,6 +9,7 @@ const props = defineProps<{
   clanMembers: any[];
   clanId: string;
   characterId: string;
+  currentWarId?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -93,7 +94,8 @@ async function loadHistory(reset = false) {
   loadingHist.value = true;
   try {
     const res = await getHistory(page.value, 'shadow_war', props.characterId, search.value || undefined);
-    history.value   = reset ? (res.data ?? []) : [...history.value, ...(res.data ?? [])];
+    const incoming = (res.data ?? []).filter((e: any) => !props.currentWarId || String(e._id) !== String(props.currentWarId));
+    history.value   = reset ? incoming : [...history.value, ...incoming];
     totalPages.value = res.pages ?? 1;
     histLoaded.value = true;
   } finally {
