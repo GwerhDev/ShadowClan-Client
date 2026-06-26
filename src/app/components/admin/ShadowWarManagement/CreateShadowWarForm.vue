@@ -665,13 +665,10 @@ function onDragEnd() {
             </button>
           </div>
         </div>
-        <!-- WhatsApp + Formaciones + Publicar: fila separada, siempre a la derecha -->
+        <!-- Compartir + Publicar: fila separada, siempre a la derecha -->
         <div v-if="!editing" class="instance-action-row">
           <button class="btn-share-trigger" @click="showShareModal = true">
             <i class="fas fa-share-nodes"></i> Compartir
-          </button>
-          <button class="btn-share-trigger" @click="showFormacionesModal = true">
-            <i class="fas fa-layer-group"></i> Formaciones
           </button>
           <button class="btn-publish-trigger" @click="emit('publish')">
             <i class="fas fa-paper-plane"></i> Publicar
@@ -710,6 +707,9 @@ function onDragEnd() {
           </button>
           <button class="btn-roster-action btn-roster-action--reset" :disabled="savingAlignment || autoAssigning" @click="resetAlignment">
             <i class="fas fa-trash-alt"></i> Resetear
+          </button>
+          <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="showFormacionesModal = true">
+            <i class="fas fa-layer-group"></i> Formaciones
           </button>
         </div>
       </div>
