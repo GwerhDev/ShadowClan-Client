@@ -484,7 +484,8 @@ async function autoAssign() {
   if (!clanId.value) return;
   autoAssigning.value = true;
   try {
-    const result = await autoAssignRoster(clanId.value, 'shadow-war');
+    const current = buildSWData();
+    const result = await autoAssignRoster(clanId.value, 'shadow-war', current);
     applyAlignment(result);
   } finally {
     autoAssigning.value = false;

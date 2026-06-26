@@ -350,10 +350,11 @@ export const saveClanRoster = async (clanId: string, payload: {
 export const autoAssignRoster = async (
   clanId: string,
   type: 'accursed-tower' | 'shadow-war',
+  currentFormation?: any,
 ): Promise<any> => {
   const r = await axios.post(
     API_URL + `/clan-management/clan/${clanId}/auto-assign`,
-    { type },
+    { type, formation: currentFormation },
     { withCredentials: true },
   );
   return r.data;
