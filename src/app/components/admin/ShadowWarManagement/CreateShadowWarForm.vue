@@ -458,6 +458,13 @@ async function deleteCustomAlignment(index: number) {
   savedAlignments.value.custom.splice(index, 1);
 }
 
+async function renameCustomAlignment(index: number, newName: string) {
+  if (!clanId.value || !newName.trim()) return;
+  const entry = savedAlignments.value.custom[index];
+  await saveClanRoster(clanId.value, { type: 'shadow-war', slot: 'custom', name: newName.trim(), customIndex: index, data: entry.data });
+  savedAlignments.value.custom[index] = { ...entry, name: newName.trim() };
+}
+
 function applyAlignment(data: any) {
   if (!data) return;
   const findChar = (id: any) => clanMembers.value.find(c => String(c._id) === String(id));
@@ -705,20 +712,6 @@ function onDragEnd() {
             <i class="fas fa-trash-alt"></i> Resetear
           </button>
         </div>
-        <div v-if="savedAlignments.last || savedAlignments.custom.length > 0" class="roster-toolbar-row roster-toolbar-row--apply">
-          <span class="apply-label">Aplicar:</span>
-          <button v-if="savedAlignments.last" class="btn-roster-action btn-roster-action--apply" :disabled="savingAlignment" @click="applyAlignment(savedAlignments.last)">
-            <i class="fas fa-clock-rotate-left"></i> Última
-          </button>
-          <span v-for="(slot, i) in savedAlignments.custom" :key="i" class="alignment-chip">
-            <button class="btn-roster-action btn-roster-action--apply" :disabled="savingAlignment" :title="slot.name" @click="applyAlignment(slot.data)">
-              <i class="fas fa-bookmark"></i> {{ slot.name }}
-            </button>
-            <button class="btn-chip-delete" :disabled="savingAlignment" title="Eliminar plantilla" @click="deleteCustomAlignment(i)">
-              <i class="fas fa-times"></i>
-            </button>
-          </span>
-        </div>
       </div>
 
       <CustomModal v-if="showSaveCustomModal" title="Guardar plantilla" @close="showSaveCustomModal = false">
@@ -819,6 +812,8 @@ function onDragEnd() {
       :clan-id="clanId"
       :character-id="store.currentCharacter"
       @apply="applyAlignment"
+      @rename-template="renameCustomAlignment"
+      @delete-template="deleteCustomAlignment"
       @close="showFormacionesModal = false"
     />
 
