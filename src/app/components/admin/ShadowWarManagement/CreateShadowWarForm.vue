@@ -705,11 +705,11 @@ function onDragEnd() {
           <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="autoAssign">
             <i class="fas fa-bolt"></i> Auto-asignar
           </button>
-          <button class="btn-roster-action btn-roster-action--reset" :disabled="savingAlignment || autoAssigning" @click="resetAlignment">
-            <i class="fas fa-trash-alt"></i> Resetear
-          </button>
           <button class="btn-roster-action" :disabled="savingAlignment || autoAssigning" @click="showFormacionesModal = true">
             <i class="fas fa-layer-group"></i> Formaciones
+          </button>
+          <button class="btn-roster-action btn-roster-action--reset" :disabled="savingAlignment || autoAssigning" @click="resetAlignment">
+            <i class="fas fa-trash-alt"></i> Resetear
           </button>
         </div>
       </div>
