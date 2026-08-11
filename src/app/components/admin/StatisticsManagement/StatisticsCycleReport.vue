@@ -85,7 +85,7 @@ onMounted(fetchReport);
 
 <template>
   <div class="cycle-report">
-    <button class="btn-back" @click="router.push({ name: 'ManagementStatisticsCycles' })">
+    <button class="btn-back" @click="router.push('/management/statistics/cycles')">
       <i class="fas fa-arrow-left"></i> Volver a ciclos
     </button>
 

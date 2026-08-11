@@ -78,7 +78,7 @@ onMounted(fetchData);
 
 <template>
   <div class="statistics-detail">
-    <button class="btn-back" @click="router.push({ name: 'ManagementStatistics' })">
+    <button class="btn-back" @click="router.push('/management/statistics')">
       <i class="fas fa-arrow-left"></i> Volver a estadísticas
     </button>
 
