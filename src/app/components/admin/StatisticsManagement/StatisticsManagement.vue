@@ -73,6 +73,10 @@ onMounted(fetchCycles);
   <div class="statistics-management">
     <router-view v-if="route.params.cycle_id" />
     <template v-else>
+      <button class="btn-back" @click="router.push({ name: 'ManagementStatistics' })">
+        <i class="fas fa-arrow-left"></i> Volver a estadísticas
+      </button>
+
       <div class="cycles-toolbar">
         <button class="btn-add-cycle" @click="showForm = !showForm">
           <i class="fas fa-plus"></i> Nuevo ciclo

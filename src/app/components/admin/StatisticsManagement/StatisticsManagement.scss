@@ -6,6 +6,20 @@
   padding: 0 1rem 1rem;
 }
 
+.btn-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, .5);
+  font-size: .8rem;
+  cursor: pointer;
+
+  &:hover { color: rgba(255, 255, 255, .85); }
+}
+
 .cycles-toolbar {
   display: flex;
   justify-content: flex-end;
