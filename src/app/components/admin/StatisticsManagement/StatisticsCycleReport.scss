@@ -7,17 +7,24 @@
 }
 
 .btn-back {
-  align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  gap: .4rem;
+  gap: .5rem;
+  padding: .35rem .9rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
   background: transparent;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, .12);
   color: rgba(255, 255, 255, .5);
-  font-size: .8rem;
   cursor: pointer;
+  width: fit-content;
+  transition: background .15s, border-color .15s, color .15s;
 
-  &:hover { color: rgba(255, 255, 255, .85); }
+  &:hover {
+    background: rgba(255, 255, 255, .06);
+    border-color: rgba(255, 255, 255, .25);
+    color: rgba(255, 255, 255, .85);
+  }
 }
 
 .cycle-report-header {
