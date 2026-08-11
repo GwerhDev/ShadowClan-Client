@@ -241,6 +241,7 @@ export {
   updateAttendanceCycle,
   deleteAttendanceCycle,
   getAttendanceCycleReport,
+  getMyAttendance,
 } from './attendanceService';
 export { getStatisticsOverview, getOverviewSummary } from './statisticsService';
 

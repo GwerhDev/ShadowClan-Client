@@ -63,3 +63,9 @@ export const getAttendanceCycleReport: any = async (cycleId: string, characterId
     .then(response => response.data)
   return response;
 };
+
+export const getMyAttendance: any = async (characterId: string, range: '30' | '60' | '90' | 'cycle' = '30') => {
+  const response: any = await axios.get(API_URL + `/attendance/character/${characterId}`, { params: { range }, withCredentials: true })
+    .then(response => response.data)
+  return response;
+};

@@ -1,13 +1,19 @@
 <style scoped lang="scss" src="./ProfileComponent.scss" />
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { Doughnut } from 'vue-chartjs';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useStore } from '../../../middlewares/store';
 import AddCharacterModal from './AddCharacterModal.vue';
 import LinkCharacterForm from '../Walker/LinkCharacterForm.vue';
 import { classes } from '../../../middlewares/misc/const';
-import { updateCharacter, leaveClan } from '../../../middlewares/services';
+import { updateCharacter, leaveClan, getMyAttendance } from '../../../middlewares/services';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const store: any = useStore();
+const router = useRouter();
 const showAddModal = ref(false);
 const linkingCharacter = ref(false);
 const showCharSwitcher = ref(false);
@@ -33,6 +39,75 @@ const clanMemberCount = computed(() => {
   const clan = activeCharacter.value?.clan;
   if (!clan) return 0;
   return 1 + (clan.officer?.length ?? 0) + (clan.member?.length ?? 0);
+});
+
+// ── Próxima actividad ──
+function formatActivityDate(d?: string | Date | null) {
+  if (!d) return null;
+  const date = new Date(d);
+  return isNaN(date.getTime()) ? null : date.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit' });
+}
+
+const nextShadowWarDate = computed(() => formatActivityDate(store.currentUser.shadowWarData?.date));
+const nextAccursedTowerDate = computed(() => formatActivityDate(store.currentUser.towerWarList?.[0]?.date));
+
+// ── Participación en Guerra Sombría ──
+type ParticipationRange = '30' | '60' | '90' | 'cycle';
+const PARTICIPATION_RANGES: Array<{ value: ParticipationRange; label: string }> = [
+  { value: '30',    label: '30d' },
+  { value: '60',    label: '60d' },
+  { value: '90',    label: '90d' },
+  { value: 'cycle', label: 'Último ciclo' },
+];
+
+const participationRange   = ref<ParticipationRange>('30');
+const participationData    = ref<any>(null);
+const participationLoading = ref(true);
+
+async function fetchParticipation() {
+  if (!activeCharacter.value?.clan) { participationData.value = null; return; }
+  participationLoading.value = true;
+  try {
+    participationData.value = await getMyAttendance(activeCharacter.value._id, participationRange.value);
+  } catch {
+    participationData.value = null;
+  } finally {
+    participationLoading.value = false;
+  }
+}
+
+function selectParticipationRange(r: ParticipationRange) {
+  if (r === 'cycle' && !participationData.value?.hasCycle) return;
+  participationRange.value = r;
+}
+
+const participationChartData = computed(() => {
+  const d = participationData.value ?? { attended: 0, missed: 0, unmarked: 0 };
+  return {
+    labels: ['Asistió', 'No asistió', 'Sin marcar'],
+    datasets: [{
+      data: [d.attended, d.missed, d.unmarked],
+      backgroundColor: ['#4ade80', '#f87171', 'rgba(255, 255, 255, .3)'],
+      borderColor: 'rgba(0,0,0,0)',
+      borderWidth: 2,
+    }],
+  };
+});
+
+const participationChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'bottom' as const, labels: { color: 'rgba(255, 255, 255, .65)', boxWidth: 12, padding: 12 } },
+  },
+};
+
+watch(participationRange, fetchParticipation);
+watch(() => activeCharacter.value?._id, fetchParticipation);
+
+onMounted(() => {
+  store.handleGetActiveTowerWar();
+  fetchParticipation();
 });
 
 async function switchCharacter(id: string) {
@@ -340,10 +415,66 @@ function charHasUnreadNotifications(char: any): boolean {
               <span class="clan-stat-label">Oficiales</span>
             </div>
           </div>
+
+          <!-- Próxima actividad -->
+          <div class="next-activity-row">
+            <button class="next-activity-chip" @click.stop="router.push('/shadow-war')">
+              <i class="fas fa-khanda"></i>
+              <div class="next-activity-info">
+                <span class="next-activity-label">Guerra Sombría</span>
+                <span class="next-activity-value">{{ nextShadowWarDate ?? 'Sin programar' }}</span>
+              </div>
+            </button>
+            <button class="next-activity-chip" @click.stop="router.push('/accursed-tower')">
+              <i class="fas fa-chess-rook"></i>
+              <div class="next-activity-info">
+                <span class="next-activity-label">Torre Maldita</span>
+                <span class="next-activity-value">{{ nextAccursedTowerDate ?? 'Sin programar' }}</span>
+              </div>
+            </button>
+          </div>
         </div>
         <div v-else class="no-clan-card">
           <i class="fas fa-shield-halved"></i>
           <span>Sin clan asignado</span>
+        </div>
+
+        <!-- Participación en Guerra Sombría -->
+        <div v-if="activeCharacter.clan" class="participation-card" @click.stop>
+          <div class="participation-header">
+            <i class="fas fa-khanda"></i>
+            <span>Mi participación en Guerra Sombría</span>
+          </div>
+          <div class="range-filters">
+            <button
+              v-for="r in PARTICIPATION_RANGES"
+              :key="r.value"
+              class="range-btn"
+              :class="{ active: participationRange === r.value }"
+              :disabled="r.value === 'cycle' && !participationData?.hasCycle"
+              :title="r.value === 'cycle' && !participationData?.hasCycle ? 'El clan no tiene ciclos de Guerra Sombría definidos' : ''"
+              @click.stop="selectParticipationRange(r.value)"
+            >{{ r.label }}</button>
+          </div>
+          <div v-if="participationLoading" class="participation-empty">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Cargando...</span>
+          </div>
+          <div v-else-if="!participationData?.totalActivities" class="participation-empty">
+            <i class="fas fa-scroll"></i>
+            <span>Sin Shadow Wars en este rango.</span>
+          </div>
+          <template v-else>
+            <div class="participation-body">
+              <div class="participation-chart">
+                <Doughnut :data="participationChartData" :options="participationChartOptions" />
+              </div>
+              <p class="participation-summary">
+                <strong>{{ participationData.percentage }}%</strong> de asistencia
+                ({{ participationData.attended }}/{{ participationData.totalActivities }} Shadow Wars)
+              </p>
+            </div>
+          </template>
         </div>
       </div>
     </template>
