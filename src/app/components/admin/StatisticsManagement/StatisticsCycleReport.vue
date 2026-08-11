@@ -26,6 +26,7 @@ const characterId = computed(() => active.value?._id ?? (store as any).currentCh
 
 const loading = ref(true);
 const report  = ref<any>(null);
+const error   = ref('');
 
 const navItems = ['miembro', 'rol', 'asistió', 'total guerras', '%'];
 
@@ -73,8 +74,11 @@ const chartOptions = {
 
 async function fetchReport() {
   loading.value = true;
+  error.value   = '';
   try {
     report.value = await getAttendanceCycleReport(route.params.cycle_id as string, characterId.value);
+  } catch (e: any) {
+    error.value = e?.response?.data?.message ?? 'Error al cargar el reporte.';
   } finally {
     loading.value = false;
   }
@@ -85,11 +89,13 @@ onMounted(fetchReport);
 
 <template>
   <div class="cycle-report">
-    <button class="btn-back" @click="router.push('/management/statistics/cycles')">
+    <button class="btn-back" @click="router.push('/management/overview/cycles')">
       <i class="fas fa-arrow-left"></i> Volver a ciclos
     </button>
 
     <EmptyState v-if="loading" icon="fas fa-spinner fa-spin" message="Cargando reporte..." :compact="true" />
+
+    <EmptyState v-else-if="error" icon="fas fa-triangle-exclamation" :message="error" :compact="true" />
 
     <template v-else-if="report">
       <div class="cycle-report-header">

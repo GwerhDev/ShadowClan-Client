@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from '../../../middlewares/store';
 import AppLayout from '../../layouts/AppLayout.vue';
@@ -7,13 +8,23 @@ import DeniedAccess from '../../utils/DeniedAccess.vue';
 const store: any = useStore();
 const route = useRoute();
 
+const chars  = computed(() => store.currentUser.userData?.character ?? []);
+const active = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
+
+const pageTitle = computed(() => {
+  if (route.name === 'ManagementOverview' && active.value?.clan?.name) {
+    return `Clan ${active.value.clan.name}`;
+  }
+  return undefined;
+});
+
 const tabs = [
+  { id: 'overview',       name: 'Resumen',  icon: 'fas fa-house',      path: '/management/overview' },
   { id: 'clan',           name: 'Clan',     icon: 'fas fa-users',      path: '/management/clan' },
   { id: 'shadow-war',     name: 'Guerra',   icon: 'fas fa-khanda',     path: '/management/shadow-war' },
   { id: 'accursed-tower', name: 'Torre',    icon: 'fas fa-chess-rook', path: '/management/accursed-tower' },
   { id: 'history',        name: 'Historial', icon: 'fas fa-history',    path: '/management/history' },
   { id: 'attendance',     name: 'Asistencia', icon: 'fas fa-clipboard-check', path: '/management/attendance' },
-  { id: 'statistics',     name: 'Estadísticas', icon: 'fas fa-chart-column', path: '/management/statistics' },
 ];
 </script>
 
@@ -24,7 +35,7 @@ const tabs = [
         :logged="store.currentUser.logged"
         :tabs="tabs"
         :active-layout-tab="route.path"
-        title="Gestión de Clan"
+        :title="pageTitle"
       >
         <router-view />
       </AppLayout>

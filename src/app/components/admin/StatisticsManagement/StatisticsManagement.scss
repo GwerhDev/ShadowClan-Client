@@ -67,13 +67,14 @@
 
   label { font-size: .72rem; color: rgba(255, 255, 255, .5); }
 
-  input {
+  input, select {
     height: 36px;
     padding: 0 .6rem;
     background: rgba(255, 255, 255, .04);
     border: 1px solid rgba(255, 255, 255, .1);
     border-radius: 8px;
     color: var(--color-app-white, #fff);
+    font-family: inherit;
 
     &:focus { outline: none; border-color: rgba(227, 210, 168, .4); }
   }
@@ -97,25 +98,72 @@
   &:disabled { opacity: .5; cursor: not-allowed; }
 }
 
+// El slot #header queda "poseído" por StatisticsManagement (no por TableComponent), así que las
+// reglas scoped de nav li en TableComponent.scss no aplican acá — hay que redeclarar padding/centrado.
+.th-cell {
+  padding: .45rem .3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .4);
+}
+
+.type-filter-select {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: .72rem;
+  min-width: 0;
+  width: 100%;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .4);
+  font-family: inherit;
+  cursor: pointer;
+  transition: color .15s;
+
+  &:focus { outline: none; }
+  &:hover, &.active { color: rgba(255, 255, 255, .85); }
+
+  option { text-transform: none; letter-spacing: 0; font-size: .85rem; }
+}
+
 .cycle-row {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   padding: .5rem;
   border-radius: 8px;
   background: rgba(255, 255, 255, .02);
   cursor: pointer;
 
   &:hover { background: rgba(255, 255, 255, .05); }
+  &--no-report { cursor: default; }
 
   span {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: .35rem;
   }
 
   .cycle-name { justify-content: flex-start; font-weight: 600; }
+}
+
+.activity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .7rem;
+  color: rgba(255, 255, 255, .6);
+
+  i { color: rgb(227, 210, 168); }
 }
 
 .icon-button {

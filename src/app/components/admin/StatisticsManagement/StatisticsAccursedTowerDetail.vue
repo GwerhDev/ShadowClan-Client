@@ -38,7 +38,7 @@ function formatDate(d: string | Date) {
 }
 
 const chartData = computed(() => {
-  const s = data.value?.accursedTower ?? { victory: 0, defeat: 0, draw: 0 };
+  const s = data.value ?? { victory: 0, defeat: 0, draw: 0 };
   return {
     labels: ['Victoria', 'Derrota', 'Empate'],
     datasets: [{
@@ -78,7 +78,7 @@ onMounted(fetchData);
 
 <template>
   <div class="statistics-detail">
-    <button class="btn-back" @click="router.push('/management/statistics')">
+    <button class="btn-back" @click="router.push('/management/overview')">
       <i class="fas fa-arrow-left"></i> Volver a estadísticas
     </button>
 
@@ -106,14 +106,14 @@ onMounted(fetchData);
       </div>
 
       <EmptyState
-        v-if="!data?.accursedTower?.matches?.length"
+        v-if="!data?.matches?.length"
         icon="fas fa-scroll"
         message="No hay Torres Malditas con resultado en este rango."
         :compact="true"
       />
 
       <TableComponent v-else :navItems="navItems">
-        <div v-for="match in data.accursedTower.matches" :key="match._id" class="detail-row">
+        <div v-for="match in data.matches" :key="match._id" class="detail-row">
           <span>{{ formatDate(match.date) }}</span>
           <span>{{ match.enemyClan?.name || '—' }}</span>
           <span><span :class="['result-chip', `result-${match.result}`]">{{ translateResult(match.result) }}</span></span>

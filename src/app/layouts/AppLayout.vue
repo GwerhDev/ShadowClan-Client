@@ -12,7 +12,7 @@ import NavMobileComponent from '../components/NavMobileComponent.vue';
 const store: any = useStore();
 const route = useRoute();
 
-defineProps({
+const props = defineProps({
   loading: {
     type: Boolean,
     required: false
@@ -20,6 +20,10 @@ defineProps({
   hideTitle: {
     type: Boolean,
     default: false
+  },
+  title: {
+    type: String,
+    required: false
   },
   tabs: Array as () => Array<{
     id: string;
@@ -32,6 +36,7 @@ defineProps({
 });
 
 const dynamicTitle = computed(() => {
+  if (props.title) return props.title;
   if (route.meta.title) {
     return route.meta.title;
   }

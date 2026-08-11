@@ -84,8 +84,40 @@ const routes: RouteRecordRaw[] = [
     path: '/management',
     name: 'ClanManagement',
     component: ClanManagementPage,
-    redirect: '/management/clan',
+    redirect: '/management/overview',
     children: [
+      {
+        path: 'overview',
+        name: 'ManagementOverview',
+        component: StatisticsOverview,
+        meta: { title: 'Resumen', requiresClanManagement: true },
+      },
+      {
+        path: 'overview/cycles',
+        name: 'ManagementOverviewCycles',
+        component: StatisticsManagement,
+        meta: { title: 'Resumen · Ciclos', requiresClanManagement: true },
+        children: [
+          {
+            path: ':cycle_id',
+            name: 'ManagementOverviewCycleReport',
+            component: StatisticsCycleReport,
+            meta: { title: 'Resumen · Ciclos', requiresClanManagement: true },
+          },
+        ],
+      },
+      {
+        path: 'overview/shadow-wars',
+        name: 'ManagementOverviewShadowWars',
+        component: StatisticsShadowWarDetail,
+        meta: { title: 'Resumen · Guerra Sombría', requiresClanManagement: true },
+      },
+      {
+        path: 'overview/accursed-tower',
+        name: 'ManagementOverviewAccursedTower',
+        component: StatisticsAccursedTowerDetail,
+        meta: { title: 'Resumen · Torre Maldita', requiresClanManagement: true },
+      },
       {
         path: 'clan',
         name: 'ManagementClan',
@@ -129,38 +161,6 @@ const routes: RouteRecordRaw[] = [
         name: 'ManagementAttendance',
         component: AttendanceRegister,
         meta: { title: 'Asistencia', requiresClanManagement: true },
-      },
-      {
-        path: 'statistics',
-        name: 'ManagementStatistics',
-        component: StatisticsOverview,
-        meta: { title: 'Estadísticas', requiresClanManagement: true },
-      },
-      {
-        path: 'statistics/cycles',
-        name: 'ManagementStatisticsCycles',
-        component: StatisticsManagement,
-        meta: { title: 'Estadísticas · Ciclos', requiresClanManagement: true },
-        children: [
-          {
-            path: ':cycle_id',
-            name: 'ManagementStatisticsReport',
-            component: StatisticsCycleReport,
-            meta: { title: 'Estadísticas · Ciclos', requiresClanManagement: true },
-          },
-        ],
-      },
-      {
-        path: 'statistics/shadow-wars',
-        name: 'ManagementStatisticsShadowWars',
-        component: StatisticsShadowWarDetail,
-        meta: { title: 'Estadísticas · Guerra Sombría', requiresClanManagement: true },
-      },
-      {
-        path: 'statistics/accursed-tower',
-        name: 'ManagementStatisticsAccursedTower',
-        component: StatisticsAccursedTowerDetail,
-        meta: { title: 'Estadísticas · Torre Maldita', requiresClanManagement: true },
       },
     ],
   },
