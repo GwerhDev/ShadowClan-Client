@@ -8,8 +8,11 @@ import HistoryManagement from '../components/admin/HistoryManagement/HistoryMana
 import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
 import ClanMembersManagement from '../components/admin/ClanMembersManagement/ClanMembersManagement.vue';
 import AttendanceRegister from '../components/admin/AttendanceManagement/AttendanceRegister.vue';
+import StatisticsOverview from '../components/admin/StatisticsManagement/StatisticsOverview.vue';
 import StatisticsManagement from '../components/admin/StatisticsManagement/StatisticsManagement.vue';
 import StatisticsCycleReport from '../components/admin/StatisticsManagement/StatisticsCycleReport.vue';
+import StatisticsShadowWarDetail from '../components/admin/StatisticsManagement/StatisticsShadowWarDetail.vue';
+import StatisticsAccursedTowerDetail from '../components/admin/StatisticsManagement/StatisticsAccursedTowerDetail.vue';
 
 import UserPage from '../pages/UserPage.vue';
 import ProfileComponent from '../components/Account/ProfileComponent.vue';
@@ -130,16 +133,34 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'statistics',
         name: 'ManagementStatistics',
-        component: StatisticsManagement,
+        component: StatisticsOverview,
         meta: { title: 'Estadísticas', requiresClanManagement: true },
+      },
+      {
+        path: 'statistics/cycles',
+        name: 'ManagementStatisticsCycles',
+        component: StatisticsManagement,
+        meta: { title: 'Estadísticas · Ciclos', requiresClanManagement: true },
         children: [
           {
             path: ':cycle_id',
             name: 'ManagementStatisticsReport',
             component: StatisticsCycleReport,
-            meta: { title: 'Estadísticas', requiresClanManagement: true },
+            meta: { title: 'Estadísticas · Ciclos', requiresClanManagement: true },
           },
         ],
+      },
+      {
+        path: 'statistics/shadow-wars',
+        name: 'ManagementStatisticsShadowWars',
+        component: StatisticsShadowWarDetail,
+        meta: { title: 'Estadísticas · Guerra Sombría', requiresClanManagement: true },
+      },
+      {
+        path: 'statistics/accursed-tower',
+        name: 'ManagementStatisticsAccursedTower',
+        component: StatisticsAccursedTowerDetail,
+        meta: { title: 'Estadísticas · Torre Maldita', requiresClanManagement: true },
       },
     ],
   },
