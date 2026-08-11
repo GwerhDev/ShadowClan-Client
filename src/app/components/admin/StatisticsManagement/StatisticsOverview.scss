@@ -84,6 +84,14 @@
   height: 200px;
 }
 
+.chart-card--wide {
+  width: 100%;
+}
+
+.chart-body--wide {
+  height: 240px;
+}
+
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));

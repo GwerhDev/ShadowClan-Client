@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { Doughnut } from 'vue-chartjs';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut, Bar } from 'vue-chartjs';
+import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { useStore } from '../../../../middlewares/store';
 import EmptyState from '../../common/EmptyState.vue';
-import { getStatisticsOverview, getClanMembers, getActiveShadowWar, getActiveAccursedTower, getAttendanceCycles } from '../../../../middlewares/services';
+import { classes } from '../../../../middlewares/misc/const';
+import { getStatisticsOverview, getOverviewSummary } from '../../../../middlewares/services';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const MEMBER_CAP = 100;
 
@@ -17,7 +18,6 @@ const router = useRouter();
 const chars       = computed(() => (store as any).currentUser.userData?.character ?? []);
 const active      = computed(() => (chars.value as any[]).find((c: any) => c._id === (store as any).currentCharacter) ?? chars.value[0] ?? null);
 const characterId = computed(() => active.value?._id ?? (store as any).currentCharacter);
-const clanId      = computed(() => active.value?.clan?._id ?? active.value?.clan ?? null);
 
 type Range = '30' | '60' | '90' | 'cycle';
 const RANGES: Array<{ value: Range; label: string }> = [
@@ -71,43 +71,57 @@ function formatDate(d?: string | Date | null) {
   return isNaN(date.getTime()) ? null : date.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit' });
 }
 
-const memberCount      = ref<number | null>(null);
-const clanUpdatedAt    = ref<string | null>(null);
-const nextShadowWar     = ref<any>(null);
-const nextAccursedTower = ref<any>(null);
-const cyclesTotal       = ref<number | null>(null);
+const summary = ref<any>(null);
+
+const memberCount       = computed(() => summary.value?.memberCount ?? null);
+const cyclesTotal       = computed(() => summary.value?.cyclesTotal ?? null);
+const nextShadowWar     = computed(() => summary.value?.nextShadowWar ?? null);
+const nextAccursedTower = computed(() => summary.value?.nextAccursedTower ?? null);
 
 const memberUpdatedLabel = computed(() => {
-  const formatted = formatDate(clanUpdatedAt.value);
+  const formatted = formatDate(summary.value?.clanUpdatedAt);
   return formatted ? `actualizado ${formatted}` : 'sin registros de actualización';
 });
 
-async function fetchMemberCount() {
-  if (!clanId.value) return;
-  try {
-    const clan = await getClanMembers(clanId.value);
-    memberCount.value = (clan.leader ? 1 : 0) + (clan.officer?.length ?? 0) + (clan.member?.length ?? 0);
-    clanUpdatedAt.value = clan.updatedAt ?? null;
-  } catch { memberCount.value = null; clanUpdatedAt.value = null; }
-}
+const classDistribution = computed(() => {
+  const counts: Record<string, number> = summary.value?.classCounts ?? {};
+  const known = classes.map(cls => ({ name: cls.name, count: counts[cls.value] ?? 0 }));
+  const unclassed = counts['unknown'] ?? 0;
+  return [...known, { name: 'Sin clase', count: unclassed }];
+});
 
-async function fetchCyclesTotal() {
-  try {
-    const response = await getAttendanceCycles(1, characterId.value);
-    cyclesTotal.value = response.total ?? 0;
-  } catch { cyclesTotal.value = null; }
-}
+const classDistributionChart = computed(() => ({
+  labels: classDistribution.value.map(c => c.name),
+  datasets: [{
+    label: 'Personajes',
+    data: classDistribution.value.map(c => c.count),
+    backgroundColor: 'rgba(227, 210, 168, .55)',
+    borderColor: 'rgba(227, 210, 168, .9)',
+    borderWidth: 1,
+    borderRadius: 4,
+  }],
+}));
 
-async function fetchNextShadowWar() {
-  try { nextShadowWar.value = await getActiveShadowWar(characterId.value); }
-  catch { nextShadowWar.value = null; }
-}
+const classDistributionOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: {
+      ticks: { color: 'rgba(255, 255, 255, .6)', font: { size: 10 } },
+      grid:  { color: 'rgba(255, 255, 255, .04)' },
+    },
+    y: {
+      beginAtZero: true,
+      ticks: { color: 'rgba(255, 255, 255, .5)', precision: 0 },
+      grid:  { color: 'rgba(255, 255, 255, .06)' },
+    },
+  },
+};
 
-async function fetchNextAccursedTower() {
-  try {
-    const towers = await getActiveAccursedTower(characterId.value);
-    nextAccursedTower.value = Array.isArray(towers) ? (towers[0] ?? null) : null;
-  } catch { nextAccursedTower.value = null; }
+async function fetchSummary() {
+  try { summary.value = await getOverviewSummary(characterId.value); }
+  catch { summary.value = null; }
 }
 
 async function fetchShadowWar() {
@@ -143,10 +157,7 @@ watch(atRange, fetchAccursedTower);
 onMounted(() => {
   fetchShadowWar();
   fetchAccursedTower();
-  fetchMemberCount();
-  fetchNextShadowWar();
-  fetchNextAccursedTower();
-  fetchCyclesTotal();
+  fetchSummary();
 });
 
 function resultBreakdown(summary?: { victory: number; defeat: number; draw: number } | null) {
@@ -163,14 +174,14 @@ const topCards = computed(() => [
   },
   {
     key: 'next-shadow-war', icon: 'fas fa-khanda', label: 'Próxima Guerra Sombría',
-    value: formatDate(nextShadowWar.value?.date) ?? 'Sin programar',
-    hint: nextShadowWar.value?.enemyClan?.name ? `vs ${nextShadowWar.value.enemyClan.name}` : '',
+    value: nextShadowWar.value ? (nextShadowWar.value.enemyClan?.name ? `vs ${nextShadowWar.value.enemyClan.name}` : 'Sin enemigo') : 'Sin programar',
+    hint: formatDate(nextShadowWar.value?.date) ?? '',
     to: '/management/shadow-war',
   },
   {
     key: 'next-accursed-tower', icon: 'fas fa-chess-rook', label: 'Próxima Torre Maldita',
-    value: formatDate(nextAccursedTower.value?.date) ?? 'Sin programar',
-    hint: nextAccursedTower.value?.towerNumber ? `torre #${nextAccursedTower.value.towerNumber}` : '',
+    value: nextAccursedTower.value ? (nextAccursedTower.value.enemyClan?.name ? `vs ${nextAccursedTower.value.enemyClan.name}` : 'Sin enemigo') : 'Sin programar',
+    hint: formatDate(nextAccursedTower.value?.date) ?? '',
     to: '/management/accursed-tower',
   },
 ]);
@@ -242,6 +253,18 @@ const bottomCards = computed(() => [
         <div v-else class="chart-body">
           <Doughnut :data="accursedTowerChart" :options="chartOptions" />
         </div>
+      </div>
+    </div>
+
+    <div class="chart-card chart-card--wide">
+      <div class="chart-card-header">
+        <i class="fas fa-users"></i>
+        <span>Composición del clan</span>
+        <span class="chart-total">{{ memberCount ?? 0 }} personajes</span>
+      </div>
+      <EmptyState v-if="!memberCount" icon="fas fa-users-slash" message="El clan no tiene miembros." :compact="true" />
+      <div v-else class="chart-body chart-body--wide">
+        <Bar :data="classDistributionChart" :options="classDistributionOptions" />
       </div>
     </div>
 

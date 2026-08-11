@@ -61,7 +61,7 @@ const chartOptions = {
 async function fetchData() {
   loading.value = true;
   try {
-    data.value = await getStatisticsOverview(range.value, characterId.value, 'shadow_war');
+    data.value = await getStatisticsOverview(range.value, characterId.value, 'shadow_war', true);
   } finally {
     loading.value = false;
   }

@@ -61,7 +61,7 @@ const chartOptions = {
 async function fetchData() {
   loading.value = true;
   try {
-    data.value = await getStatisticsOverview(range.value, characterId.value, 'accursed_tower');
+    data.value = await getStatisticsOverview(range.value, characterId.value, 'accursed_tower', true);
   } finally {
     loading.value = false;
   }

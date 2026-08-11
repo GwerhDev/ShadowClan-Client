@@ -242,7 +242,7 @@ export {
   deleteAttendanceCycle,
   getAttendanceCycleReport,
 } from './attendanceService';
-export { getStatisticsOverview } from './statisticsService';
+export { getStatisticsOverview, getOverviewSummary } from './statisticsService';
 
 export const getClanMembersPage: any = async (clanId: string, params: { page: number; limit: number; q?: string }) => {
   const response: any = await axios.get(`${API_URL}/clan-management/clan/${clanId}/members`, {
