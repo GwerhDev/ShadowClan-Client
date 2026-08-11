@@ -13,6 +13,7 @@ const tabs = [
   { id: 'accursed-tower', name: 'Torre',    icon: 'fas fa-chess-rook', path: '/management/accursed-tower' },
   { id: 'history',        name: 'Historial', icon: 'fas fa-history',    path: '/management/history' },
   { id: 'attendance',     name: 'Asistencia', icon: 'fas fa-clipboard-check', path: '/management/attendance' },
+  { id: 'statistics',     name: 'Estadísticas', icon: 'fas fa-chart-column', path: '/management/statistics' },
 ];
 </script>
 

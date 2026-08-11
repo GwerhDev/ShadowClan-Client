@@ -85,7 +85,7 @@ onMounted(fetchReport);
 
 <template>
   <div class="cycle-report">
-    <button class="btn-back" @click="router.push({ name: 'ManagementAttendanceCycles' })">
+    <button class="btn-back" @click="router.push({ name: 'ManagementStatistics' })">
       <i class="fas fa-arrow-left"></i> Volver a ciclos
     </button>
 
@@ -124,4 +124,4 @@ onMounted(fetchReport);
   </div>
 </template>
 
-<style scoped lang="scss" src="./AttendanceCycleReport.scss" />
+<style scoped lang="scss" src="./StatisticsCycleReport.scss" />

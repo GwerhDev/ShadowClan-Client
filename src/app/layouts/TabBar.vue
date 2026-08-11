@@ -91,9 +91,8 @@ function handleType(tab: { id: string; name: string; icon: string; length?: numb
 };
 
 function styleActive(path: string) {
-  if (route.path === path) {
-    return { backgroundColor: "var(--color-primary)" };
-  }
+  if (route.path === path) return { backgroundColor: "var(--color-primary)" };
+  if (path !== '/' && route.path.startsWith(path)) return { backgroundColor: "var(--color-primary)" };
   return {};
 };
 

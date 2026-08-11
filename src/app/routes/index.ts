@@ -7,10 +7,9 @@ import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowW
 import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
 import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
 import ClanMembersManagement from '../components/admin/ClanMembersManagement/ClanMembersManagement.vue';
-import AttendanceManagement from '../components/admin/AttendanceManagement/AttendanceManagement.vue';
 import AttendanceRegister from '../components/admin/AttendanceManagement/AttendanceRegister.vue';
-import AttendanceCycles from '../components/admin/AttendanceManagement/AttendanceCycles.vue';
-import AttendanceCycleReport from '../components/admin/AttendanceManagement/AttendanceCycleReport.vue';
+import StatisticsManagement from '../components/admin/StatisticsManagement/StatisticsManagement.vue';
+import StatisticsCycleReport from '../components/admin/StatisticsManagement/StatisticsCycleReport.vue';
 
 import UserPage from '../pages/UserPage.vue';
 import ProfileComponent from '../components/Account/ProfileComponent.vue';
@@ -125,27 +124,20 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'attendance',
         name: 'ManagementAttendance',
-        component: AttendanceManagement,
-        redirect: { name: 'ManagementAttendanceRegister' },
+        component: AttendanceRegister,
         meta: { title: 'Asistencia', requiresClanManagement: true },
+      },
+      {
+        path: 'statistics',
+        name: 'ManagementStatistics',
+        component: StatisticsManagement,
+        meta: { title: 'Estadísticas', requiresClanManagement: true },
         children: [
           {
-            path: 'register',
-            name: 'ManagementAttendanceRegister',
-            component: AttendanceRegister,
-            meta: { title: 'Asistencia', requiresClanManagement: true },
-          },
-          {
-            path: 'cycles',
-            name: 'ManagementAttendanceCycles',
-            component: AttendanceCycles,
-            meta: { title: 'Ciclos', requiresClanManagement: true },
-          },
-          {
-            path: 'cycles/:cycle_id',
-            name: 'ManagementAttendanceCycleReport',
-            component: AttendanceCycleReport,
-            meta: { title: 'Ciclos', requiresClanManagement: true },
+            path: ':cycle_id',
+            name: 'ManagementStatisticsReport',
+            component: StatisticsCycleReport,
+            meta: { title: 'Estadísticas', requiresClanManagement: true },
           },
         ],
       },
