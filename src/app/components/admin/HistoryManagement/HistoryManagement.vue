@@ -208,8 +208,8 @@ async function handleAddHistory() {
           <li class="th-cell th-cell--last">acciones</li>
         </template>
 
-        <!-- Skeleton rows during initial load or search fetch -->
-        <template v-if="loading || isFetching">
+        <!-- Skeleton rows only for the initial load / a fresh search — never while paginating -->
+        <template v-if="loading">
           <div class="skeleton-table-row skeleton-cols-5" v-for="n in 6" :key="'sk' + n">
             <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
           </div>
@@ -221,10 +221,16 @@ async function handleAddHistory() {
             :key="item._id"
             :war="item"
           />
-          <li v-if="!store.admin.history?.length" class="table-empty-row">
+          <li v-if="!store.admin.history?.length && !isFetching" class="table-empty-row">
             <i class="fas fa-clock-rotate-left"></i>
             <span>{{ searchQuery ? `Sin resultados para "${searchQuery}".` : 'No hay historiales disponibles.' }}</span>
           </li>
+          <!-- "load more" indicator: appends below the already-rendered rows, doesn't replace them -->
+          <template v-if="isFetching">
+            <div class="skeleton-table-row skeleton-cols-5" v-for="n in 2" :key="'more' + n">
+              <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
+            </div>
+          </template>
         </template>
       </TableComponent>
 
