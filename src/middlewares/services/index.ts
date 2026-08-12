@@ -242,6 +242,7 @@ export {
   deleteAttendanceCycle,
   getAttendanceCycleReport,
   getMyAttendance,
+  getClanMembersAttendanceSummary,
 } from './attendanceService';
 export { getStatisticsOverview, getOverviewSummary } from './statisticsService';
 

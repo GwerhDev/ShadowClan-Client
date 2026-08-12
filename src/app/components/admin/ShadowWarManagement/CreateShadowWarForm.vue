@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref, computed, watch } from 'vue';
-import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan, saveClanRoster, autoAssignRoster, respondToShadowWar } from '../../../../middlewares/services';
+import { updateShadowWarClan, searchClans, getClanMembers, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, createEnemyClan, saveClanRoster, autoAssignRoster, respondToShadowWar, getClanMembersAttendanceSummary } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
 import { Character, Match } from '../../../../interfaces';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
@@ -51,6 +51,15 @@ async function handleConfirmCreate() {
 }
 
 const clanMembers: Ref<Character[]> = ref([]);
+const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
+const statMaxes = computed(() => {
+  const keys = ['armor', 'armorPenetration', 'power', 'resistance'] as const;
+  const result: Record<string, number> = {};
+  for (const k of keys) {
+    result[k] = Math.max(...clanMembers.value.map((m: any) => (m as any)[k] ?? 0), 1);
+  }
+  return result;
+});
 const shadowWarData = computed(() => store.currentUser.shadowWarData);
 
 const chars  = computed(() => store.currentUser.userData?.character ?? []);
@@ -264,6 +273,12 @@ onMounted(async () => {
           last:   clanData.savedShadowWarAlignments.last   ?? null,
           custom: clanData.savedShadowWarAlignments.custom ?? [],
         };
+      }
+      // Fetch attendance stats (non-blocking)
+      if (active.value?._id) {
+        getClanMembersAttendanceSummary(active.value._id).then((stats: any) => {
+          attendanceStats.value = stats ?? {};
+        }).catch(() => {});
       }
     }
 
@@ -688,6 +703,8 @@ function onDragEnd() {
         :assigned-member-ids="assignedMemberIds"
         :confirmed-ids="confirmedIds"
         :assigned-details="assignedMemberDetails"
+        :attendance-stats="attendanceStats"
+        :stat-maxes="statMaxes"
         @close="showMemberSelectionModal = false"
         @character-selected="handleMemberSelected"
         @character-unassigned="handleMemberUnassigned"

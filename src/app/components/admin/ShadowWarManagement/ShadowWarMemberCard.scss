@@ -6,7 +6,7 @@
   cursor: pointer;
   transition: border-color .15s, background .15s;
   background: rgba(255, 255, 255, .04);
-  height: 72px;
+  min-height: 80px;
   display: flex;
   align-items: center;
 
@@ -84,6 +84,14 @@
 
   .separator {
     color: rgba(255, 255, 255, .2);
+  }
+
+  .attendance-pct {
+    font-weight: 700;
+    letter-spacing: .02em;
+    &--high { color: #4ade80; }
+    &--mid  { color: #fbbf24; }
+    &--low  { color: #f87171; }
   }
 
   .respond-actions {
