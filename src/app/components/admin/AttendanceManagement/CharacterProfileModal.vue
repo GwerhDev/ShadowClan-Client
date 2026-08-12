@@ -104,8 +104,7 @@ const hasStats = computed(() =>
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  min-width: 300px;
-  max-width: 420px;
+  width: 100%;
 }
 
 // ── Header ──────────────────────────────────────────────────────────────────
