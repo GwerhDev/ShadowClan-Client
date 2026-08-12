@@ -428,6 +428,14 @@ function getClassName(value: string) {
         v-if="members.length || pendingInvitations.length || membersLoading"
         :navItems="navItems"
       >
+        <template #header>
+          <li class="header-cell">estado</li>
+          <li class="header-cell sticky-col">nombre</li>
+          <li class="header-cell">rol</li>
+          <li class="header-cell">clase</li>
+          <li class="header-cell">puntaje</li>
+        </template>
+
         <ClanMemberCard
           v-for="m in members"
           :key="m._id"

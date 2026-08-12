@@ -2,6 +2,16 @@ p {
   margin: 0;
 }
 
+// Columna "nombre": sticky solo porque se indica explícitamente (no por posición).
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background .15s;
+}
+
 span {
   width: 100%;
   gap: 1rem;
@@ -98,9 +108,13 @@ input, select {
 
   &:hover {
     background: rgba(255, 255, 255, .05);
+
+    .name-cell.sticky-col {
+      background: #1c1f28;
+    }
   }
 
-  & > span:nth-child(2) {
+  .name-cell {
     justify-content: center;
     overflow: hidden;
 
@@ -109,6 +123,10 @@ input, select {
       white-space: nowrap;
       text-overflow: ellipsis;
       max-width: 100%;
+    }
+
+    &.sticky-col {
+      background: var(--color-primary-bg, #15171e);
     }
   }
 

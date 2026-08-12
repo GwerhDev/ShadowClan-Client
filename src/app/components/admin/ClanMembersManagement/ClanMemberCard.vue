@@ -32,7 +32,7 @@ function roleLabel(r: string) {
         <span class="status" :style="styleStatus(char.memberStatus ?? 'activo')"></span>
       </div>
     </span>
-    <span><p>{{ char.name }}</p></span>
+    <span class="name-cell sticky-col"><p>{{ char.name }}</p></span>
     <span><span :class="['role-badge', role]">{{ roleLabel(role) }}</span></span>
     <span>
       <img v-if="char.currentClass && getClassImage(char.currentClass)"

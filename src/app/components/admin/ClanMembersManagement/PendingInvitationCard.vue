@@ -34,7 +34,7 @@ function getClassName(value: string) {
         <span class="status"></span>
       </div>
     </span>
-    <span><p>{{ inv.character?.name ?? '—' }}</p></span>
+    <span class="name-cell sticky-col"><p>{{ inv.character?.name ?? '—' }}</p></span>
     <span>
       <span :class="['role-badge', inv.role]">
         {{ inv.role === 'officer' ? 'Oficial' : 'Miembro' }}
@@ -81,7 +81,7 @@ span {
   border: 1px solid rgba(255, 255, 255, .07);
   align-items: center;
 
-  & > span:nth-child(2) {
+  .name-cell {
     justify-content: flex-start;
     overflow: hidden;
 
@@ -95,15 +95,23 @@ span {
 
 }
 
-// Sticky solo cuando la celda es explícitamente una columna de acción, no por posición.
-.action-col {
+// Sticky solo cuando la celda se indica explícitamente, no por posición.
+.sticky-col {
   position: sticky;
-  right: 0;
-  background: rgba(255, 255, 255, .03);
+  z-index: 1;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+.name-cell.sticky-col {
+  left: 0;
+  background: rgba(255, 255, 255, .03);
+}
+
+.action-col {
+  right: 0;
+  background: rgba(255, 255, 255, .03);
   padding-inline: .3rem;
-  z-index: 1;
 }
 
 .role-badge {
