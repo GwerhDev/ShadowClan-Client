@@ -53,17 +53,18 @@ const nextAccursedTowerDate = computed(() => formatActivityDate(store.currentUse
 
 // ── Participación en Guerra Sombría ──
 type ParticipationRange = '30' | '60' | '90' | 'cycle';
-const PARTICIPATION_RANGES: Array<{ value: ParticipationRange; label: string }> = [
-  { value: '30',    label: '30d' },
-  { value: '60',    label: '60d' },
-  { value: '90',    label: '90d' },
-  { value: 'cycle', label: 'Último ciclo' },
-];
 
 const participationRange        = ref<ParticipationRange>('30');
 const participationRangeTouched = ref(false);
 const participationData         = ref<any>(null);
 const participationLoading      = ref(true);
+
+const PARTICIPATION_RANGES = computed<Array<{ value: ParticipationRange; label: string }>>(() => [
+  { value: '30',    label: '30d' },
+  { value: '60',    label: '60d' },
+  { value: '90',    label: '90d' },
+  { value: 'cycle', label: participationData.value?.cycleIsOpen ? 'Ciclo actual' : 'Último ciclo' },
+]);
 
 async function fetchParticipation() {
   if (!activeCharacter.value?.clan) { participationData.value = null; return; }

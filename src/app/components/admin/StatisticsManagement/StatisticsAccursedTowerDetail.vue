@@ -19,12 +19,6 @@ const active      = computed(() => (chars.value as any[]).find((c: any) => c._id
 const characterId = computed(() => active.value?._id ?? (store as any).currentCharacter);
 
 type Range = '30' | '60' | '90' | 'cycle';
-const RANGES: Array<{ value: Range; label: string }> = [
-  { value: '30',    label: '30d' },
-  { value: '60',    label: '60d' },
-  { value: '90',    label: '90d' },
-  { value: 'cycle', label: 'Último ciclo' },
-];
 
 const range        = ref<Range>('30');
 const rangeTouched = ref(false);
@@ -32,6 +26,13 @@ const loading      = ref(true);
 const data         = ref<any>(null);
 
 const navItems = ['fecha', 'enemigo', 'resultado'];
+
+const RANGES = computed<Array<{ value: Range; label: string }>>(() => [
+  { value: '30',    label: '30d' },
+  { value: '60',    label: '60d' },
+  { value: '90',    label: '90d' },
+  { value: 'cycle', label: data.value?.cycleIsOpen ? 'Ciclo actual' : 'Último ciclo' },
+]);
 
 function formatDate(d: string | Date) {
   const date = new Date(d);

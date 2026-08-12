@@ -20,12 +20,6 @@ const active      = computed(() => (chars.value as any[]).find((c: any) => c._id
 const characterId = computed(() => active.value?._id ?? (store as any).currentCharacter);
 
 type Range = '30' | '60' | '90' | 'cycle';
-const RANGES: Array<{ value: Range; label: string }> = [
-  { value: '30',    label: '30d' },
-  { value: '60',    label: '60d' },
-  { value: '90',    label: '90d' },
-  { value: 'cycle', label: 'Último ciclo' },
-];
 
 const swRange = ref<Range>('30');
 const atRange = ref<Range>('30');
@@ -35,6 +29,19 @@ const swLoading = ref(true);
 const atLoading = ref(true);
 const swData = ref<any>(null);
 const atData = ref<any>(null);
+
+const SW_RANGES = computed<Array<{ value: Range; label: string }>>(() => [
+  { value: '30',    label: '30d' },
+  { value: '60',    label: '60d' },
+  { value: '90',    label: '90d' },
+  { value: 'cycle', label: swData.value?.cycleIsOpen ? 'Ciclo actual' : 'Último ciclo' },
+]);
+const AT_RANGES = computed<Array<{ value: Range; label: string }>>(() => [
+  { value: '30',    label: '30d' },
+  { value: '60',    label: '60d' },
+  { value: '90',    label: '90d' },
+  { value: 'cycle', label: atData.value?.cycleIsOpen ? 'Ciclo actual' : 'Último ciclo' },
+]);
 
 const chartColors = { victory: '#4ade80', defeat: '#f87171', draw: '#facc15' };
 
@@ -227,7 +234,7 @@ const bottomCards = computed(() => [
         </div>
         <div class="range-filters">
           <button
-            v-for="r in RANGES"
+            v-for="r in SW_RANGES"
             :key="r.value"
             class="range-btn"
             :class="{ active: swRange === r.value }"
@@ -250,7 +257,7 @@ const bottomCards = computed(() => [
         </div>
         <div class="range-filters">
           <button
-            v-for="r in RANGES"
+            v-for="r in AT_RANGES"
             :key="r.value"
             class="range-btn"
             :class="{ active: atRange === r.value }"

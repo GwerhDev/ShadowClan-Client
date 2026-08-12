@@ -65,24 +65,27 @@ const handleCardClick = (character: Character) => {
 
 // ── Asistencia: filtro 30d/60d/90d/último ciclo ─────────────────────────────
 type Range = '30' | '60' | '90' | 'cycle';
-const RANGES: Array<{ value: Range; label: string }> = [
-  { value: '30',    label: '30d' },
-  { value: '60',    label: '60d' },
-  { value: '90',    label: '90d' },
-  { value: 'cycle', label: 'Último ciclo' },
-];
 
 const attendanceRange        = ref<Range>('30');
 const attendanceRangeTouched = ref(false);
 const attendanceStats        = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
 const attendanceHasCycle     = ref(false);
+const attendanceCycleIsOpen  = ref(false);
+
+const RANGES = computed<Array<{ value: Range; label: string }>>(() => [
+  { value: '30',    label: '30d' },
+  { value: '60',    label: '60d' },
+  { value: '90',    label: '90d' },
+  { value: 'cycle', label: attendanceCycleIsOpen.value ? 'Ciclo actual' : 'Último ciclo' },
+]);
 
 async function fetchAttendanceStats() {
   if (!props.characterId) return;
   try {
     const res = await getClanMembersAttendanceSummary(props.characterId, attendanceRange.value);
-    attendanceStats.value    = res?.data ?? {};
-    attendanceHasCycle.value = !!res?.hasCycle;
+    attendanceStats.value       = res?.data ?? {};
+    attendanceHasCycle.value    = !!res?.hasCycle;
+    attendanceCycleIsOpen.value = !!res?.cycleIsOpen;
     if (!attendanceRangeTouched.value && attendanceHasCycle.value && attendanceRange.value !== 'cycle') {
       attendanceRange.value = 'cycle';
     }
