@@ -49,14 +49,12 @@ function getClassName(value: string) {
       />
       <span v-else class="no-class">—</span>
     </span>
-    <span><p>{{ inv.character?.resonance ?? '—' }}</p></span>
-    <span>
-      <div class="buttons-container">
-        <button class="icon-button icon-button--danger" :disabled="cancelling" @click="handleCancel" title="Cancelar invitación">
-          <i v-if="cancelling" class="fas fa-spinner fa-spin"></i>
-          <i v-else class="fas fa-ban"></i>
-        </button>
-      </div>
+    <span class="score-cell">
+      <p>{{ inv.character?.resonance ?? '—' }}</p>
+      <button class="icon-button icon-button--danger" :disabled="cancelling" @click="handleCancel" title="Cancelar invitación">
+        <i v-if="cancelling" class="fas fa-spinner fa-spin"></i>
+        <i v-else class="fas fa-ban"></i>
+      </button>
     </span>
   </div>
 </template>
@@ -77,7 +75,7 @@ span {
   display: grid;
   padding-top: .5rem;
   padding-bottom: .5rem;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border-radius: 8px;
   background: rgba(255, 255, 255, .03);
   border: 1px solid rgba(255, 255, 255, .07);
@@ -120,6 +118,16 @@ span {
 }
 
 .no-class { color: rgba(255, 255, 255, .3); }
+
+.score-cell {
+  gap: .5rem;
+
+  .icon-button {
+    width: 26px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+}
 
 .buttons-container {
   display: flex;

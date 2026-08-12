@@ -47,7 +47,7 @@ let   scrollObserver: IntersectionObserver | null = null;
 let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 
-const navItems = ['estado', 'nombre', 'rol', 'clase', 'puntaje', 'acciones'];
+const navItems = ['estado', 'nombre', 'rol', 'clase', 'puntaje'];
 
 const isLeader = computed(() => {
   if (!clan.value) return false;
@@ -433,10 +433,6 @@ function getClassName(value: string) {
           :key="m._id"
           :char="m"
           :role="m.role"
-          :clanId="clanId"
-          :isLeader="isLeader"
-          :isOfficer="isOfficer"
-          @refresh="loadClan"
           @open-profile="selectedMember = $event"
         />
         <PendingInvitationCard
@@ -452,7 +448,7 @@ function getClassName(value: string) {
           :key="'sk' + n"
           class="member-skeleton-row"
         >
-          <span v-for="c in 6" :key="c" class="skeleton-box skeleton-cell"></span>
+          <span v-for="c in 5" :key="c" class="skeleton-box skeleton-cell"></span>
         </div>
       </TableComponent>
 
@@ -463,10 +459,10 @@ function getClassName(value: string) {
 
     <div v-else-if="loading" class="skeleton-table-container">
       <div class="skeleton-table-header">
-        <div v-for="n in 6" :key="n" class="skeleton-box skeleton-header-item"></div>
+        <div v-for="n in 5" :key="n" class="skeleton-box skeleton-header-item"></div>
       </div>
       <div class="skeleton-table-row" v-for="n in 5" :key="n">
-        <div v-for="i in 6" :key="i" class="skeleton-box skeleton-cell"></div>
+        <div v-for="i in 5" :key="i" class="skeleton-box skeleton-cell"></div>
       </div>
     </div>
 
