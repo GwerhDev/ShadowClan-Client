@@ -112,15 +112,6 @@ input, select {
     }
   }
 
-  & > span:last-child {
-    position: sticky;
-    right: 0;
-    background: rgba(255, 255, 255, .03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 1;
-  }
-
   &.red-bg {
     background: rgba(123, 41, 23, .35);
     border-color: rgba(229, 115, 115, .25);

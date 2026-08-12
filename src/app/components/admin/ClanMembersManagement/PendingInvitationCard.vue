@@ -49,7 +49,7 @@ function getClassName(value: string) {
       />
       <span v-else class="no-class">—</span>
     </span>
-    <span class="score-cell">
+    <span class="score-cell action-col">
       <p>{{ inv.character?.resonance ?? '—' }}</p>
       <button class="icon-button icon-button--danger" :disabled="cancelling" @click="handleCancel" title="Cancelar invitación">
         <i v-if="cancelling" class="fas fa-spinner fa-spin"></i>
@@ -93,15 +93,17 @@ span {
     }
   }
 
-  & > span:last-child {
-    position: sticky;
-    right: 0;
-    background: rgba(255, 255, 255, .03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding-inline: .3rem;
-    z-index: 1;
-  }
+}
+
+// Sticky solo cuando la celda es explícitamente una columna de acción, no por posición.
+.action-col {
+  position: sticky;
+  right: 0;
+  background: rgba(255, 255, 255, .03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding-inline: .3rem;
+  z-index: 1;
 }
 
 .role-badge {
