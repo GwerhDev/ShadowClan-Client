@@ -480,6 +480,10 @@ function getClassName(value: string) {
     v-if="selectedMember"
     :member="selectedMember"
     :attendance-pct="attendanceStats[selectedMember._id]?.percentage ?? null"
+    :clan-id="clanId"
+    :is-leader="isLeader"
+    :is-officer="isOfficer"
+    @refresh="loadClan"
     @close="selectedMember = null"
   />
 
