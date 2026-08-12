@@ -105,7 +105,7 @@ span {
 
 .name-cell.sticky-col {
   left: 0;
-  background: rgba(255, 255, 255, .03);
+  background: transparent;
 }
 
 .action-col {
