@@ -7,9 +7,11 @@ export const getShadowWarByDate: any = async (date: string, characterId?: string
   return response;
 };
 
-export const getAttendanceWeek: any = async (date: string, characterId?: string) => {
-  const response: any = await axios.get(API_URL + "/clan-management/attendance/week", { params: { date, characterId }, withCredentials: true })
-    .then(response => response.data)
+export const getAttendanceWeek: any = async (date: string, characterId?: string, opts?: { page?: number; limit?: number; q?: string }) => {
+  const response: any = await axios.get(API_URL + "/clan-management/attendance/week", {
+    params: { date, characterId, ...opts },
+    withCredentials: true,
+  }).then(response => response.data)
   return response;
 };
 

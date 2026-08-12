@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
 import ClassImage from '../../common/ClassImage.vue';
-import EmptyState from '../../common/EmptyState.vue';
 import CharacterProfileModal from './CharacterProfileModal.vue';
 import { getAttendanceWeek, setMemberAttendance, createShadowWarManagement, getClanMembersAttendanceSummary } from '../../../../middlewares/services';
 
@@ -29,8 +28,8 @@ function formatShort(dateStr: string) {
 }
 
 const refDate     = ref(todayStr());
-const loading     = ref(true);
-const week        = ref<any>(null);
+const loading     = ref(true);       // skeleton de página completa: montaje inicial y cambio de semana
+const week        = ref<any>(null);  // { weekStart, days }
 const savingKeys  = ref<Set<string>>(new Set());
 const creatingDay = ref<string | null>(null);
 const searchQuery = ref('');
@@ -39,12 +38,15 @@ const activityType = ref<'shadow_war' | 'accursed_tower'>('shadow_war');
 const selectedMember  = ref<any>(null);
 const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
 
-const filteredMembers = computed(() => {
-  const members = week.value?.members ?? [];
-  const q = searchQuery.value.trim().toLowerCase();
-  if (!q) return members;
-  return members.filter((m: any) => (m.name ?? '').toLowerCase().includes(q));
-});
+// ── Miembros paginados (infinite scroll) ──
+const members        = ref<any[]>([]);
+const membersPage    = ref(1);
+const membersHasMore = ref(false);
+const membersLoading = ref(false);
+const membersTotal   = ref(0);
+const sentinel        = ref<HTMLElement | null>(null);
+let   scrollObserver: IntersectionObserver | null = null;
+let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 const weekRangeLabel = computed(() => {
   if (!week.value?.weekStart) return '';
@@ -57,10 +59,30 @@ const weekRangeLabel = computed(() => {
 
 function cellKey(memberId: string, dayKey: string) { return `${memberId}:${dayKey}`; }
 
+async function loadWeek(reset: boolean) {
+  if (membersLoading.value) return;
+  if (reset) { membersPage.value = 1; members.value = []; membersHasMore.value = false; }
+  membersLoading.value = true;
+  try {
+    const res = await getAttendanceWeek(refDate.value, characterId.value, {
+      page:  membersPage.value,
+      limit: 20,
+      q:     searchQuery.value || undefined,
+    });
+    week.value = { weekStart: res.weekStart, days: res.days };
+    members.value       = reset ? res.members : [...members.value, ...res.members];
+    membersTotal.value  = res.total;
+    membersHasMore.value = res.hasMore;
+    if (res.hasMore) membersPage.value++;
+  } finally {
+    membersLoading.value = false;
+  }
+}
+
 async function fetchWeek() {
   loading.value = true;
   try {
-    week.value = await getAttendanceWeek(refDate.value, characterId.value);
+    await loadWeek(true);
   } finally {
     loading.value = false;
   }
@@ -102,9 +124,29 @@ async function createWar(day: any) {
   }
 }
 
+function setupObserver() {
+  scrollObserver?.disconnect();
+  if (!sentinel.value) return;
+  scrollObserver = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && membersHasMore.value && !membersLoading.value) {
+      loadWeek(false);
+    }
+  }, { threshold: 0.1 });
+  scrollObserver.observe(sentinel.value);
+}
+
 onMounted(() => {
   fetchWeek();
   fetchAttendanceStats();
+});
+
+onUnmounted(() => scrollObserver?.disconnect());
+
+watch(sentinel, (el) => { if (el) setupObserver(); });
+
+watch(searchQuery, () => {
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => loadWeek(true), 500);
 });
 </script>
 
@@ -113,7 +155,7 @@ onMounted(() => {
     <div class="attendance-toolbar">
       <div class="search-wrap">
         <i class="fas fa-magnifying-glass search-icon"></i>
-        <input v-model="searchQuery" class="search-input" placeholder="Buscar miembro..." :disabled="loading || !week" />
+        <input v-model="searchQuery" class="search-input" placeholder="Buscar miembro..." :disabled="loading" />
         <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
           <i class="fas fa-xmark"></i>
         </button>
@@ -137,9 +179,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <EmptyState v-if="loading" icon="fas fa-spinner fa-spin" message="Cargando semana..." :compact="true" />
-
-    <template v-else-if="week">
+    <div v-if="!loading">
       <TableComponent :navItems="navItems" :grid-template="gridTemplate">
         <template #header>
           <li class="header-cell sticky-col">miembro</li>
@@ -157,34 +197,48 @@ onMounted(() => {
           </li>
         </template>
 
-        <div v-for="member in filteredMembers" :key="member._id" class="attendance-row">
+        <div v-for="member in members" :key="member._id" class="attendance-row">
           <span class="member-cell sticky-col" @click="openProfile(member)">
             <ClassImage :current-class="member.currentClass" :size="28" />
             <p>{{ member.name }}</p>
             <i class="fas fa-circle-info member-info-icon" title="Ver detalle"></i>
           </span>
           <span v-for="day in week.days" :key="day.key">
+            <i
+              v-if="day.shadowWar && savingKeys.has(cellKey(member._id, day.key))"
+              class="fas fa-spinner fa-spin attendance-spinner"
+            ></i>
             <input
-              v-if="day.shadowWar"
+              v-else-if="day.shadowWar"
               type="checkbox"
               :checked="member.attendance[day.key] === true"
-              :disabled="savingKeys.has(cellKey(member._id, day.key))"
               @change="toggle(member, day)"
             />
             <span v-else class="no-war">—</span>
           </span>
         </div>
 
-        <div v-if="!week.members.length" class="table-empty-row">
-          <i class="fas fa-users-slash"></i>
-          <span>El clan no tiene miembros.</span>
+        <div v-if="membersLoading" v-for="n in 4" :key="'sk' + n" class="attendance-row-skeleton">
+          <span v-for="c in 3" :key="c" class="skeleton-box skeleton-cell"></span>
         </div>
-        <div v-else-if="!filteredMembers.length" class="table-empty-row">
-          <i class="fas fa-magnifying-glass"></i>
-          <span>Sin resultados para "{{ searchQuery }}".</span>
+
+        <div v-if="!members.length && !membersLoading" class="table-empty-row">
+          <i class="fas fa-users-slash"></i>
+          <span>{{ searchQuery ? `Sin resultados para "${searchQuery}".` : 'El clan no tiene miembros.' }}</span>
         </div>
       </TableComponent>
-    </template>
+
+      <div ref="sentinel" class="sentinel"></div>
+    </div>
+
+    <div v-else class="skeleton-table-container">
+      <div class="skeleton-table-header">
+        <div v-for="n in 3" :key="n" class="skeleton-box skeleton-header-item"></div>
+      </div>
+      <div class="skeleton-table-row" v-for="n in 6" :key="n">
+        <div v-for="i in 3" :key="i" class="skeleton-box skeleton-cell"></div>
+      </div>
+    </div>
   </div>
 
   <CharacterProfileModal

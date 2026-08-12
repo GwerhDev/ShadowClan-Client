@@ -251,3 +251,74 @@
   padding: 2rem 0;
   color: rgba(255, 255, 255, .3);
 }
+
+.attendance-spinner {
+  font-size: .85rem;
+  color: rgba(227, 210, 168, .75);
+}
+
+.sentinel { height: 1px; }
+
+// ── Skeleton: carga inicial / cambio de semana (reemplaza toda la tabla) ────
+.skeleton-table-container {
+  width: 100%;
+  padding-top: .3rem;
+  padding-bottom: .3rem;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.skeleton-table-header,
+.skeleton-table-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: .5rem 1rem;
+  border-radius: 8px;
+}
+
+.skeleton-table-header {
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .07);
+}
+
+.skeleton-table-row {
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .07);
+}
+
+// ── Skeleton: paginación (append en el fondo de filas ya cargadas) ──────────
+.attendance-row-skeleton {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) repeat(2, minmax(170px, 1fr));
+  align-items: center;
+  gap: .75rem;
+  padding: .6rem 1rem;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 8px;
+}
+
+.skeleton-header-item {
+  height: 14px;
+  border-radius: 4px;
+}
+
+.skeleton-cell {
+  height: 20px;
+  border-radius: 4px;
+}
+
+.skeleton-box {
+  background: rgba(255, 255, 255, .08);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 0.9; }
+  100% { opacity: 0.4; }
+}
