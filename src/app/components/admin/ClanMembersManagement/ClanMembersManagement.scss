@@ -160,6 +160,31 @@
   color: rgba(255, 255, 255, .45);
 }
 
+.hint-attendance {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .55rem .75rem;
+  background: rgba(227, 210, 168, .05);
+  border: 1px solid rgba(227, 210, 168, .15);
+  border-radius: 7px;
+
+  &__icon {
+    font-size: .8rem;
+    color: rgba(227, 210, 168, .5);
+    flex-shrink: 0;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: .78rem;
+    line-height: 1.5;
+    color: rgba(227, 210, 168, .5);
+    strong { color: rgba(227, 210, 168, .75); }
+    em { font-style: normal; font-weight: 600; color: rgba(227, 210, 168, .65); }
+  }
+}
+
 .modal-error {
   margin: 0;
   font-size: .82rem;

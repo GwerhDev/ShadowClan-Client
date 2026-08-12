@@ -466,6 +466,12 @@ function getClassName(value: string) {
         El archivo reemplaza los <strong>miembros</strong> del clan. Los personajes del archivo son creados o actualizados; los que no aparezcan son eliminados del clan.<br />
         Columnas: <strong>Jugador, Resonancia, Armadura, Penetracion, Potencia, Resistencia, Clase, Whatsapp</strong>.
       </p>
+      <div class="hint-attendance">
+        <i class="fas fa-calendar-check hint-attendance__icon"></i>
+        <p class="hint-attendance__text">
+          <strong>Nuevo:</strong> columnas de fecha (<em>28may</em>, <em>4jun</em>…) con valor <strong>1</strong> registran asistencia a la Guerra de Sombras de ese día.
+        </p>
+      </div>
       <div class="field-group">
         <label class="field-label">Archivo (.csv o .xlsx)</label>
         <input type="file" accept=".csv,.xlsx" class="sync-file-input" @change="onSyncFileChange" :disabled="syncLoading" />
