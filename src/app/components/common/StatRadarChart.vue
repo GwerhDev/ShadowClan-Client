@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+const STAT_MAX = 10000;
+
 const props = defineProps<{
   armor:            number;
   armorPenetration: number;
   power:            number;
   resistance:       number;
-  maxArmor:            number;
-  maxArmorPenetration: number;
-  maxPower:            number;
-  maxResistance:       number;
   size?: number;
 }>();
 
@@ -18,19 +16,18 @@ const CX = computed(() => S.value / 2);
 const CY = computed(() => S.value / 2);
 const R  = computed(() => S.value * 0.37);
 
-function norm(v: number, max: number): number {
-  if (!max) return 0;
-  return Math.min(1, Math.max(0, v / max));
+function norm(v: number): number {
+  return Math.min(1, Math.max(0, v / STAT_MAX));
 }
 
 // Axes: top = ARM, right = RES, bottom = PEN, left = POT
 const pts = computed(() => {
   const cx = CX.value, cy = CY.value, r = R.value;
   return [
-    { x: cx,                              y: cy - r * norm(props.armor,            props.maxArmor)            }, // TOP  — ARM
-    { x: cx + r * norm(props.resistance,  props.maxResistance),  y: cy            }, // RIGHT — RES
-    { x: cx,                              y: cy + r * norm(props.armorPenetration, props.maxArmorPenetration) }, // BOT  — PEN
-    { x: cx - r * norm(props.power,       props.maxPower),       y: cy            }, // LEFT  — POT
+    { x: cx,                           y: cy - r * norm(props.armor)            }, // TOP  — ARM
+    { x: cx + r * norm(props.resistance),  y: cy                                }, // RIGHT — RES
+    { x: cx,                           y: cy + r * norm(props.armorPenetration) }, // BOT  — PEN
+    { x: cx - r * norm(props.power),       y: cy                                }, // LEFT  — POT
   ];
 });
 

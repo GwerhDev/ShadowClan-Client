@@ -6,9 +6,8 @@ import StatRadarChart from '../../common/StatRadarChart.vue';
 import { classes } from '../../../../middlewares/misc/const';
 
 const props = defineProps<{
-  member:       any;
+  member:        any;
   attendancePct: number | null;
-  statMaxes:    Record<string, number>;
 }>();
 
 defineEmits<{ close: [] }>();
@@ -75,10 +74,6 @@ const hasStats = computed(() =>
             :armor-penetration="member.armorPenetration ?? 0"
             :power="member.power ?? 0"
             :resistance="member.resistance ?? 0"
-            :max-armor="statMaxes.armor ?? 1"
-            :max-armor-penetration="statMaxes.armorPenetration ?? 1"
-            :max-power="statMaxes.power ?? 1"
-            :max-resistance="statMaxes.resistance ?? 1"
             :size="160"
           />
         </div>

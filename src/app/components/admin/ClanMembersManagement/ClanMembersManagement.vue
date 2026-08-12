@@ -89,13 +89,6 @@ watch(searchQuery, () => {
 const selectedMember  = ref<any>(null);
 const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
 
-const statMaxes = computed(() => ({
-  armor:            Math.max(1, ...members.value.map((m: any) => m.armor ?? 0)),
-  armorPenetration: Math.max(1, ...members.value.map((m: any) => m.armorPenetration ?? 0)),
-  power:            Math.max(1, ...members.value.map((m: any) => m.power ?? 0)),
-  resistance:       Math.max(1, ...members.value.map((m: any) => m.resistance ?? 0)),
-}));
-
 function fetchAttendanceStats() {
   if (!active.value?._id) return;
   getClanMembersAttendanceSummary(active.value._id, 30)
@@ -487,7 +480,6 @@ function getClassName(value: string) {
     v-if="selectedMember"
     :member="selectedMember"
     :attendance-pct="attendanceStats[selectedMember._id]?.percentage ?? null"
-    :stat-maxes="statMaxes"
     @close="selectedMember = null"
   />
 

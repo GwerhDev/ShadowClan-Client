@@ -37,16 +37,6 @@ const activityType = ref<'shadow_war' | 'accursed_tower'>('shadow_war');
 const selectedMember  = ref<any>(null);
 const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
 
-const statMaxes = computed(() => {
-  const members = week.value?.members ?? [];
-  return {
-    armor:            Math.max(1, ...members.map((m: any) => m.armor ?? 0)),
-    armorPenetration: Math.max(1, ...members.map((m: any) => m.armorPenetration ?? 0)),
-    power:            Math.max(1, ...members.map((m: any) => m.power ?? 0)),
-    resistance:       Math.max(1, ...members.map((m: any) => m.resistance ?? 0)),
-  };
-});
-
 const filteredMembers = computed(() => {
   const members = week.value?.members ?? [];
   const q = searchQuery.value.trim().toLowerCase();
@@ -198,7 +188,6 @@ onMounted(() => {
     v-if="selectedMember"
     :member="selectedMember"
     :attendance-pct="attendanceStats[selectedMember._id]?.percentage ?? null"
-    :stat-maxes="statMaxes"
     @close="selectedMember = null"
   />
 </template>
