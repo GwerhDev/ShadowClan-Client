@@ -37,6 +37,35 @@
   .cycle-count { font-size: .75rem; color: rgba(255, 255, 255, .4); }
 }
 
+.view-tabs {
+  display: flex;
+  gap: .5rem;
+}
+
+.view-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  height: 32px;
+  padding: 0 .9rem;
+  font-family: 'Cinzel', serif;
+  font-size: .75rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .5);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+
+  &:hover { border-color: rgba(255, 255, 255, .3); color: rgba(255, 255, 255, .85); }
+
+  &.active {
+    background: rgba(227, 210, 168, .12);
+    border-color: rgba(227, 210, 168, .55);
+    color: rgb(227, 210, 168);
+  }
+}
+
 .chart-wrapper {
   position: relative;
   width: 100%;

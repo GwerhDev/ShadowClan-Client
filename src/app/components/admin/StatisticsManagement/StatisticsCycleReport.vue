@@ -29,6 +29,7 @@ const report  = ref<any>(null);
 const error   = ref('');
 
 const navItems = ['miembro', 'rol', 'asistió', 'total guerras', '%'];
+const activeView = ref<'chart' | 'list'>('chart');
 
 function roleLabel(r: string) { return r === 'leader' ? 'Líder' : r === 'officer' ? 'Oficial' : 'Miembro'; }
 function formatDate(d: string | Date) {
@@ -111,11 +112,20 @@ onMounted(fetchReport);
       />
 
       <template v-else>
-        <div class="chart-wrapper" :style="{ height: chartHeight }">
+        <div class="view-tabs">
+          <button class="view-tab" :class="{ active: activeView === 'chart' }" @click="activeView = 'chart'">
+            <i class="fas fa-chart-bar"></i> Gráfico
+          </button>
+          <button class="view-tab" :class="{ active: activeView === 'list' }" @click="activeView = 'list'">
+            <i class="fas fa-list"></i> Lista
+          </button>
+        </div>
+
+        <div v-show="activeView === 'chart'" class="chart-wrapper" :style="{ height: chartHeight }">
           <Bar :data="chartData" :options="chartOptions" />
         </div>
 
-        <TableComponent :navItems="navItems">
+        <TableComponent v-show="activeView === 'list'" :navItems="navItems">
           <div v-for="member in report.members" :key="member._id" class="report-row">
             <span class="member-name">{{ member.name }}</span>
             <span><span :class="['role-badge', member.role]">{{ roleLabel(member.role) }}</span></span>

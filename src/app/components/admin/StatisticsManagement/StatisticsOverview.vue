@@ -201,13 +201,13 @@ const topCards = computed(() => [
     hint: formatDate(nextAccursedTower.value?.date) ?? '',
     to: '/management/accursed-tower',
   },
+  { key: 'cycles', icon: 'fas fa-calendar-days', label: 'Ciclos', value: cyclesTotal.value ?? '—', hint: 'ciclos definidos', to: { name: 'ManagementOverviewCycles' } },
 ]);
 
 // Cards que son hijas de Estadísticas (Overview) van abajo de los gráficos.
 const bottomCards = computed(() => [
-  { key: 'shadow-wars',    icon: 'fas fa-khanda',        label: 'Guerra Sombría', value: `${winRate(swData.value)}%`, hint: resultBreakdown(swData.value), to: { name: 'ManagementOverviewShadowWars' } },
-  { key: 'accursed-tower', icon: 'fas fa-chess-rook',    label: 'Torre Maldita',  value: `${winRate(atData.value)}%`, hint: resultBreakdown(atData.value), to: { name: 'ManagementOverviewAccursedTower' } },
-  { key: 'cycles',         icon: 'fas fa-calendar-days', label: 'Ciclos',         value: cyclesTotal.value ?? '—',    hint: 'ciclos definidos', to: { name: 'ManagementOverviewCycles' } },
+  { key: 'shadow-wars',    icon: 'fas fa-khanda',     label: 'Guerra Sombría', value: `${winRate(swData.value)}%`, hint: resultBreakdown(swData.value), to: { name: 'ManagementOverviewShadowWars' } },
+  { key: 'accursed-tower', icon: 'fas fa-chess-rook', label: 'Torre Maldita',  value: `${winRate(atData.value)}%`, hint: resultBreakdown(atData.value), to: { name: 'ManagementOverviewAccursedTower' } },
 ]);
 </script>
 
