@@ -21,7 +21,6 @@ import {
   bulkImportMembers,
   syncClanMembers,
   getClanMembersPage,
-  getClanMembersAttendanceSummary,
 } from '../../../../middlewares/services';
 import { getCharacterByName } from '../../../../middlewares/services/characterService';
 
@@ -66,7 +65,6 @@ const isOfficer = computed(() => {
 
 onMounted(() => {
   loadClan();
-  fetchAttendanceStats();
   scrollObserver = new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting && membersHasMore.value && !membersLoading.value) {
       loadMembers(false);
@@ -86,15 +84,7 @@ watch(searchQuery, () => {
 });
 
 // ── Character profile modal ──
-const selectedMember  = ref<any>(null);
-const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
-
-function fetchAttendanceStats() {
-  if (!active.value?._id) return;
-  getClanMembersAttendanceSummary(active.value._id, 30)
-    .then((data: any) => { attendanceStats.value = data; })
-    .catch(() => {});
-}
+const selectedMember = ref<any>(null);
 
 const pendingInvitations = ref<any[]>([]);
 
@@ -483,7 +473,6 @@ function getClassName(value: string) {
   <CharacterProfileModal
     v-if="selectedMember"
     :member="selectedMember"
-    :attendance-pct="attendanceStats[selectedMember._id]?.percentage ?? null"
     :clan-id="clanId"
     :is-leader="isLeader"
     :is-officer="isOfficer"

@@ -243,6 +243,7 @@ export {
   getAttendanceCycleReport,
   getMyAttendance,
   getClanMembersAttendanceSummary,
+  getMemberAttendanceSummary,
 } from './attendanceService';
 export { getStatisticsOverview, getOverviewSummary } from './statisticsService';
 

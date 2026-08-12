@@ -3,18 +3,64 @@ import { computed, ref, watch } from 'vue';
 import CustomModal from '../../Modals/CustomModal.vue';
 import ClassImage  from '../../common/ClassImage.vue';
 import StatRadarChart from '../../common/StatRadarChart.vue';
+import { useStore } from '../../../../middlewares/store';
 import { classes } from '../../../../middlewares/misc/const';
-import { updateClanMember, updateMemberRole, removeClanMember } from '../../../../middlewares/services';
+import { updateClanMember, updateMemberRole, removeClanMember, getMemberAttendanceSummary } from '../../../../middlewares/services';
 
 const props = defineProps<{
-  member:        any;
-  attendancePct: number | null;
-  clanId?:       string;
-  isLeader?:     boolean;
-  isOfficer?:    boolean;
+  member:    any;
+  clanId?:   string;
+  isLeader?: boolean;
+  isOfficer?: boolean;
 }>();
 
 const emit = defineEmits<{ close: []; refresh: [] }>();
+
+const store: any = useStore();
+const chars       = computed(() => store.currentUser.userData?.character ?? []);
+const active      = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
+const characterId = computed(() => active.value?._id ?? store.currentCharacter);
+
+// ── Participación (asistencia) con filtro 30d/60d/90d/último ciclo ──────────
+type ParticipationRange = '30' | '60' | '90' | 'cycle';
+const PARTICIPATION_RANGES: Array<{ value: ParticipationRange; label: string }> = [
+  { value: '30',    label: '30d' },
+  { value: '60',    label: '60d' },
+  { value: '90',    label: '90d' },
+  { value: 'cycle', label: 'Último ciclo' },
+];
+
+const participationRange        = ref<ParticipationRange>('30');
+const participationRangeTouched = ref(false);
+const participationData         = ref<any>(null);
+const participationLoading      = ref(true);
+
+async function fetchParticipation() {
+  if (!props.member?._id) return;
+  participationLoading.value = true;
+  try {
+    participationData.value = await getMemberAttendanceSummary(characterId.value, props.member._id, participationRange.value);
+    if (!participationRangeTouched.value && participationData.value?.hasCycle && participationRange.value !== 'cycle') {
+      participationRange.value = 'cycle';
+    }
+  } catch {
+    participationData.value = null;
+  } finally {
+    participationLoading.value = false;
+  }
+}
+
+function selectParticipationRange(r: ParticipationRange) {
+  if (r === 'cycle' && !participationData.value?.hasCycle) return;
+  participationRangeTouched.value = true;
+  participationRange.value = r;
+}
+
+watch(participationRange, fetchParticipation);
+watch(() => props.member?._id, () => {
+  participationRangeTouched.value = false;
+  fetchParticipation();
+}, { immediate: true });
 
 // ── Editar / eliminar (mismas acciones que el listado de miembros) ──────────
 const canManage = computed(() => !!props.clanId && (props.isLeader || props.isOfficer));
@@ -152,12 +198,6 @@ const hasStats = computed(() =>
           </div>
         </div>
 
-        <!-- Attendance block -->
-        <div v-if="attendancePct !== null" class="cp-attendance">
-          <span class="cp-attendance__label">Asistencia<br/>último mes</span>
-          <span class="cp-attendance__value" :style="{ color: pctColor(attendancePct) }">{{ attendancePct }}%</span>
-        </div>
-
         <!-- Acciones: editar/eliminar, o guardar/cancelar mientras se edita -->
         <div v-if="canManage && !deleteActive" class="cp-actions">
           <template v-if="!editionActive">
@@ -169,6 +209,35 @@ const hasStats = computed(() =>
               <i v-if="saving" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-check"></i>
             </button>
             <button class="icon-button" :disabled="saving" @click="cancelAction" title="Cancelar"><i class="fas fa-times"></i></button>
+          </template>
+        </div>
+      </div>
+
+      <!-- Participación: filtro 30d/60d/90d/último ciclo -->
+      <div class="cp-participation">
+        <div class="cp-participation__top">
+          <span class="cp-participation__label">Asistencia</span>
+          <div class="range-filters">
+            <button
+              v-for="r in PARTICIPATION_RANGES"
+              :key="r.value"
+              class="range-btn"
+              :class="{ active: participationRange === r.value }"
+              :disabled="r.value === 'cycle' && !participationData?.hasCycle"
+              :title="r.value === 'cycle' && !participationData?.hasCycle ? 'El clan no tiene ciclos de Guerra Sombría definidos' : ''"
+              @click="selectParticipationRange(r.value)"
+            >{{ r.label }}</button>
+          </div>
+        </div>
+        <div class="cp-participation__body">
+          <span v-if="participationLoading" class="cp-participation__value cp-participation__value--loading">…</span>
+          <template v-else>
+            <span class="cp-participation__value" :style="{ color: pctColor(participationData?.percentage ?? 0) }">
+              {{ participationData?.percentage ?? 0 }}%
+            </span>
+            <span class="cp-participation__detail">
+              {{ participationData?.attended ?? 0 }}/{{ participationData?.totalActivities ?? 0 }} Guerras Sombrías
+            </span>
           </template>
         </div>
       </div>
@@ -280,29 +349,6 @@ const hasStats = computed(() =>
   }
 }
 
-.cp-attendance {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .15rem;
-  flex-shrink: 0;
-
-  &__label {
-    font-size: .62rem;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: rgba(255, 255, 255, .3);
-    text-align: center;
-    line-height: 1.3;
-  }
-
-  &__value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-}
-
 // ── Acciones: editar / eliminar ─────────────────────────────────────────────
 .cp-actions {
   display: flex;
@@ -372,6 +418,81 @@ const hasStats = computed(() =>
     font-size: .88rem;
     color: rgba(255, 255, 255, .7);
   }
+}
+
+// ── Participación (asistencia) ───────────────────────────────────────────────
+.cp-participation {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: .75rem .9rem;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 8px;
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+
+  &__label {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: rgba(255, 255, 255, .35);
+    flex-shrink: 0;
+  }
+
+  &__body {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+  }
+
+  &__value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1;
+
+    &--loading { color: rgba(255, 255, 255, .3); font-size: 1rem; }
+  }
+
+  &__detail {
+    font-size: .72rem;
+    color: rgba(255, 255, 255, .4);
+  }
+}
+
+.range-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+
+.range-btn {
+  height: 24px;
+  padding: 0 .55rem;
+  font-family: 'Cinzel', serif;
+  font-size: .62rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .5);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+
+  &:hover:not(:disabled) { border-color: rgba(255, 255, 255, .3); color: rgba(255, 255, 255, .85); }
+
+  &.active {
+    background: rgba(227, 210, 168, .12);
+    border-color: rgba(227, 210, 168, .55);
+    color: rgb(227, 210, 168);
+  }
+
+  &:disabled { opacity: .35; cursor: not-allowed; }
 }
 
 // ── Body (radar + stat list) ─────────────────────────────────────────────────

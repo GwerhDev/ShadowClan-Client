@@ -4,7 +4,7 @@ import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
 import ClassImage from '../../common/ClassImage.vue';
 import CharacterProfileModal from './CharacterProfileModal.vue';
-import { getAttendanceWeek, setMemberAttendance, createShadowWarManagement, getClanMembersAttendanceSummary } from '../../../../middlewares/services';
+import { getAttendanceWeek, setMemberAttendance, createShadowWarManagement } from '../../../../middlewares/services';
 
 const store: any = useStore();
 
@@ -35,8 +35,7 @@ const creatingDay = ref<string | null>(null);
 const searchQuery = ref('');
 const activityType = ref<'shadow_war' | 'accursed_tower'>('shadow_war');
 
-const selectedMember  = ref<any>(null);
-const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
+const selectedMember = ref<any>(null);
 
 // ── Miembros paginados (infinite scroll) ──
 const members        = ref<any[]>([]);
@@ -88,12 +87,6 @@ async function fetchWeek() {
   }
 }
 
-function fetchAttendanceStats() {
-  getClanMembersAttendanceSummary(characterId.value, 30)
-    .then((data: any) => { attendanceStats.value = data; })
-    .catch(() => {});
-}
-
 function openProfile(member: any) {
   selectedMember.value = member;
 }
@@ -137,7 +130,6 @@ function setupObserver() {
 
 onMounted(() => {
   fetchWeek();
-  fetchAttendanceStats();
 });
 
 onUnmounted(() => scrollObserver?.disconnect());
@@ -244,7 +236,6 @@ watch(searchQuery, () => {
   <CharacterProfileModal
     v-if="selectedMember"
     :member="selectedMember"
-    :attendance-pct="attendanceStats[selectedMember._id]?.percentage ?? null"
     @close="selectedMember = null"
   />
 </template>

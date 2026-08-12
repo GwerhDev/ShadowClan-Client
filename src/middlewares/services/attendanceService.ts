@@ -29,6 +29,14 @@ export const getClanMembersAttendanceSummary: any = async (characterId: string, 
   return response as Record<string, { percentage: number; attended: number; totalActivities: number }>;
 };
 
+export const getMemberAttendanceSummary: any = async (characterId: string, targetId: string, range: '30' | '60' | '90' | 'cycle' = '30') => {
+  const response: any = await axios.get(API_URL + `/clan-management/attendance/member/${targetId}/summary`, {
+    params: { characterId, range },
+    withCredentials: true,
+  }).then(r => r.data);
+  return response;
+};
+
 export const setMemberAttendance: any = async (shadowWarId: string, memberId: string, attended: boolean, characterId?: string) => {
   const response: any = await axios.patch(
     API_URL + `/clan-management/attendance/shadow-war/${shadowWarId}/members/${memberId}`,
