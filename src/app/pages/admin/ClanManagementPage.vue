@@ -19,7 +19,7 @@ const pageTitle = computed(() => {
 });
 
 const tabs = [
-  { id: 'overview',       name: 'Resumen',  icon: 'fas fa-house',      path: '/management/overview' },
+  { id: 'overview',       name: 'Resumen',  icon: 'fas fa-chart-pie',  path: '/management/overview' },
   { id: 'clan',           name: 'Clan',     icon: 'fas fa-users',      path: '/management/clan' },
   { id: 'shadow-war',     name: 'Guerra',   icon: 'fas fa-khanda',     path: '/management/shadow-war' },
   { id: 'accursed-tower', name: 'Torre',    icon: 'fas fa-chess-rook', path: '/management/accursed-tower' },
