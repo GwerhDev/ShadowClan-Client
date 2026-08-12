@@ -58,7 +58,7 @@ const navItems = ['actividad', 'inicio', 'fin', 'acciones'];
 
 function formatDate(d: string | Date) {
   const date = new Date(d);
-  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 function activityLabel(t: ActivityType) { return t === 'accursed_tower' ? 'Torre Maldita' : 'Guerra Sombría'; }
