@@ -21,12 +21,12 @@ export const getShadowWarAttendance: any = async (shadowWarId: string, character
   return response;
 };
 
-export const getClanMembersAttendanceSummary: any = async (characterId: string, range = 30) => {
+export const getClanMembersAttendanceSummary: any = async (characterId: string, range: '30' | '60' | '90' | 'cycle' = '30') => {
   const response: any = await axios.get(API_URL + '/clan-management/attendance/members-summary', {
     params: { characterId, range },
     withCredentials: true,
   }).then(r => r.data);
-  return response as Record<string, { percentage: number; attended: number; totalActivities: number }>;
+  return response as { hasCycle: boolean; data: Record<string, { percentage: number; attended: number; totalActivities: number }> };
 };
 
 export const getMemberAttendanceSummary: any = async (characterId: string, targetId: string, range: '30' | '60' | '90' | 'cycle' = '30') => {
