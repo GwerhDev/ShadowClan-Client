@@ -86,6 +86,9 @@ span {
     overflow: hidden;
 
     p {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--color-app-white, #fff);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;

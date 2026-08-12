@@ -7,13 +7,15 @@ span {
 }
 
 .date-text {
-  font-size: 0.82rem;
-  opacity: 0.8;
+  font-size: .78rem;
+  color: rgba(255, 255, 255, .5);
   white-space: nowrap;
 }
 
 .enemy-text {
-  font-weight: 500;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--color-app-white, #fff);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -26,9 +28,9 @@ span {
   align-items: center;
   padding: .2rem .7rem;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: .72rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: .04em;
   white-space: nowrap;
 
   &.result-victory {

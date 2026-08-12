@@ -111,7 +111,7 @@
 // El slot #header queda "poseído" por StatisticsManagement (no por TableComponent), así que las
 // reglas scoped de nav li en TableComponent.scss no aplican acá — hay que redeclarar padding/centrado.
 .th-cell {
-  padding: .45rem .3rem;
+  padding: .45rem .5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,7 +168,10 @@
   display: inline-flex;
   align-items: center;
   gap: .35rem;
-  font-size: .7rem;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
   color: rgba(255, 255, 255, .6);
 
   i { color: rgb(227, 210, 168); }
@@ -195,9 +198,11 @@
 .status-badge--open {
   display: inline-flex;
   align-items: center;
-  padding: .15rem .55rem;
+  padding: .2rem .7rem;
   border-radius: 999px;
-  font-size: .68rem;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
   background: rgba(129, 199, 132, .12);
   border: 1px solid rgba(129, 199, 132, .4);
   color: #81c784;

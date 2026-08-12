@@ -127,7 +127,7 @@
 // El slot #header queda "poseído" por AttendanceRegister (no por TableComponent), así que las
 // reglas scoped de nav li en TableComponent.scss no aplican acá — hay que redeclarar padding/centrado.
 .header-cell {
-  padding: .2rem .5rem;
+  padding: .45rem .5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,6 +204,9 @@
 
     p {
       margin: 0;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--color-app-white, #fff);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;

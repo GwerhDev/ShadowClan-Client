@@ -29,7 +29,11 @@
 
 // Celdas del header slotted (replican el estilo de TableComponent nav li)
 .th-cell {
-  padding: .45rem .3rem;
+  padding: .45rem .5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   font-size: .72rem;
   font-weight: 600;
   letter-spacing: .06em;

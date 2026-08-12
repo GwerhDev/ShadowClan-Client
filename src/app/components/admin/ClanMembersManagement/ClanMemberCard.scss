@@ -115,6 +115,9 @@ input, select {
     overflow: hidden;
 
     p {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--color-app-white, #fff);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -192,11 +195,11 @@ input, select {
 }
 
 .attendance-pill {
-  font-size: .62rem;
-  font-weight: 700;
+  font-size: .72rem;
+  font-weight: 600;
   letter-spacing: .04em;
-  padding: .05rem .4rem;
-  border-radius: 3px;
+  padding: .2rem .7rem;
+  border-radius: 999px;
   white-space: nowrap;
 
   &--high { background: rgba(74, 222, 128, .12); color: #4ade80; border: 1px solid rgba(74, 222, 128, .25); }

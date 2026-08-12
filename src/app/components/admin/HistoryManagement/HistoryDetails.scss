@@ -419,11 +419,11 @@
 .result-chip {
   display: inline-flex;
   align-items: center;
-  padding: .2rem .75rem;
+  padding: .2rem .7rem;
   border-radius: 999px;
   font-size: .72rem;
   font-weight: 600;
-  letter-spacing: .03em;
+  letter-spacing: .04em;
   white-space: nowrap;
   width: fit-content;
 
@@ -764,7 +764,7 @@
 }
 
 .attendance-member-name {
-  font-size: .88rem;
+  font-size: .85rem;
   font-weight: 600;
   color: var(--color-app-white);
   white-space: nowrap;
@@ -773,8 +773,8 @@
 }
 
 .attendance-member-meta {
-  font-size: .7rem;
-  color: rgba(255, 255, 255, .35);
+  font-size: .78rem;
+  color: rgba(255, 255, 255, .5);
 }
 
 .attendance-actions {

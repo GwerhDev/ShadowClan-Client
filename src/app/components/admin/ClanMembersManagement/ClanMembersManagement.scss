@@ -402,8 +402,9 @@
 }
 
 .inv-role-badge {
-  font-size: .63rem;
-  letter-spacing: .1em;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .05em;
   text-transform: uppercase;
   padding: .15rem .5rem;
   border-radius: 4px;
@@ -643,12 +644,12 @@
 .import-reason { font-size: .72rem; color: rgba(255, 255, 255, .35); flex: 1; text-align: right; }
 
 .import-badge {
-  font-size: .65rem;
-  letter-spacing: .08em;
+  font-size: .68rem;
+  letter-spacing: .05em;
   text-transform: uppercase;
-  padding: .1rem .45rem;
+  padding: .15rem .5rem;
   border-radius: 4px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 
   .import-row--created &  { background: rgba(102, 187, 106, .12); color: #66bb6a; border: 1px solid rgba(102, 187, 106, .3); }

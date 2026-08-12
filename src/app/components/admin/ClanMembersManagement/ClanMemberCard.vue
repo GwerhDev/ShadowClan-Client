@@ -58,7 +58,7 @@ function roleLabel(r: string) {
 }
 
 .score-text {
-  font-size: .82rem;
-  color: rgba(255, 255, 255, .7);
+  font-size: .78rem;
+  color: rgba(255, 255, 255, .5);
 }
 </style>

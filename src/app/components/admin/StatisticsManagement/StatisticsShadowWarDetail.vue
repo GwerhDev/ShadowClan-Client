@@ -120,8 +120,8 @@ onMounted(fetchData);
 
       <TableComponent v-else :navItems="navItems">
         <div v-for="match in data.matches" :key="match._id" class="detail-row">
-          <span>{{ formatDate(match.date) }}</span>
-          <span>{{ match.enemyClan?.name || '—' }}</span>
+          <span class="detail-date">{{ formatDate(match.date) }}</span>
+          <span class="detail-enemy">{{ match.enemyClan?.name || '—' }}</span>
           <span><span :class="['result-chip', `result-${match.result}`]">{{ translateResult(match.result) }}</span></span>
         </div>
       </TableComponent>
