@@ -218,6 +218,12 @@
   font-family: inherit;
 }
 
+.cycle-date {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--color-app-white, #fff);
+}
+
 .cycle-row .finish-error {
   grid-column: 1 / -1;
   padding: .2rem .5rem 0;

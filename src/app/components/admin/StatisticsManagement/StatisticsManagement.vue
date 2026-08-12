@@ -214,10 +214,10 @@ onMounted(fetchCycles);
               <i :class="activityIcon(cycle.activityType)"></i> {{ activityLabel(cycle.activityType) }}
             </span>
           </span>
-          <span>{{ formatDate(cycle.startDate) }}</span>
+          <span class="cycle-date">{{ formatDate(cycle.startDate) }}</span>
           <span @click.stop>
             <input v-if="finishingId === cycle._id" type="date" v-model="finishDate" class="finish-date-input" />
-            <span v-else-if="cycle.endDate">{{ formatDate(cycle.endDate) }}</span>
+            <span v-else-if="cycle.endDate" class="cycle-date">{{ formatDate(cycle.endDate) }}</span>
             <span v-else class="status-badge status-badge--open">En curso</span>
           </span>
           <span @click.stop>
