@@ -4,6 +4,7 @@ import { computed } from 'vue';
 
 const props = defineProps<{
   navItems: string[];
+  actionsColumn?: boolean;
 }>();
 
 const gridColumns = computed(() => {
@@ -16,7 +17,11 @@ const gridColumns = computed(() => {
     <div class="table-container">
       <nav :style="gridColumns">
         <slot name="header">
-          <li v-for="(item, index) in navItems" :key="index">{{ item }}</li>
+          <li
+            v-for="(item, index) in navItems"
+            :key="index"
+            :class="{ 'nav-action-cell': actionsColumn && index === navItems.length - 1 }"
+          >{{ item }}</li>
         </slot>
       </nav>
       <slot></slot>
