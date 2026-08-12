@@ -4,7 +4,8 @@ import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
 import ClassImage from '../../common/ClassImage.vue';
 import EmptyState from '../../common/EmptyState.vue';
-import { getAttendanceWeek, setMemberAttendance, createShadowWarManagement } from '../../../../middlewares/services';
+import CharacterProfileModal from './CharacterProfileModal.vue';
+import { getAttendanceWeek, setMemberAttendance, createShadowWarManagement, getClanMembersAttendanceSummary } from '../../../../middlewares/services';
 
 const store: any = useStore();
 
@@ -33,6 +34,19 @@ const creatingDay = ref<string | null>(null);
 const searchQuery = ref('');
 const activityType = ref<'shadow_war' | 'accursed_tower'>('shadow_war');
 
+const selectedMember  = ref<any>(null);
+const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
+
+const statMaxes = computed(() => {
+  const members = week.value?.members ?? [];
+  return {
+    armor:            Math.max(1, ...members.map((m: any) => m.armor ?? 0)),
+    armorPenetration: Math.max(1, ...members.map((m: any) => m.armorPenetration ?? 0)),
+    power:            Math.max(1, ...members.map((m: any) => m.power ?? 0)),
+    resistance:       Math.max(1, ...members.map((m: any) => m.resistance ?? 0)),
+  };
+});
+
 const filteredMembers = computed(() => {
   const members = week.value?.members ?? [];
   const q = searchQuery.value.trim().toLowerCase();
@@ -58,6 +72,16 @@ async function fetchWeek() {
   } finally {
     loading.value = false;
   }
+}
+
+function fetchAttendanceStats() {
+  getClanMembersAttendanceSummary(characterId.value, 30)
+    .then(data => { attendanceStats.value = data; })
+    .catch(() => {});
+}
+
+function openProfile(member: any) {
+  selectedMember.value = member;
 }
 
 function prevWeek() { refDate.value = shiftDate(refDate.value, -7); fetchWeek(); }
@@ -86,7 +110,10 @@ async function createWar(day: any) {
   }
 }
 
-onMounted(fetchWeek);
+onMounted(() => {
+  fetchWeek();
+  fetchAttendanceStats();
+});
 </script>
 
 <template>
@@ -139,7 +166,7 @@ onMounted(fetchWeek);
         </template>
 
         <div v-for="member in filteredMembers" :key="member._id" class="attendance-row">
-          <span class="member-cell">
+          <span class="member-cell" @click="openProfile(member)">
             <ClassImage :current-class="member.currentClass" :size="28" />
             <p>{{ member.name }}</p>
           </span>
@@ -166,6 +193,14 @@ onMounted(fetchWeek);
       </TableComponent>
     </template>
   </div>
+
+  <CharacterProfileModal
+    v-if="selectedMember"
+    :member="selectedMember"
+    :attendance-pct="attendanceStats[selectedMember._id]?.percentage ?? null"
+    :stat-maxes="statMaxes"
+    @close="selectedMember = null"
+  />
 </template>
 
 <style scoped lang="scss" src="./AttendanceRegister.scss" />

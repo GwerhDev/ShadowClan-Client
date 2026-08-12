@@ -177,6 +177,11 @@
 
   .member-cell {
     justify-content: flex-start;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background .15s;
+
+    &:hover { background: rgba(255, 255, 255, .05); }
 
     p { margin: 0; }
   }
