@@ -60,15 +60,19 @@ const PARTICIPATION_RANGES: Array<{ value: ParticipationRange; label: string }> 
   { value: 'cycle', label: 'Último ciclo' },
 ];
 
-const participationRange   = ref<ParticipationRange>('30');
-const participationData    = ref<any>(null);
-const participationLoading = ref(true);
+const participationRange        = ref<ParticipationRange>('30');
+const participationRangeTouched = ref(false);
+const participationData         = ref<any>(null);
+const participationLoading      = ref(true);
 
 async function fetchParticipation() {
   if (!activeCharacter.value?.clan) { participationData.value = null; return; }
   participationLoading.value = true;
   try {
     participationData.value = await getMyAttendance(activeCharacter.value._id, participationRange.value);
+    if (!participationRangeTouched.value && participationData.value?.hasCycle && participationRange.value !== 'cycle') {
+      participationRange.value = 'cycle';
+    }
   } catch {
     participationData.value = null;
   } finally {
@@ -78,6 +82,7 @@ async function fetchParticipation() {
 
 function selectParticipationRange(r: ParticipationRange) {
   if (r === 'cycle' && !participationData.value?.hasCycle) return;
+  participationRangeTouched.value = true;
   participationRange.value = r;
 }
 
@@ -103,7 +108,10 @@ const participationChartOptions = {
 };
 
 watch(participationRange, fetchParticipation);
-watch(() => activeCharacter.value?._id, fetchParticipation);
+watch(() => activeCharacter.value?._id, () => {
+  participationRangeTouched.value = false;
+  fetchParticipation();
+});
 
 onMounted(() => {
   store.handleGetActiveTowerWar();

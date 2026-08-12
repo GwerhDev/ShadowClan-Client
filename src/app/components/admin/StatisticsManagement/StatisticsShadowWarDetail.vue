@@ -26,9 +26,10 @@ const RANGES: Array<{ value: Range; label: string }> = [
   { value: 'cycle', label: 'Último ciclo' },
 ];
 
-const range   = ref<Range>('30');
-const loading = ref(true);
-const data    = ref<any>(null);
+const range        = ref<Range>('30');
+const rangeTouched = ref(false);
+const loading      = ref(true);
+const data         = ref<any>(null);
 
 const navItems = ['fecha', 'enemigo', 'resultado'];
 
@@ -62,6 +63,9 @@ async function fetchData() {
   loading.value = true;
   try {
     data.value = await getStatisticsOverview(range.value, characterId.value, 'shadow_war', true);
+    if (!rangeTouched.value && data.value?.hasCycle && range.value !== 'cycle') {
+      range.value = 'cycle';
+    }
   } finally {
     loading.value = false;
   }
@@ -69,6 +73,7 @@ async function fetchData() {
 
 function selectRange(r: Range) {
   if (r === 'cycle' && !data.value?.hasCycle && range.value !== 'cycle') return;
+  rangeTouched.value = true;
   range.value = r;
 }
 

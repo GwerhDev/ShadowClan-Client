@@ -29,6 +29,8 @@ const RANGES: Array<{ value: Range; label: string }> = [
 
 const swRange = ref<Range>('30');
 const atRange = ref<Range>('30');
+const swRangeTouched = ref(false);
+const atRangeTouched = ref(false);
 const swLoading = ref(true);
 const atLoading = ref(true);
 const swData = ref<any>(null);
@@ -128,6 +130,9 @@ async function fetchShadowWar() {
   swLoading.value = true;
   try {
     swData.value = await getStatisticsOverview(swRange.value, characterId.value, 'shadow_war');
+    if (!swRangeTouched.value && swData.value?.hasCycle && swRange.value !== 'cycle') {
+      swRange.value = 'cycle';
+    }
   } finally {
     swLoading.value = false;
   }
@@ -137,6 +142,9 @@ async function fetchAccursedTower() {
   atLoading.value = true;
   try {
     atData.value = await getStatisticsOverview(atRange.value, characterId.value, 'accursed_tower');
+    if (!atRangeTouched.value && atData.value?.hasCycle && atRange.value !== 'cycle') {
+      atRange.value = 'cycle';
+    }
   } finally {
     atLoading.value = false;
   }
@@ -144,10 +152,12 @@ async function fetchAccursedTower() {
 
 function selectSwRange(r: Range) {
   if (r === 'cycle' && !swData.value?.hasCycle) return;
+  swRangeTouched.value = true;
   swRange.value = r;
 }
 function selectAtRange(r: Range) {
   if (r === 'cycle' && !atData.value?.hasCycle) return;
+  atRangeTouched.value = true;
   atRange.value = r;
 }
 

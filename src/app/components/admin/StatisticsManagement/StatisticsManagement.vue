@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
 import EmptyState from '../../common/EmptyState.vue';
-import { getAttendanceCycles, createAttendanceCycle, deleteAttendanceCycle } from '../../../../middlewares/services';
+import { getAttendanceCycles, createAttendanceCycle, updateAttendanceCycle, deleteAttendanceCycle } from '../../../../middlewares/services';
 
 type ActivityType = 'shadow_war' | 'accursed_tower';
 type ActivityFilter = 'all' | ActivityType;
@@ -25,6 +25,29 @@ const deletingId = ref<string | null>(null);
 const filter   = ref<ActivityFilter>('all');
 
 const form = ref({ name: '', startDate: '', endDate: '', activityType: 'shadow_war' as ActivityType });
+
+const MIN_CYCLE_WEEKS = 4;
+const MAX_CYCLE_WEEKS = 7;
+const MIN_CYCLE_DAYS  = MIN_CYCLE_WEEKS * 7; // 28
+const MAX_CYCLE_DAYS  = MAX_CYCLE_WEEKS * 7; // 49
+
+const durationError = computed(() => {
+  if (!form.value.startDate || !form.value.endDate) return null; // ciclo abierto: sin restricción
+  const start = new Date(form.value.startDate + 'T00:00:00Z').getTime();
+  const end   = new Date(form.value.endDate   + 'T00:00:00Z').getTime();
+  const days  = Math.round((end - start) / 86400000) + 1;
+  if (days < 1) return 'La fecha de fin no puede ser anterior al inicio.';
+  if (days < MIN_CYCLE_DAYS || days > MAX_CYCLE_DAYS) {
+    return `La duración debe ser de entre ${MIN_CYCLE_WEEKS} y ${MAX_CYCLE_WEEKS} semanas (actual: ${days} días).`;
+  }
+  return null;
+});
+
+// ── Finalizar ciclo (setear endDate en uno abierto) ──
+const finishingId = ref<string | null>(null);
+const finishDate  = ref('');
+const finishing   = ref(false);
+const finishError = ref<string | null>(null);
 
 const navItems = ['actividad', 'nombre', 'inicio', 'fin', 'acciones'];
 
@@ -49,10 +72,16 @@ async function fetchCycles() {
 watch(filter, fetchCycles);
 
 async function handleCreate() {
-  if (!form.value.name.trim() || !form.value.startDate || !form.value.endDate) return;
+  if (!form.value.name.trim() || !form.value.startDate || durationError.value) return;
   saving.value = true;
   try {
-    await createAttendanceCycle({ ...form.value, name: form.value.name.trim() }, characterId.value);
+    const payload = {
+      name: form.value.name.trim(),
+      startDate: form.value.startDate,
+      activityType: form.value.activityType,
+      ...(form.value.endDate ? { endDate: form.value.endDate } : {}),
+    };
+    await createAttendanceCycle(payload, characterId.value);
     form.value    = { name: '', startDate: '', endDate: '', activityType: 'shadow_war' };
     showForm.value = false;
     await fetchCycles();
@@ -68,6 +97,32 @@ async function handleDelete(cycleId: string) {
     cycles.value = cycles.value.filter(c => c._id !== cycleId);
   } finally {
     deletingId.value = null;
+  }
+}
+
+function startFinish(cycle: any) {
+  finishingId.value = cycle._id;
+  finishDate.value  = new Date().toISOString().slice(0, 10);
+  finishError.value = null;
+}
+function cancelFinish() {
+  finishingId.value = null;
+  finishDate.value  = '';
+  finishError.value = null;
+}
+async function confirmFinish(cycle: any) {
+  if (!finishDate.value) return;
+  finishing.value   = true;
+  finishError.value = null;
+  try {
+    const updated = await updateAttendanceCycle(cycle._id, { endDate: finishDate.value }, characterId.value);
+    const idx = cycles.value.findIndex(c => c._id === cycle._id);
+    if (idx !== -1) cycles.value[idx] = updated;
+    cancelFinish();
+  } catch (e: any) {
+    finishError.value = e?.response?.data?.message ?? 'No se pudo finalizar el ciclo.';
+  } finally {
+    finishing.value = false;
   }
 }
 
@@ -98,7 +153,7 @@ onMounted(fetchCycles);
           <label>Actividad</label>
           <select v-model="form.activityType">
             <option value="shadow_war">Guerra Sombría</option>
-            <option value="accursed_tower">Torre Maldita</option>
+            <option value="accursed_tower" disabled>Torre Maldita</option>
           </select>
         </div>
         <div class="cycle-form-field">
@@ -110,10 +165,11 @@ onMounted(fetchCycles);
           <input type="date" v-model="form.startDate" />
         </div>
         <div class="cycle-form-field">
-          <label>Fin</label>
+          <label>Fin (opcional — vacío si el ciclo sigue activo)</label>
           <input type="date" v-model="form.endDate" />
         </div>
-        <button class="btn-save-cycle" :disabled="saving" @click="handleCreate">
+        <span v-if="durationError" class="cycle-form-error">{{ durationError }}</span>
+        <button class="btn-save-cycle" :disabled="saving || !!durationError" @click="handleCreate">
           <i class="fas fa-check"></i> Crear
         </button>
       </div>
@@ -149,12 +205,31 @@ onMounted(fetchCycles);
           </span>
           <span class="cycle-name">{{ cycle.name }}</span>
           <span>{{ formatDate(cycle.startDate) }}</span>
-          <span>{{ formatDate(cycle.endDate) }}</span>
           <span @click.stop>
-            <button class="icon-button icon-button--danger" :disabled="deletingId === cycle._id" @click="handleDelete(cycle._id)" title="Eliminar">
-              <i class="fas fa-trash"></i>
-            </button>
+            <input v-if="finishingId === cycle._id" type="date" v-model="finishDate" class="finish-date-input" />
+            <span v-else-if="cycle.endDate">{{ formatDate(cycle.endDate) }}</span>
+            <span v-else class="status-badge status-badge--open">En curso</span>
           </span>
+          <span @click.stop>
+            <template v-if="finishingId === cycle._id">
+              <button class="icon-button icon-button--confirm" :disabled="finishing || !finishDate" @click="confirmFinish(cycle)" title="Confirmar">
+                <i v-if="finishing" class="fas fa-spinner fa-spin"></i>
+                <i v-else class="fas fa-check"></i>
+              </button>
+              <button class="icon-button" :disabled="finishing" @click="cancelFinish" title="Cancelar">
+                <i class="fas fa-xmark"></i>
+              </button>
+            </template>
+            <template v-else>
+              <button v-if="!cycle.endDate" class="icon-button" @click="startFinish(cycle)" title="Finalizar ciclo">
+                <i class="fas fa-flag-checkered"></i>
+              </button>
+              <button class="icon-button icon-button--danger" :disabled="deletingId === cycle._id" @click="handleDelete(cycle._id)" title="Eliminar">
+                <i class="fas fa-trash"></i>
+              </button>
+            </template>
+          </span>
+          <span v-if="finishError && finishingId === cycle._id" class="finish-error">{{ finishError }}</span>
         </div>
         <div v-if="!cycles.length" class="table-empty-row">
           <i class="fas fa-calendar-xmark"></i>
