@@ -24,7 +24,7 @@ const saving   = ref(false);
 const deletingId = ref<string | null>(null);
 const filter   = ref<ActivityFilter>('all');
 
-const form = ref({ name: '', startDate: '', endDate: '', activityType: 'shadow_war' as ActivityType });
+const form = ref({ startDate: '', endDate: '', activityType: 'shadow_war' as ActivityType });
 
 const MIN_CYCLE_WEEKS = 4;
 const MAX_CYCLE_WEEKS = 7;
@@ -49,7 +49,7 @@ const finishDate  = ref('');
 const finishing   = ref(false);
 const finishError = ref<string | null>(null);
 
-const navItems = ['actividad', 'nombre', 'inicio', 'fin', 'acciones'];
+const navItems = ['actividad', 'inicio', 'fin', 'acciones'];
 
 function formatDate(d: string | Date) {
   const date = new Date(d);
@@ -72,17 +72,16 @@ async function fetchCycles() {
 watch(filter, fetchCycles);
 
 async function handleCreate() {
-  if (!form.value.name.trim() || !form.value.startDate || durationError.value) return;
+  if (!form.value.startDate || durationError.value) return;
   saving.value = true;
   try {
     const payload = {
-      name: form.value.name.trim(),
       startDate: form.value.startDate,
       activityType: form.value.activityType,
       ...(form.value.endDate ? { endDate: form.value.endDate } : {}),
     };
     await createAttendanceCycle(payload, characterId.value);
-    form.value    = { name: '', startDate: '', endDate: '', activityType: 'shadow_war' };
+    form.value    = { startDate: '', endDate: '', activityType: 'shadow_war' };
     showForm.value = false;
     await fetchCycles();
   } finally {
@@ -157,10 +156,6 @@ onMounted(fetchCycles);
           </select>
         </div>
         <div class="cycle-form-field">
-          <label>Nombre</label>
-          <input type="text" v-model="form.name" placeholder="Ej. Ciclo Agosto 2026" />
-        </div>
-        <div class="cycle-form-field">
           <label>Inicio</label>
           <input type="date" v-model="form.startDate" />
         </div>
@@ -185,7 +180,6 @@ onMounted(fetchCycles);
               <option value="accursed_tower">Torre Maldita</option>
             </select>
           </li>
-          <li class="th-cell">nombre</li>
           <li class="th-cell">inicio</li>
           <li class="th-cell">fin</li>
           <li class="th-cell">acciones</li>
@@ -203,7 +197,6 @@ onMounted(fetchCycles);
               <i :class="activityIcon(cycle.activityType)"></i> {{ activityLabel(cycle.activityType) }}
             </span>
           </span>
-          <span class="cycle-name">{{ cycle.name }}</span>
           <span>{{ formatDate(cycle.startDate) }}</span>
           <span @click.stop>
             <input v-if="finishingId === cycle._id" type="date" v-model="finishDate" class="finish-date-input" />

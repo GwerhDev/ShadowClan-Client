@@ -142,7 +142,7 @@
 .cycle-row {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   padding: .5rem;
   border-radius: 8px;
   background: rgba(255, 255, 255, .02);
@@ -158,8 +158,6 @@
     justify-content: center;
     gap: .35rem;
   }
-
-  .cycle-name { justify-content: flex-start; font-weight: 600; }
 }
 
 .activity-badge {

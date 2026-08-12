@@ -99,8 +99,7 @@ onMounted(fetchReport);
 
     <template v-else-if="report">
       <div class="cycle-report-header">
-        <h3>{{ report.cycle.name }}</h3>
-        <span class="cycle-range">{{ formatDate(report.cycle.startDate) }} — {{ formatDate(report.cycle.endDate) }}</span>
+        <h3>{{ formatDate(report.cycle.startDate) }} — {{ report.cycle.endDate ? formatDate(report.cycle.endDate) : 'En curso' }}</h3>
         <span class="cycle-count">{{ report.shadowWars.length }} Guerra(s) Sombría(s) en el rango</span>
       </div>
 

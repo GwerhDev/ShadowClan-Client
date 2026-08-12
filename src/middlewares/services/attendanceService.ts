@@ -44,7 +44,7 @@ export const getAttendanceCycles: any = async (page?: number, characterId?: stri
   return response;
 };
 
-export const createAttendanceCycle: any = async (data: { name: string; startDate: string; endDate?: string; activityType: 'shadow_war' | 'accursed_tower' }, characterId?: string) => {
+export const createAttendanceCycle: any = async (data: { startDate: string; endDate?: string; activityType: 'shadow_war' | 'accursed_tower' }, characterId?: string) => {
   const response: any = await axios.post(
     API_URL + "/clan-management/attendance/cycles",
     { ...data, characterId },
@@ -53,7 +53,7 @@ export const createAttendanceCycle: any = async (data: { name: string; startDate
   return response;
 };
 
-export const updateAttendanceCycle: any = async (cycleId: string, data: { name?: string; startDate?: string; endDate?: string; activityType?: 'shadow_war' | 'accursed_tower' }, characterId?: string) => {
+export const updateAttendanceCycle: any = async (cycleId: string, data: { startDate?: string; endDate?: string; activityType?: 'shadow_war' | 'accursed_tower' }, characterId?: string) => {
   const response: any = await axios.patch(
     API_URL + `/clan-management/attendance/cycles/${cycleId}`,
     { ...data, characterId },
