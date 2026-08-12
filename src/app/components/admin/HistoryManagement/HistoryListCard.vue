@@ -8,7 +8,7 @@ const props = defineProps<{ war: any }>();
 const router = useRouter();
 
 const formatDate = (dateString: string) => {
-  const options: any = { day: '2-digit', month: '2-digit', year: 'numeric' };
+  const options: any = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('es-ES', options);
 };
 
