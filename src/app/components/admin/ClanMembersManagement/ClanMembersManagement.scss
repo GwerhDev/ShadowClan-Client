@@ -532,6 +532,41 @@
   }
 }
 
+.sync-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.sync-progress-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, .07);
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    left: -40%;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(227, 210, 168, .7), transparent);
+    animation: sync-shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+.sync-progress-label {
+  font-size: .72rem;
+  color: rgba(255, 255, 255, .3);
+  text-align: center;
+}
+
+@keyframes sync-shimmer {
+  0%   { left: -40%; }
+  100% { left: 100%; }
+}
+
 .import-results {
   display: flex;
   flex-direction: column;

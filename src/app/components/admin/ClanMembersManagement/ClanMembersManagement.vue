@@ -472,9 +472,13 @@ function getClassName(value: string) {
       </div>
       <div class="step-actions">
         <button :disabled="syncLoading || !syncFile" @click="handleSync">
-          <i class="fas fa-rotate"></i>
+          <i :class="['fas', 'fa-rotate', { 'fa-spin': syncLoading }]"></i>
           {{ syncLoading ? 'Sincronizando...' : 'Sincronizar' }}
         </button>
+      </div>
+      <div v-if="syncLoading" class="sync-progress-wrap">
+        <div class="sync-progress-bar" />
+        <span class="sync-progress-label">Procesando archivo, puede tomar unos segundos…</span>
       </div>
       <p v-if="syncError" class="modal-error">{{ syncError }}</p>
       <template v-if="syncDone">
