@@ -66,7 +66,7 @@ async function fetchWeek() {
 
 function fetchAttendanceStats() {
   getClanMembersAttendanceSummary(characterId.value, 30)
-    .then(data => { attendanceStats.value = data; })
+    .then((data: any) => { attendanceStats.value = data; })
     .catch(() => {});
 }
 
