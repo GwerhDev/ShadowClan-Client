@@ -25,6 +25,11 @@ const deletingId = ref<string | null>(null);
 const filter   = ref<ActivityFilter>('all');
 
 const form = ref({ startDate: '', endDate: '', activityType: 'shadow_war' as ActivityType });
+const cycleStatus = ref<'vigente' | 'finalizado'>('vigente');
+
+watch(cycleStatus, (status) => {
+  if (status === 'vigente') form.value.endDate = '';
+});
 
 const MIN_CYCLE_WEEKS = 4;
 const MAX_CYCLE_WEEKS = 7;
@@ -72,7 +77,7 @@ async function fetchCycles() {
 watch(filter, fetchCycles);
 
 async function handleCreate() {
-  if (!form.value.startDate || durationError.value) return;
+  if (!form.value.startDate || (cycleStatus.value === 'finalizado' && !form.value.endDate) || durationError.value) return;
   saving.value = true;
   try {
     const payload = {
@@ -81,7 +86,8 @@ async function handleCreate() {
       ...(form.value.endDate ? { endDate: form.value.endDate } : {}),
     };
     await createAttendanceCycle(payload, characterId.value);
-    form.value    = { startDate: '', endDate: '', activityType: 'shadow_war' };
+    form.value     = { startDate: '', endDate: '', activityType: 'shadow_war' };
+    cycleStatus.value = 'vigente';
     showForm.value = false;
     await fetchCycles();
   } finally {
@@ -160,11 +166,22 @@ onMounted(fetchCycles);
           <input type="date" v-model="form.startDate" />
         </div>
         <div class="cycle-form-field">
-          <label>Fin (opcional — vacío si el ciclo sigue activo)</label>
+          <label>Estado</label>
+          <select v-model="cycleStatus">
+            <option value="vigente">Vigente</option>
+            <option value="finalizado">Finalizado</option>
+          </select>
+        </div>
+        <div v-if="cycleStatus === 'finalizado'" class="cycle-form-field">
+          <label>Fin</label>
           <input type="date" v-model="form.endDate" />
         </div>
         <span v-if="durationError" class="cycle-form-error">{{ durationError }}</span>
-        <button class="btn-save-cycle" :disabled="saving || !!durationError" @click="handleCreate">
+        <button
+          class="btn-save-cycle"
+          :disabled="saving || !!durationError || !form.startDate || (cycleStatus === 'finalizado' && !form.endDate)"
+          @click="handleCreate"
+        >
           <i class="fas fa-check"></i> Crear
         </button>
       </div>
