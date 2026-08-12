@@ -33,10 +33,6 @@ const props = defineProps({
     type: Object as PropType<Record<string, { percentage: number; attended: number; totalActivities: number }>>,
     default: () => ({})
   },
-  statMaxes: {
-    type: Object as PropType<Record<string, number>>,
-    default: () => ({})
-  },
 });
 
 const emit = defineEmits(['close', 'character-selected', 'character-unassigned']);
@@ -79,7 +75,6 @@ const handleCardClick = (character: Character) => {
           :confirmed-ids="confirmedIds"
           :assigned-ids="assignedMemberIds"
           :attendance-pct="attendanceStats[character._id]?.percentage ?? null"
-          :stat-maxes="statMaxes"
           :class="{ 'is-assigned': isAssigned(character._id) }"
           @click="handleCardClick(character)"
         />

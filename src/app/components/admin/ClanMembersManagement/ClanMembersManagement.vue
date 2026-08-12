@@ -20,7 +20,6 @@ import {
   bulkImportMembers,
   syncClanMembers,
   getClanMembersPage,
-  getClanMembersAttendanceSummary,
 } from '../../../../middlewares/services';
 import { getCharacterByName } from '../../../../middlewares/services/characterService';
 
@@ -45,16 +44,6 @@ const sentinel       = ref<HTMLElement | null>(null);
 let   scrollObserver: IntersectionObserver | null = null;
 let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
-const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
-
-const statMaxes = computed(() => {
-  const keys = ['armor', 'armorPenetration', 'power', 'resistance'] as const;
-  const result: Record<string, number> = {};
-  for (const k of keys) {
-    result[k] = Math.max(...members.value.map((m: any) => m[k] ?? 0), 1);
-  }
-  return result;
-});
 
 const navItems = ['estado', 'nombre', 'rol', 'clase', 'puntaje', 'acciones'];
 
@@ -126,12 +115,6 @@ async function loadMembers(reset: boolean) {
     membersTotal.value = res.total;
     membersHasMore.value = res.hasMore;
     if (res.hasMore) membersPage.value++;
-    // Fetch attendance summary on first page load (reset = true)
-    if (reset && active.value?._id) {
-      getClanMembersAttendanceSummary(active.value._id).then((stats: any) => {
-        attendanceStats.value = stats ?? {};
-      }).catch(() => {});
-    }
   } finally {
     membersLoading.value = false;
   }
@@ -439,8 +422,6 @@ function getClassName(value: string) {
           :clanId="clanId"
           :isLeader="isLeader"
           :isOfficer="isOfficer"
-          :attendancePct="attendanceStats[m._id]?.percentage ?? null"
-          :statMaxes="statMaxes"
           @refresh="loadClan"
         />
         <PendingInvitationCard

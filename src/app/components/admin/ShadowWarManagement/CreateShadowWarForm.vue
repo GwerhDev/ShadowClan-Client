@@ -52,14 +52,6 @@ async function handleConfirmCreate() {
 
 const clanMembers: Ref<Character[]> = ref([]);
 const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
-const statMaxes = computed(() => {
-  const keys = ['armor', 'armorPenetration', 'power', 'resistance'] as const;
-  const result: Record<string, number> = {};
-  for (const k of keys) {
-    result[k] = Math.max(...clanMembers.value.map((m: any) => (m as any)[k] ?? 0), 1);
-  }
-  return result;
-});
 const shadowWarData = computed(() => store.currentUser.shadowWarData);
 
 const chars  = computed(() => store.currentUser.userData?.character ?? []);
@@ -704,7 +696,6 @@ function onDragEnd() {
         :confirmed-ids="confirmedIds"
         :assigned-details="assignedMemberDetails"
         :attendance-stats="attendanceStats"
-        :stat-maxes="statMaxes"
         @close="showMemberSelectionModal = false"
         @character-selected="handleMemberSelected"
         @character-unassigned="handleMemberUnassigned"

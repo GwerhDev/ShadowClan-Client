@@ -4,7 +4,6 @@ import { Character } from '../../../../interfaces';
 import { classes } from '../../../../middlewares/misc/const';
 import ConfirmStatusIcon from '../../common/ConfirmStatusIcon.vue';
 import ClassImage from '../../common/ClassImage.vue';
-import StatRadarChart from '../../common/StatRadarChart.vue';
 
 const props = defineProps({
   character:          { type: Object as PropType<Character | undefined>, default: undefined },
@@ -16,7 +15,6 @@ const props = defineProps({
   confirming:         { type: Boolean, default: false },
   readonly:           { type: Boolean, default: false },
   attendancePct:      { type: Number as PropType<number | null>, default: null },
-  statMaxes:          { type: Object as PropType<Record<string, number>>, default: () => ({}) },
 });
 
 defineEmits<{
@@ -85,21 +83,7 @@ const status = computed<'confirmed' | 'declined' | 'pending' | null>(() => {
           @click="$emit('respond', 'decline')"
         ><i class="fas fa-times"></i></button>
       </div>
-      <template v-else>
-        <StatRadarChart
-          v-if="statMaxes.armor"
-          :armor="(character as any).armor ?? 0"
-          :armor-penetration="(character as any).armorPenetration ?? 0"
-          :power="(character as any).power ?? 0"
-          :resistance="(character as any).resistance ?? 0"
-          :max-armor="statMaxes.armor ?? 1"
-          :max-armor-penetration="statMaxes.armorPenetration ?? 1"
-          :max-power="statMaxes.power ?? 1"
-          :max-resistance="statMaxes.resistance ?? 1"
-          :size="64"
-        />
-        <ConfirmStatusIcon :status="status" />
-      </template>
+      <ConfirmStatusIcon v-else :status="status" />
     </div>
     <div v-else class="empty-card">
       <i :class="readonly ? 'fas fa-ban' : 'fas fa-plus'"></i>

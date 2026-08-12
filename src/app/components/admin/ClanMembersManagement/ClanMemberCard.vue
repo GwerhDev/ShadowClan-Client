@@ -4,7 +4,6 @@ import { ref, onMounted } from 'vue';
 import { classes } from '../../../../middlewares/misc/const';
 import { removeClanMember, updateMemberRole, updateClanMember } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
-import StatRadarChart from '../../common/StatRadarChart.vue';
 
 const props = defineProps<{
   char: any;
@@ -12,8 +11,6 @@ const props = defineProps<{
   clanId: string;
   isLeader: boolean;
   isOfficer: boolean;
-  attendancePct: number | null;
-  statMaxes: Record<string, number>;
 }>();
 
 const emit = defineEmits(['refresh']);
@@ -120,20 +117,10 @@ async function handleConfirmDelete() {
         :title="getClassName(char.currentClass)" width="30" />
       <span v-else class="no-class">—</span>
     </span>
-    <span class="score-cell">
+    <span>
       <button class="score-btn" @click="showStats = true" :title="'Ver atributos'">
         {{ (props.char.score ?? 0) > 0 ? (props.char.score ?? 0).toLocaleString('es') : '—' }}
       </button>
-      <span
-        v-if="attendancePct !== null"
-        class="attendance-pill"
-        :class="{
-          'attendance-pill--high':   attendancePct >= 75,
-          'attendance-pill--mid':    attendancePct >= 40 && attendancePct < 75,
-          'attendance-pill--low':    attendancePct < 40,
-        }"
-        :title="`Asistencia último mes: ${attendancePct}%`"
-      >{{ attendancePct }}%</span>
     </span>
     <span>
       <div class="buttons-container">
@@ -205,39 +192,6 @@ async function handleConfirmDelete() {
   <!-- Modal stats -->
   <CustomModal v-if="showStats" :title="char.name" @close="showStats = false">
     <div class="stats-modal">
-
-      <!-- Radar chart + attendance -->
-      <div class="stats-visual">
-        <StatRadarChart
-          :armor="char.armor ?? 0"
-          :armorPenetration="char.armorPenetration ?? 0"
-          :power="char.power ?? 0"
-          :resistance="char.resistance ?? 0"
-          :maxArmor="statMaxes.armor ?? 1"
-          :maxArmorPenetration="statMaxes.armorPenetration ?? 1"
-          :maxPower="statMaxes.power ?? 1"
-          :maxResistance="statMaxes.resistance ?? 1"
-          :size="140"
-        />
-        <div class="stats-side">
-          <div v-if="attendancePct !== null" class="attendance-block">
-            <span class="attendance-block__label">Asistencia<br/>último mes</span>
-            <span
-              class="attendance-block__value"
-              :class="{
-                'pct--high': attendancePct >= 75,
-                'pct--mid':  attendancePct >= 40,
-                'pct--low':  attendancePct < 40,
-              }"
-            >{{ attendancePct }}%</span>
-          </div>
-          <div class="resonance-block">
-            <span class="attendance-block__label">Resonancia</span>
-            <span class="attendance-block__value pct--res">{{ char.resonance?.toLocaleString('es') ?? '—' }}</span>
-          </div>
-        </div>
-      </div>
-
       <div class="stats-row" v-for="stat in [
         { label: 'Resonancia',  key: 'resonance'        },
         { label: 'Armadura',    key: 'armor'             },
