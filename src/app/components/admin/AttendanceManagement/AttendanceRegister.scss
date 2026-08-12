@@ -139,6 +139,25 @@
   gap: .5rem;
 }
 
+.day-date {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// Columna "miembro": sticky solo porque se indica explícitamente (no por ser la primera columna).
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.header-cell.sticky-col {
+  background: rgba(255, 255, 255, .05);
+  border-radius: 8px 0 0 8px;
+}
+
 .btn-create-day {
   display: inline-flex;
   align-items: center;
@@ -162,7 +181,7 @@
 .attendance-row {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: minmax(150px, 1.2fr) repeat(2, minmax(170px, 1fr));
   padding: .5rem;
   border-radius: 8px;
   background: rgba(255, 255, 255, .02);
@@ -183,7 +202,31 @@
 
     &:hover { background: rgba(255, 255, 255, .05); }
 
-    p { margin: 0; }
+    p {
+      margin: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    &.sticky-col {
+      background: var(--color-primary-bg, #15171e);
+
+      &:hover { background: #1c1f28; }
+    }
+  }
+
+  .member-info-icon {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: .72rem;
+    color: rgba(255, 255, 255, .2);
+    transition: color .15s;
+  }
+
+  .member-cell:hover .member-info-icon {
+    color: rgba(227, 210, 168, .7);
   }
 
   input[type="checkbox"] {

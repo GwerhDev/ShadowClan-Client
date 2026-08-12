@@ -14,6 +14,8 @@ const active      = computed(() => (chars.value as any[]).find((c: any) => c._id
 const characterId = computed(() => active.value?._id ?? store.currentCharacter);
 
 const navItems = ['miembro', 'jueves', 'sábado'];
+// Miembro fijo (sticky) + columnas de día lo bastante anchas para fecha + botón "Crear" sin wrap.
+const gridTemplate = 'minmax(150px, 1.2fr) repeat(2, minmax(170px, 1fr))';
 
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 function shiftDate(dateStr: string, days: number) {
@@ -138,11 +140,11 @@ onMounted(() => {
     <EmptyState v-if="loading" icon="fas fa-spinner fa-spin" message="Cargando semana..." :compact="true" />
 
     <template v-else-if="week">
-      <TableComponent :navItems="navItems">
+      <TableComponent :navItems="navItems" :grid-template="gridTemplate">
         <template #header>
-          <li class="header-cell">miembro</li>
+          <li class="header-cell sticky-col">miembro</li>
           <li v-for="day in week.days" :key="day.key" class="header-cell day-header">
-            <span>{{ day.label }} {{ formatShort(day.date) }}</span>
+            <span class="day-date">{{ day.label }} {{ formatShort(day.date) }}</span>
             <button
               v-if="!day.shadowWar"
               class="btn-create-day"
@@ -156,9 +158,10 @@ onMounted(() => {
         </template>
 
         <div v-for="member in filteredMembers" :key="member._id" class="attendance-row">
-          <span class="member-cell" @click="openProfile(member)">
+          <span class="member-cell sticky-col" @click="openProfile(member)">
             <ClassImage :current-class="member.currentClass" :size="28" />
             <p>{{ member.name }}</p>
+            <i class="fas fa-circle-info member-info-icon" title="Ver detalle"></i>
           </span>
           <span v-for="day in week.days" :key="day.key">
             <input
