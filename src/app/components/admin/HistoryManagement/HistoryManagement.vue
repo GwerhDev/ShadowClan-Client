@@ -85,7 +85,7 @@ watch(searchQuery, () => {
   searchDebounce = setTimeout(fetchHistory, 500);
 });
 
-const navItems = ['tipo', 'fecha', 'enemigo', 'resultado', 'acciones'];
+const navItems = ['tipo', 'fecha', 'enemigo', 'resultado'];
 
 // ── Add history modal ──
 const showAddModal = ref(false);
@@ -205,13 +205,12 @@ async function handleAddHistory() {
           <li class="th-cell">fecha</li>
           <li class="th-cell">enemigo</li>
           <li class="th-cell">resultado</li>
-          <li class="th-cell th-cell--last">acciones</li>
         </template>
 
         <!-- Skeleton rows only for the initial load / a fresh search — never while paginating -->
         <template v-if="loading">
-          <div class="skeleton-table-row skeleton-cols-5" v-for="n in 6" :key="'sk' + n">
-            <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
+          <div class="skeleton-table-row" v-for="n in 6" :key="'sk' + n">
+            <div class="skeleton-box skeleton-cell" v-for="c in 4" :key="c"></div>
           </div>
         </template>
 
@@ -227,8 +226,8 @@ async function handleAddHistory() {
           </li>
           <!-- "load more" indicator: appends below the already-rendered rows, doesn't replace them -->
           <template v-if="isFetching">
-            <div class="skeleton-table-row skeleton-cols-5" v-for="n in 2" :key="'more' + n">
-              <div class="skeleton-box skeleton-cell" v-for="c in 5" :key="c"></div>
+            <div class="skeleton-table-row" v-for="n in 2" :key="'more' + n">
+              <div class="skeleton-box skeleton-cell" v-for="c in 4" :key="c"></div>
             </div>
           </template>
         </template>

@@ -1,15 +1,11 @@
 <style scoped lang="scss" src="./HistoryListCard.scss"/>
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useStore } from '../../../../middlewares/store';
 import { translateResult } from '../../../../helpers/lists';
 
 const props = defineProps<{ war: any }>();
 
 const router = useRouter();
-const store: any = useStore();
-const confirmDelete = ref(false);
 
 const formatDate = (dateString: string) => {
   const options: any = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -23,18 +19,10 @@ const viewDetails = () => {
     router.push(`/management/history/shadow-war/${props.war._id}`);
   }
 };
-
-const deleteEntry = async () => {
-  if (props.war.type === 'accursed_tower') {
-    await store.handleDeleteTowerWar(props.war._id);
-  } else {
-    await store.handleDeleteShadowWarHistory(props.war._id);
-  }
-};
 </script>
 
 <template>
-  <div class="list-container">
+  <div class="list-container list-container--clickable" @click="viewDetails">
     <span>
       <span :class="['type-chip', `type-chip--${war.type}`]">
         <i :class="war.type === 'accursed_tower' ? 'fas fa-chess-rook' : 'fas fa-khanda'"></i>
@@ -49,26 +37,6 @@ const deleteEntry = async () => {
     <span>
       <span v-if="war.result" :class="['result-chip', `result-${war.result}`]">{{ translateResult(war.result) }}</span>
       <span v-else class="result-chip result-pending">—</span>
-    </span>
-    <span class="actions-col">
-      <div class="buttons-container">
-        <template v-if="confirmDelete">
-          <button class="icon-button icon-button--confirm" @click="deleteEntry" title="Confirmar eliminación">
-            <i class="fas fa-check"></i>
-          </button>
-          <button class="icon-button" @click="confirmDelete = false" title="Cancelar">
-            <i class="fas fa-times"></i>
-          </button>
-        </template>
-        <template v-else>
-          <button class="icon-button" @click="viewDetails" title="Ver detalle">
-            <i class="fas fa-eye"></i>
-          </button>
-          <button class="icon-button icon-button--danger" @click="confirmDelete = true" title="Eliminar">
-            <i class="fas fa-trash"></i>
-          </button>
-        </template>
-      </div>
     </span>
   </div>
 </template>

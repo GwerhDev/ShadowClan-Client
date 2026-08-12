@@ -35,14 +35,6 @@
   letter-spacing: .06em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, .4);
-
-  &--last {
-    position: sticky;
-    right: 0;
-    background: rgba(255, 255, 255, .05);
-    z-index: 1;
-    text-align: center;
-  }
 }
 
 // Select de filtro integrado en la cabecera de la columna "tipo"
@@ -132,10 +124,6 @@
 .skeleton-table-header {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-
-  &.skeleton-cols-5 {
-    grid-template-columns: repeat(5, 1fr);
-  }
   align-items: center;
   gap: 1rem;
   padding: .5rem 1rem;
@@ -154,10 +142,6 @@
 .skeleton-table-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-
-  &.skeleton-cols-5 {
-    grid-template-columns: repeat(5, 1fr);
-  }
   align-items: center;
   gap: 1rem;
   padding: .55rem 1rem;
