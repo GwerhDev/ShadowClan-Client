@@ -7,6 +7,7 @@ import CustomModal from '../../Modals/CustomModal.vue';
 import LabeledInput from '../../Inputs/LabeledInput.vue';
 import ClanMemberCard from './ClanMemberCard.vue';
 import PendingInvitationCard from './PendingInvitationCard.vue';
+import CharacterProfileModal from '../AttendanceManagement/CharacterProfileModal.vue';
 import { classes } from '../../../../middlewares/misc/const';
 import {
   getClanMembers,
@@ -20,6 +21,7 @@ import {
   bulkImportMembers,
   syncClanMembers,
   getClanMembersPage,
+  getClanMembersAttendanceSummary,
 } from '../../../../middlewares/services';
 import { getCharacterByName } from '../../../../middlewares/services/characterService';
 
@@ -64,6 +66,7 @@ const isOfficer = computed(() => {
 
 onMounted(() => {
   loadClan();
+  fetchAttendanceStats();
   scrollObserver = new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting && membersHasMore.value && !membersLoading.value) {
       loadMembers(false);
@@ -81,6 +84,24 @@ watch(searchQuery, () => {
   if (searchDebounce) clearTimeout(searchDebounce);
   searchDebounce = setTimeout(() => loadMembers(true), 500);
 });
+
+// ── Character profile modal ──
+const selectedMember  = ref<any>(null);
+const attendanceStats = ref<Record<string, { percentage: number; attended: number; totalActivities: number }>>({});
+
+const statMaxes = computed(() => ({
+  armor:            Math.max(1, ...members.value.map((m: any) => m.armor ?? 0)),
+  armorPenetration: Math.max(1, ...members.value.map((m: any) => m.armorPenetration ?? 0)),
+  power:            Math.max(1, ...members.value.map((m: any) => m.power ?? 0)),
+  resistance:       Math.max(1, ...members.value.map((m: any) => m.resistance ?? 0)),
+}));
+
+function fetchAttendanceStats() {
+  if (!active.value?._id) return;
+  getClanMembersAttendanceSummary(active.value._id, 30)
+    .then((data: any) => { attendanceStats.value = data; })
+    .catch(() => {});
+}
 
 const pendingInvitations = ref<any[]>([]);
 
@@ -423,6 +444,7 @@ function getClassName(value: string) {
           :isLeader="isLeader"
           :isOfficer="isOfficer"
           @refresh="loadClan"
+          @open-profile="selectedMember = $event"
         />
         <PendingInvitationCard
           v-for="inv in pendingInvitations"
@@ -459,6 +481,15 @@ function getClassName(value: string) {
     <p v-else>No hay miembros en el clan.</p>
 
   </div>
+
+  <!-- Modal: perfil de personaje -->
+  <CharacterProfileModal
+    v-if="selectedMember"
+    :member="selectedMember"
+    :attendance-pct="attendanceStats[selectedMember._id]?.percentage ?? null"
+    :stat-maxes="statMaxes"
+    @close="selectedMember = null"
+  />
 
   <!-- Modal: sincronizar desde archivo -->
   <CustomModal v-if="showSyncModal" title="Actualizar clan desde archivo" @close="showSyncModal = false">

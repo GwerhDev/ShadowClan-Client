@@ -13,7 +13,7 @@ const props = defineProps<{
   isOfficer: boolean;
 }>();
 
-const emit = defineEmits(['refresh']);
+const emit = defineEmits(['refresh', 'open-profile']);
 
 const editionActive = ref(false);
 const deleteActive  = ref(false);
@@ -109,7 +109,7 @@ async function handleConfirmDelete() {
         <span class="status" :style="styleStatus(char.memberStatus ?? 'activo')"></span>
       </div>
     </span>
-    <span><p>{{ char.name }}</p></span>
+    <span class="name-cell" @click="emit('open-profile', char)"><p>{{ char.name }}</p></span>
     <span><span :class="['role-badge', role]">{{ roleLabel(role) }}</span></span>
     <span>
       <img v-if="char.currentClass && getClassImage(char.currentClass)"
@@ -227,6 +227,14 @@ async function handleConfirmDelete() {
 </template>
 
 <style scoped lang="scss">
+.name-cell {
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background .15s;
+
+  &:hover { background: rgba(255, 255, 255, .05); }
+}
+
 .score-btn {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, .1);
