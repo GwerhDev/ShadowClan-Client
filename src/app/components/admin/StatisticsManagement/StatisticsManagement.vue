@@ -6,7 +6,7 @@ import TableComponent from '../../Tables/TableComponent.vue';
 import EmptyState from '../../common/EmptyState.vue';
 import { getAttendanceCycles, createAttendanceCycle, updateAttendanceCycle, deleteAttendanceCycle } from '../../../../middlewares/services';
 
-type ActivityType = 'shadow_war' | 'accursed_tower';
+type ActivityType = 'shadow' | 'immortal';
 type ActivityFilter = 'all' | ActivityType;
 
 const store  = useStore();
@@ -24,7 +24,7 @@ const saving   = ref(false);
 const deletingId = ref<string | null>(null);
 const filter   = ref<ActivityFilter>('all');
 
-const form = ref({ startDate: '', endDate: '', activityType: 'shadow_war' as ActivityType });
+const form = ref({ startDate: '', endDate: '', activityType: 'shadow' as ActivityType });
 const cycleStatus = ref<'vigente' | 'finalizado'>('vigente');
 
 watch(cycleStatus, (status) => {
@@ -61,8 +61,8 @@ function formatDate(d: string | Date) {
   return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-function activityLabel(t: ActivityType) { return t === 'accursed_tower' ? 'Torre Maldita' : 'Guerra Sombría'; }
-function activityIcon(t: ActivityType)  { return t === 'accursed_tower' ? 'fas fa-chess-rook' : 'fas fa-khanda'; }
+function activityLabel(t: ActivityType) { return t === 'immortal' ? 'Guerra Inmortal' : 'Guerra Sombría'; }
+function activityIcon(t: ActivityType)  { return t === 'immortal' ? 'fas fa-crown' : 'fas fa-khanda'; }
 
 async function fetchCycles() {
   loading.value = true;
@@ -86,7 +86,7 @@ async function handleCreate() {
       ...(form.value.endDate ? { endDate: form.value.endDate } : {}),
     };
     await createAttendanceCycle(payload, characterId.value);
-    form.value     = { startDate: '', endDate: '', activityType: 'shadow_war' };
+    form.value     = { startDate: '', endDate: '', activityType: 'shadow' };
     cycleStatus.value = 'vigente';
     showForm.value = false;
     await fetchCycles();
@@ -132,7 +132,7 @@ async function confirmFinish(cycle: any) {
 }
 
 function openReport(cycle: any) {
-  if (cycle.activityType !== 'shadow_war') return;
+  if (cycle.activityType !== 'shadow') return;
   router.push({ name: 'ManagementOverviewCycleReport', params: { cycle_id: cycle._id } });
 }
 
@@ -157,8 +157,8 @@ onMounted(fetchCycles);
         <div class="cycle-form-field">
           <label>Actividad</label>
           <select v-model="form.activityType">
-            <option value="shadow_war">Guerra Sombría</option>
-            <option value="accursed_tower" disabled>Torre Maldita</option>
+            <option value="shadow">Guerra Sombría</option>
+            <option value="immortal">Guerra Inmortal</option>
           </select>
         </div>
         <div class="cycle-form-field">
@@ -193,8 +193,8 @@ onMounted(fetchCycles);
           <li class="th-cell">
             <select v-model="filter" class="type-filter-select" :class="{ active: filter !== 'all' }">
               <option value="all">Todas</option>
-              <option value="shadow_war">Guerra Sombría</option>
-              <option value="accursed_tower">Torre Maldita</option>
+              <option value="shadow">Guerra Sombría</option>
+              <option value="immortal">Guerra Inmortal</option>
             </select>
           </li>
           <li class="th-cell">inicio</li>
@@ -206,7 +206,7 @@ onMounted(fetchCycles);
           v-for="cycle in cycles"
           :key="cycle._id"
           class="cycle-row"
-          :class="{ 'cycle-row--no-report': cycle.activityType !== 'shadow_war' }"
+          :class="{ 'cycle-row--no-report': cycle.activityType !== 'shadow' }"
           @click="openReport(cycle)"
         >
           <span>

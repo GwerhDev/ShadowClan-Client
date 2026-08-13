@@ -6,7 +6,7 @@ import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, T
 import { useStore } from '../../../../middlewares/store';
 import EmptyState from '../../common/EmptyState.vue';
 import { classes } from '../../../../middlewares/misc/const';
-import { getStatisticsOverview, getOverviewSummary } from '../../../../middlewares/services';
+import { getStatisticsOverview, getOverviewSummary, getClanMembersAttendanceSummary } from '../../../../middlewares/services';
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -29,6 +29,7 @@ const swLoading = ref(true);
 const atLoading = ref(true);
 const swData = ref<any>(null);
 const atData = ref<any>(null);
+const clanAttendance = ref<any>(null);
 
 const SW_RANGES = computed<Array<{ value: Range; label: string }>>(() => [
   { value: '30',    label: '30d' },
@@ -157,6 +158,20 @@ async function fetchAccursedTower() {
   }
 }
 
+async function fetchClanAttendance() {
+  try { clanAttendance.value = await getClanMembersAttendanceSummary(characterId.value, 'cycle'); }
+  catch { clanAttendance.value = null; }
+}
+
+const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
+const cycleWeekNumber = computed(() => {
+  const cycle = swData.value?.cycleUsed;
+  if (!cycle?.startDate) return null;
+  const start = new Date(cycle.startDate).getTime();
+  const ref   = cycle.endDate ? new Date(cycle.endDate).getTime() : Date.now();
+  return Math.max(1, Math.floor((ref - start) / MS_PER_WEEK) + 1);
+});
+
 function selectSwRange(r: Range) {
   if (r === 'cycle' && !swData.value?.hasCycle) return;
   swRangeTouched.value = true;
@@ -175,6 +190,7 @@ onMounted(() => {
   fetchShadowWar();
   fetchAccursedTower();
   fetchSummary();
+  fetchClanAttendance();
 });
 
 function resultBreakdown(summary?: { victory: number; defeat: number; draw: number } | null) {
@@ -201,7 +217,6 @@ const topCards = computed(() => [
     hint: formatDate(nextAccursedTower.value?.date) ?? '',
     to: '/management/accursed-tower',
   },
-  { key: 'cycles', icon: 'fas fa-calendar-days', label: 'Ciclos', value: cyclesTotal.value ?? '—', hint: 'ciclos definidos', to: { name: 'ManagementOverviewCycles' } },
 ]);
 
 // Cards que son hijas de Estadísticas (Overview) van abajo de los gráficos.
@@ -213,6 +228,39 @@ const bottomCards = computed(() => [
 
 <template>
   <div class="statistics-overview">
+    <div
+      class="cycle-status-card"
+      :class="{ 'cycle-status-card--empty': !swData?.hasCycle }"
+      @click="router.push({ name: 'ManagementOverviewCycles' })"
+    >
+      <div class="cycle-status-header">
+        <i class="fas fa-khanda"></i>
+        <span>Ciclo de Guerra Sombría</span>
+        <span
+          v-if="swData?.hasCycle"
+          class="cycle-status-badge"
+          :class="swData.cycleIsOpen ? 'cycle-status-badge--open' : 'cycle-status-badge--closed'"
+        >{{ swData.cycleIsOpen ? 'Vigente' : 'Finalizado' }}</span>
+      </div>
+
+      <div v-if="swData?.hasCycle" class="cycle-status-body">
+        <div class="cycle-status-metrics">
+          <div class="cycle-status-metric">
+            <span class="cycle-status-value">Semana {{ cycleWeekNumber }}</span>
+            <span class="cycle-status-label">del ciclo</span>
+          </div>
+          <div class="cycle-status-metric">
+            <span class="cycle-status-value">{{ clanAttendance?.clanPercentage ?? 0 }}%</span>
+            <span class="cycle-status-label">asistencia del clan</span>
+          </div>
+        </div>
+        <span v-if="cyclesTotal" class="cycle-status-hint">{{ cyclesTotal }} ciclos en total</span>
+      </div>
+      <p v-else class="cycle-status-empty">Sin ciclo de Guerra Sombría definido.</p>
+
+      <i class="fas fa-arrow-right cycle-status-arrow"></i>
+    </div>
+
     <div class="stat-grid">
       <div v-for="card in topCards" :key="card.key" class="stat-card stat-card--link" @click="router.push(card.to)">
         <div class="stat-icon"><i :class="card.icon"></i></div>

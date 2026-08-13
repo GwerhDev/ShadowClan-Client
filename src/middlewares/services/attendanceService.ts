@@ -26,7 +26,7 @@ export const getClanMembersAttendanceSummary: any = async (characterId: string, 
     params: { characterId, range },
     withCredentials: true,
   }).then(r => r.data);
-  return response as { hasCycle: boolean; data: Record<string, { percentage: number; attended: number; totalActivities: number }> };
+  return response as { hasCycle: boolean; cycleIsOpen: boolean; clanPercentage: number; data: Record<string, { percentage: number; attended: number; totalActivities: number }> };
 };
 
 export const getMemberAttendanceSummary: any = async (characterId: string, targetId: string, range: '30' | '60' | '90' | 'cycle' = '30') => {
@@ -46,13 +46,13 @@ export const setMemberAttendance: any = async (shadowWarId: string, memberId: st
   return response;
 };
 
-export const getAttendanceCycles: any = async (page?: number, characterId?: string, activityType?: 'shadow_war' | 'accursed_tower') => {
+export const getAttendanceCycles: any = async (page?: number, characterId?: string, activityType?: 'shadow' | 'immortal') => {
   const response: any = await axios.get(API_URL + "/clan-management/attendance/cycles", { params: { page: page || 1, characterId, activityType }, withCredentials: true })
     .then(response => response.data)
   return response;
 };
 
-export const createAttendanceCycle: any = async (data: { startDate: string; endDate?: string; activityType: 'shadow_war' | 'accursed_tower' }, characterId?: string) => {
+export const createAttendanceCycle: any = async (data: { startDate: string; endDate?: string; activityType: 'shadow' | 'immortal' }, characterId?: string) => {
   const response: any = await axios.post(
     API_URL + "/clan-management/attendance/cycles",
     { ...data, characterId },
@@ -61,7 +61,7 @@ export const createAttendanceCycle: any = async (data: { startDate: string; endD
   return response;
 };
 
-export const updateAttendanceCycle: any = async (cycleId: string, data: { startDate?: string; endDate?: string; activityType?: 'shadow_war' | 'accursed_tower' }, characterId?: string) => {
+export const updateAttendanceCycle: any = async (cycleId: string, data: { startDate?: string; endDate?: string; activityType?: 'shadow' | 'immortal' }, characterId?: string) => {
   const response: any = await axios.patch(
     API_URL + `/clan-management/attendance/cycles/${cycleId}`,
     { ...data, characterId },
