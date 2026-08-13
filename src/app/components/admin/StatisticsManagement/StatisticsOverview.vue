@@ -244,17 +244,18 @@ const bottomCards = computed(() => [
       </div>
 
       <div v-if="swData?.hasCycle" class="cycle-status-body">
-        <div class="cycle-status-metrics">
-          <div class="cycle-status-metric">
-            <span class="cycle-status-value">Semana {{ cycleWeekNumber }}</span>
-            <span class="cycle-status-label">del ciclo</span>
-          </div>
-          <div class="cycle-status-metric">
-            <span class="cycle-status-value">{{ clanAttendance?.clanPercentage ?? 0 }}%</span>
-            <span class="cycle-status-label">asistencia del clan</span>
-          </div>
+        <div class="cycle-status-metric">
+          <span class="cycle-status-value">Semana {{ cycleWeekNumber }}</span>
+          <span class="cycle-status-label">del ciclo</span>
         </div>
-        <span v-if="cyclesTotal" class="cycle-status-hint">{{ cyclesTotal }} ciclos en total</span>
+        <div class="cycle-status-metric">
+          <span class="cycle-status-value">{{ clanAttendance?.clanPercentage ?? 0 }}%</span>
+          <span class="cycle-status-label">asistencia del clan</span>
+        </div>
+        <div v-if="cyclesTotal" class="cycle-status-metric cycle-status-metric--minor">
+          <span class="cycle-status-value">{{ cyclesTotal }}</span>
+          <span class="cycle-status-label">ciclos en total</span>
+        </div>
       </div>
       <p v-else class="cycle-status-empty">Sin ciclo de Guerra Sombría definido.</p>
 

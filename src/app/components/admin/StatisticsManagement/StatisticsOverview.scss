@@ -55,21 +55,19 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: space-evenly;
   gap: 1rem;
-}
-
-.cycle-status-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2.5rem;
 }
 
 .cycle-status-metric {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: .1rem;
+
+  &--minor {
+    .cycle-status-value { font-size: .95rem; color: rgba(255, 255, 255, .6); }
+  }
 }
 
 .cycle-status-value {
@@ -82,11 +80,6 @@
 .cycle-status-label {
   font-size: .72rem;
   color: rgba(255, 255, 255, .4);
-}
-
-.cycle-status-hint {
-  font-size: .68rem;
-  color: rgba(255, 255, 255, .35);
 }
 
 .cycle-status-empty {
