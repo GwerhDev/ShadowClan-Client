@@ -6,7 +6,10 @@ import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, T
 import { useStore } from '../../../../middlewares/store';
 import EmptyState from '../../common/EmptyState.vue';
 import { classes } from '../../../../middlewares/misc/const';
-import { getStatisticsOverview, getOverviewSummary, getClanMembersAttendanceSummary } from '../../../../middlewares/services';
+import {
+  getStatisticsOverview, getOverviewSummary, getClanMembersAttendanceSummary,
+  getAttendanceCycles, getAttendanceCycleReport,
+} from '../../../../middlewares/services';
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -30,6 +33,7 @@ const atLoading = ref(true);
 const swData = ref<any>(null);
 const atData = ref<any>(null);
 const clanAttendance = ref<any>(null);
+const previousCyclePercentage = ref<number | null>(null);
 
 const SW_RANGES = computed<Array<{ value: Range; label: string }>>(() => [
   { value: '30',    label: '30d' },
@@ -163,6 +167,23 @@ async function fetchClanAttendance() {
   catch { clanAttendance.value = null; }
 }
 
+// El ciclo anterior al actual (cycleUsed) — sin endpoint dedicado, se toma el
+// segundo elemento del listado de ciclos 'shadow' (ordenado por startDate desc)
+// y se agrega su reporte de miembros para obtener un % a nivel clan.
+async function fetchPreviousCycleAttendance() {
+  try {
+    const list = (await getAttendanceCycles(1, characterId.value, 'shadow')).data ?? [];
+    const previous = list[1];
+    if (!previous) { previousCyclePercentage.value = null; return; }
+
+    const report = await getAttendanceCycleReport(previous._id, characterId.value);
+    const members = report.members ?? [];
+    const totalAttended  = members.reduce((sum: number, m: any) => sum + (m.attendedCount ?? 0), 0);
+    const totalPossible  = members.reduce((sum: number, m: any) => sum + (m.totalActivities ?? 0), 0);
+    previousCyclePercentage.value = totalPossible ? Math.round((totalAttended / totalPossible) * 100) : 0;
+  } catch { previousCyclePercentage.value = null; }
+}
+
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 const cycleWeekNumber = computed(() => {
   const cycle = swData.value?.cycleUsed;
@@ -191,6 +212,7 @@ onMounted(() => {
   fetchAccursedTower();
   fetchSummary();
   fetchClanAttendance();
+  fetchPreviousCycleAttendance();
 });
 
 function resultBreakdown(summary?: { victory: number; defeat: number; draw: number } | null) {
@@ -251,6 +273,10 @@ const bottomCards = computed(() => [
         <div class="cycle-status-metric">
           <span class="cycle-status-value">{{ clanAttendance?.clanPercentage ?? 0 }}%</span>
           <span class="cycle-status-label">asistencia del clan</span>
+        </div>
+        <div class="cycle-status-metric">
+          <span class="cycle-status-value">{{ previousCyclePercentage !== null ? previousCyclePercentage + '%' : '—' }}</span>
+          <span class="cycle-status-label">asistencia ciclo anterior</span>
         </div>
         <div v-if="cyclesTotal" class="cycle-status-metric cycle-status-metric--minor">
           <span class="cycle-status-value">{{ cyclesTotal }}</span>
