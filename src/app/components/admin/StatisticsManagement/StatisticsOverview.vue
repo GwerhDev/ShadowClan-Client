@@ -184,6 +184,10 @@ async function fetchPreviousCycleAttendance() {
   } catch { previousCyclePercentage.value = null; }
 }
 
+function cycleTypeLabel(type?: string) {
+  return type === 'immortal' ? 'Ciclo Inmortal' : 'Ciclo Sombra';
+}
+
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 const cycleWeekNumber = computed(() => {
   const cycle = swData.value?.cycleUsed;
@@ -257,7 +261,7 @@ const bottomCards = computed(() => [
     >
       <div class="cycle-status-header">
         <i class="fas fa-khanda"></i>
-        <span>Ciclo de Guerra Sombría</span>
+        <span>{{ cycleTypeLabel(swData?.cycleUsed?.activityType) }}</span>
         <span
           v-if="swData?.hasCycle"
           class="cycle-status-badge"
