@@ -7,6 +7,7 @@ import CustomModal from '../../Modals/CustomModal.vue';
 import LabeledInput from '../../Inputs/LabeledInput.vue';
 import ClanMemberCard from './ClanMemberCard.vue';
 import PendingInvitationCard from './PendingInvitationCard.vue';
+import ExMemberCard from './ExMemberCard.vue';
 import CharacterProfileModal from '../AttendanceManagement/CharacterProfileModal.vue';
 import { classes } from '../../../../middlewares/misc/const';
 import {
@@ -41,6 +42,7 @@ const membersHasMore = ref(false);
 const membersLoading = ref(false);
 const membersTotal   = ref(0);
 const searchQuery    = ref('');
+const statusFilter   = ref<'all' | 'active' | 'ex'>('all');
 const sentinel       = ref<HTMLElement | null>(null);
 let   scrollObserver: IntersectionObserver | null = null;
 let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
@@ -78,6 +80,8 @@ watch(sentinel, (el) => {
   if (el && scrollObserver) scrollObserver.observe(el);
 });
 
+watch(statusFilter, () => loadMembers(true));
+
 watch(searchQuery, () => {
   if (searchDebounce) clearTimeout(searchDebounce);
   searchDebounce = setTimeout(() => loadMembers(true), 500);
@@ -104,6 +108,13 @@ async function loadClan() {
   }
 }
 
+const emptyStateMessage = computed(() => {
+  if (searchQuery.value) return `Sin resultados para "${searchQuery.value}".`;
+  if (statusFilter.value === 'ex')     return 'Este clan no tiene exmiembros.';
+  if (statusFilter.value === 'active') return 'Este clan no tiene miembros activos.';
+  return 'No hay miembros en el clan.';
+});
+
 async function loadMembers(reset: boolean) {
   if (!clanId.value) return;
   if (membersLoading.value) return;
@@ -111,9 +122,10 @@ async function loadMembers(reset: boolean) {
   membersLoading.value = true;
   try {
     const res = await getClanMembersPage(clanId.value, {
-      page:  membersPage.value,
-      limit: 20,
-      q:     searchQuery.value || undefined,
+      page:   membersPage.value,
+      limit:  20,
+      q:      searchQuery.value || undefined,
+      status: statusFilter.value,
     });
     members.value     = reset ? res.members : [...members.value, ...res.members];
     membersTotal.value = res.total;
@@ -380,6 +392,27 @@ function getClassImage(value: string) {
 function getClassName(value: string) {
   return classes.find(c => c.value === value)?.name ?? value;
 }
+
+// Resumen breve del historial de clanes de un personaje, para mostrar al agregarlo
+// o al revisar su solicitud de ingreso — no bloqueante, solo informativo.
+function formatHistoryDate(d: string | Date) {
+  const date = new Date(d);
+  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+}
+
+function clanHistorySummary(char: any) {
+  const history = char?.clanHistory;
+  if (!history?.length) return null;
+  const last     = history[0];
+  const clanName = last.clan?.name ?? 'clan desconocido';
+  const range    = !last.joinedAt
+    ? `hasta ${formatHistoryDate(last.leftAt)}`
+    : last.leftAt
+      ? `${formatHistoryDate(last.joinedAt)} – ${formatHistoryDate(last.leftAt)}`
+      : `desde ${formatHistoryDate(last.joinedAt)}`;
+  const extra = history.length > 1 ? ` · +${history.length - 1} más` : '';
+  return `Historial: ${clanName} (${range})${extra}`;
+}
 </script>
 
 <template>
@@ -414,43 +447,52 @@ function getClassName(value: string) {
     </div>
 
     <div v-if="!loading">
-      <TableComponent
-        v-if="members.length || pendingInvitations.length || membersLoading"
-        :navItems="navItems"
-      >
+      <TableComponent :navItems="navItems">
         <template #header>
-          <li class="header-cell">estado</li>
+          <li class="header-cell">
+            <select v-model="statusFilter" class="type-filter-select" :class="{ active: statusFilter !== 'all' }">
+              <option value="all">Todos</option>
+              <option value="active">Miembros actuales</option>
+              <option value="ex">Exmiembros</option>
+            </select>
+          </li>
           <li class="header-cell sticky-col">nombre</li>
           <li class="header-cell">rol</li>
           <li class="header-cell">clase</li>
           <li class="header-cell">puntaje</li>
         </template>
 
-        <ClanMemberCard
-          v-for="m in members"
-          :key="m._id"
-          :char="m"
-          :role="m.role"
-          @open-profile="selectedMember = $event"
-        />
-        <PendingInvitationCard
-          v-for="inv in pendingInvitations"
-          :key="inv._id"
-          :inv="inv"
-          :clanId="clanId"
-          @refresh="loadClan"
-        />
-        <div
-          v-if="membersLoading"
-          v-for="n in 5"
-          :key="'sk' + n"
-          class="member-skeleton-row"
-        >
-          <span v-for="c in 5" :key="c" class="skeleton-box skeleton-cell"></span>
+        <template v-if="members.length || pendingInvitations.length || membersLoading">
+          <template v-for="m in members" :key="m._id">
+            <ExMemberCard v-if="m.isExMember" :char="m" />
+            <ClanMemberCard
+              v-else
+              :char="m"
+              :role="m.role"
+              @open-profile="selectedMember = $event"
+            />
+          </template>
+          <PendingInvitationCard
+            v-for="inv in pendingInvitations"
+            :key="inv._id"
+            :inv="inv"
+            :clanId="clanId"
+            @refresh="loadClan"
+          />
+          <div
+            v-if="membersLoading"
+            v-for="n in 5"
+            :key="'sk' + n"
+            class="member-skeleton-row"
+          >
+            <span v-for="c in 5" :key="c" class="skeleton-box skeleton-cell"></span>
+          </div>
+        </template>
+        <div v-else class="table-empty-row">
+          <i class="fas fa-users-slash"></i>
+          <span>{{ emptyStateMessage }}</span>
         </div>
       </TableComponent>
-
-      <p v-else-if="!membersLoading && searchQuery" class="empty-search">Sin resultados para "{{ searchQuery }}".</p>
 
       <div ref="sentinel" class="sentinel"></div>
     </div>
@@ -484,7 +526,7 @@ function getClassName(value: string) {
   <CustomModal v-if="showSyncModal" title="Actualizar clan desde archivo" @close="showSyncModal = false">
     <div class="modal-form">
       <p class="modal-hint">
-        El archivo reemplaza los <strong>miembros</strong> del clan. Los personajes del archivo son creados o actualizados; los que no aparezcan son eliminados del clan.<br />
+        El archivo reemplaza los <strong>miembros</strong> del clan. Los personajes del archivo son creados o actualizados; los que no aparezcan pasan a exmiembros (no se borran, quedan en su historial).<br />
         Columnas: <strong>Jugador, Resonancia, Armadura, Penetracion, Potencia, Resistencia, Clase, Whatsapp</strong>.
       </p>
       <div class="hint-attendance">
@@ -511,7 +553,7 @@ function getClassName(value: string) {
       <template v-if="syncDone">
         <p class="modal-hint">
           {{ syncResults.length }} procesados
-          <span v-if="syncRemoved > 0"> · {{ syncRemoved }} eliminados del clan</span>
+          <span v-if="syncRemoved > 0"> · {{ syncRemoved }} pasados a exmiembros</span>
         </p>
         <ul class="search-results">
           <li v-for="r in syncResults" :key="r.name" class="search-result-card" style="cursor:default">
@@ -543,6 +585,7 @@ function getClassName(value: string) {
           <div class="inv-info">
             <strong>{{ req.character?.name ?? '—' }}</strong>
             <small>{{ req.user?.battletag ?? '—' }} · {{ req.character?.currentClass ? getClassName(req.character.currentClass) : 'Sin clase' }} · {{ req.character?.resonance ?? '—' }} res.</small>
+            <small v-if="clanHistorySummary(req.character)" class="history-hint">{{ clanHistorySummary(req.character) }}</small>
           </div>
         </div>
         <div class="request-actions">
@@ -580,6 +623,7 @@ function getClassName(value: string) {
               <div>
                 <strong>{{ char.name }}</strong>
                 <small>{{ char.currentClass ? getClassName(char.currentClass) : 'Sin clase' }} · {{ char.resonance ?? '—' }} res.</small>
+                <small v-if="clanHistorySummary(char)" class="history-hint">{{ clanHistorySummary(char) }}</small>
               </div>
             </div>
           </li>
@@ -607,6 +651,7 @@ function getClassName(value: string) {
             <div>
               <strong>{{ selectedChar.name }}</strong>
               <small>{{ selectedChar.currentClass ? getClassName(selectedChar.currentClass) : 'Sin clase' }} · {{ selectedChar.resonance ?? '—' }} res.</small>
+              <small v-if="clanHistorySummary(selectedChar)" class="history-hint">{{ clanHistorySummary(selectedChar) }}</small>
             </div>
           </div>
         </div>

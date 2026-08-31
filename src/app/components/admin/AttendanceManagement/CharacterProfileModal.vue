@@ -72,6 +72,7 @@ const canDelete = computed(() =>
 const editionActive = ref(false);
 const deleteActive  = ref(false);
 const saving        = ref(false);
+const deleteReason  = ref('');
 
 // Misma arquitectura de edición que ProfileComponent.vue: un único editForm,
 // las filas mantienen su layout y solo alternan valor/input in-place.
@@ -105,6 +106,7 @@ function startDelete() { deleteActive.value  = true; }
 function cancelAction() {
   editionActive.value = false;
   deleteActive.value  = false;
+  deleteReason.value  = '';
   resetEditFields(props.member);
 }
 
@@ -135,7 +137,7 @@ async function confirmEdit() {
 async function confirmDelete() {
   saving.value = true;
   try {
-    await removeClanMember(props.clanId, props.member._id);
+    await removeClanMember(props.clanId, props.member._id, deleteReason.value.trim() || undefined);
     emit('refresh');
     emit('close');
   } finally {
@@ -203,7 +205,7 @@ const hasStats = computed(() =>
         <div v-if="canManage && !deleteActive" class="cp-actions">
           <template v-if="!editionActive">
             <button class="icon-button" @click="startEdit" title="Editar"><i class="fas fa-pen"></i></button>
-            <button v-if="canDelete" class="icon-button icon-button--danger" @click="startDelete" title="Eliminar"><i class="fas fa-trash"></i></button>
+            <button v-if="canDelete" class="icon-button icon-button--danger" @click="startDelete" title="Expulsar"><i class="fas fa-user-slash"></i></button>
           </template>
           <template v-else>
             <button class="icon-button icon-button--confirm" :disabled="saving" @click="confirmEdit" title="Guardar">
@@ -243,11 +245,18 @@ const hasStats = computed(() =>
         </div>
       </div>
 
-      <!-- Confirmar eliminación -->
+      <!-- Confirmar expulsión -->
       <div v-if="deleteActive" class="cp-delete">
-        <p class="cp-delete__text">¿Eliminar a <strong>{{ member.name }}</strong> del clan?</p>
+        <p class="cp-delete__text">¿Expulsar a <strong>{{ member.name }}</strong> del clan?</p>
+        <textarea
+          v-model="deleteReason"
+          class="cp-delete__reason"
+          placeholder="Motivo de expulsión (opcional)"
+          :disabled="saving"
+          rows="2"
+        ></textarea>
         <div class="cp-edit-actions">
-          <button class="icon-button icon-button--confirm" :disabled="saving" @click="confirmDelete" title="Confirmar eliminación"><i class="fas fa-check"></i></button>
+          <button class="icon-button icon-button--confirm" :disabled="saving" @click="confirmDelete" title="Confirmar expulsión"><i class="fas fa-check"></i></button>
           <button class="icon-button" :disabled="saving" @click="cancelAction" title="Cancelar"><i class="fas fa-times"></i></button>
         </div>
       </div>
@@ -418,6 +427,23 @@ const hasStats = computed(() =>
     margin: 0;
     font-size: .88rem;
     color: rgba(255, 255, 255, .7);
+  }
+
+  &__reason {
+    width: 100%;
+    padding: .5rem .65rem;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, .85);
+    font-size: .8rem;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+
+    &:focus { outline: none; border-color: rgba(227, 210, 168, .4); }
+    &::placeholder { color: rgba(255, 255, 255, .3); }
+    &:disabled { opacity: .5; }
   }
 }
 

@@ -247,7 +247,7 @@ export {
 } from './attendanceService';
 export { getStatisticsOverview, getOverviewSummary } from './statisticsService';
 
-export const getClanMembersPage: any = async (clanId: string, params: { page: number; limit: number; q?: string }) => {
+export const getClanMembersPage: any = async (clanId: string, params: { page: number; limit: number; q?: string; status?: 'all' | 'active' | 'ex' }) => {
   const response: any = await axios.get(`${API_URL}/clan-management/clan/${clanId}/members`, {
     params,
     withCredentials: true,
@@ -276,9 +276,11 @@ export const leaveClan: any = async (clanId: string, characterId: string) => {
   return response;
 };
 
-export const removeClanMember: any = async (clanId: string, characterId: string) => {
-  const response: any = await axios.delete(API_URL + "/clan-management/clan/" + clanId + "/members/" + characterId, { withCredentials: true })
-                                   .then(response => response.data);
+export const removeClanMember: any = async (clanId: string, characterId: string, reason?: string) => {
+  const response: any = await axios.delete(API_URL + "/clan-management/clan/" + clanId + "/members/" + characterId, {
+    data: { reason },
+    withCredentials: true,
+  }).then(response => response.data);
   return response;
 };
 

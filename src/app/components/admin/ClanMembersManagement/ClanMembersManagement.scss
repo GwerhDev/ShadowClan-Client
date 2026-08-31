@@ -21,6 +21,28 @@
   background: rgba(255, 255, 255, .05);
 }
 
+.type-filter-select {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: .72rem;
+  min-width: 0;
+  width: 100%;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .4);
+  font-family: inherit;
+  cursor: pointer;
+  transition: color .15s;
+  text-align: center;
+
+  &:focus { outline: none; }
+  &:hover, &.active { color: rgba(255, 255, 255, .85); }
+
+  option { text-transform: none; letter-spacing: 0; font-size: .85rem; }
+}
+
 .ul-container {
   padding: 1.1rem;
   display: flex;
@@ -394,6 +416,11 @@
   color: rgba(255, 255, 255, .25);
 }
 
+.history-hint {
+  font-style: italic;
+  color: rgba(227, 210, 168, .55) !important;
+}
+
 .inv-meta {
   display: flex;
   align-items: center;
@@ -547,9 +574,12 @@
   border-radius: 8px;
 }
 
-.empty-search {
-  margin: .5rem 0 0;
-  font-size: .82rem;
+.table-empty-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: 2rem 0;
   color: rgba(255, 255, 255, .3);
 }
 
