@@ -19,7 +19,6 @@ const store = useStore();
 const STATUS_OPTIONS: { value: AttendanceStatusFilter; label: string }[] = [
   { value: 'all',      label: 'Todos' },
   { value: 'attended', label: 'Asistieron' },
-  { value: 'absent',   label: 'No asistieron' },
   { value: 'unmarked', label: 'Sin marcar' },
 ];
 const ROLE_LABEL: Record<string, string> = { leader: 'Líder', officer: 'Oficial', member: 'Miembro' };
@@ -29,7 +28,7 @@ const error        = ref('');
 const searchQuery  = ref('');
 const statusFilter = ref<AttendanceStatusFilter>('all');
 const members      = ref<AttendanceMember[]>([]);
-const summary      = ref<ShadowWarAttendance['summary']>({ total: 0, attended: 0, absent: 0, unmarked: 0 });
+const summary      = ref<ShadowWarAttendance['summary']>({ total: 0, attended: 0, unmarked: 0 });
 const savingIds    = ref<Set<string>>(new Set());
 const selectedMember = ref<AttendanceMember | null>(null);
 let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
@@ -54,12 +53,10 @@ async function load() {
   }
 }
 
-/** Ajusta los conteos localmente al cambiar el estado de un miembro. */
-function bumpSummary(prev: boolean | null, next: boolean | null) {
-  const key = (v: boolean | null): 'attended' | 'absent' | 'unmarked' =>
-    v === true ? 'attended' : v === false ? 'absent' : 'unmarked';
-  summary.value[key(prev)]--;
-  summary.value[key(next)]++;
+/** Ajusta los conteos localmente al marcar/desmarcar (asistió ↔ sin marcar). */
+function bumpSummary(nowAttended: boolean) {
+  summary.value.attended += nowAttended ? 1 : -1;
+  summary.value.unmarked += nowAttended ? -1 : 1;
 }
 
 async function toggle(member: AttendanceMember) {
@@ -70,7 +67,7 @@ async function toggle(member: AttendanceMember) {
   try {
     await setMemberAttendance(props.shadowWarId, member._id, next, store.currentCharacter ?? undefined);
     member.attended = next;
-    bumpSummary(prev, next);
+    if ((prev === true) !== next) bumpSummary(next);
     // Con un filtro de estado activo, el miembro deja de corresponder a la vista.
     if (statusFilter.value !== 'all') members.value = members.value.filter(m => m._id !== member._id);
     emit('updated');
@@ -101,7 +98,6 @@ onMounted(load);
 
         <div class="swa-summary">
           <span class="swa-chip swa-chip--ok"><i class="fas fa-check"></i> {{ summary.attended }} asistieron</span>
-          <span class="swa-chip swa-chip--no"><i class="fas fa-xmark"></i> {{ summary.absent }} no asistieron</span>
           <span class="swa-chip"><i class="fas fa-minus"></i> {{ summary.unmarked }} sin marcar</span>
           <span class="swa-pct">{{ attendancePct }}%</span>
         </div>
@@ -139,11 +135,8 @@ onMounted(load);
                 <span class="swa-member-role">{{ ROLE_LABEL[member.role] ?? member.role }}</span>
               </span>
             </span>
-            <span class="swa-state" :class="{
-              'swa-state--ok': member.attended === true,
-              'swa-state--no': member.attended === false,
-            }">
-              {{ member.attended === true ? 'Asistió' : member.attended === false ? 'No asistió' : 'Sin marcar' }}
+            <span class="swa-state" :class="{ 'swa-state--ok': member.attended === true }">
+              {{ member.attended === true ? 'Asistió' : 'Sin marcar' }}
             </span>
             <i v-if="savingIds.has(member._id)" class="fas fa-spinner fa-spin swa-spinner"></i>
             <input
