@@ -14,7 +14,7 @@ export const updateCharacter = async (id: string, data: CharacterUpdate): Promis
   axios.put<Character>(API_URL + "/character/" + id, data, { withCredentials: true }).then(r => r.data);
 
 export const logout = async (): Promise<void> => {
-  await axios.get(API_URL + "/logout/", { withCredentials: true, maxRedirects: 0 })
+  await axios.get(API_URL + "/auth/logout", { withCredentials: true, maxRedirects: 0 })
     .catch(() => {});
 };
 

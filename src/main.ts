@@ -6,6 +6,9 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 
 import App from './App.vue';
+import { installAuthRefresh } from './middlewares/authRefresh';
+
+installAuthRefresh();
 import router from './app/routes';
 
 createApp(App)
