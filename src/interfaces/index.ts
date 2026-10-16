@@ -59,8 +59,12 @@ export interface AttendanceMember {
   attended: boolean | null;
 }
 
+export type AttendanceStatusFilter = 'all' | 'attended' | 'absent' | 'unmarked';
+
 export interface ShadowWarAttendance {
   shadowWar: { _id: string; date: Date; enemyClan?: Clan; result?: string };
+  /** Conteos sobre la plantilla completa (no dependen de los filtros). */
+  summary: { total: number; attended: number; absent: number; unmarked: number };
   members: AttendanceMember[];
 }
 

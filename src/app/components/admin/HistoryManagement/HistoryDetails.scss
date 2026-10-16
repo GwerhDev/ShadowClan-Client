@@ -85,6 +85,27 @@
   gap: .6rem;
 }
 
+.btn-attendance {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  height: 32px;
+  padding: 0 .8rem;
+  background: transparent;
+  border: 1px solid rgba(227, 210, 168, .3);
+  color: rgb(227, 210, 168);
+  border-radius: 6px;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+
+  &:hover {
+    background: rgba(227, 210, 168, .08);
+    border-color: rgba(227, 210, 168, .55);
+  }
+}
+
 // ── Context menu ──────────────────────────────────────────────────────────────
 
 .ctx-wrapper { position: relative; }

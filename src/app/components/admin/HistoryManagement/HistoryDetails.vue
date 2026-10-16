@@ -81,7 +81,11 @@
               </button>
             </template>
 
-            <div v-else class="ctx-wrapper">
+            <button v-if="!confirmDelete" class="btn-attendance" @click="showInstanceAttendance = true" title="Asistencia de esta Guerra Sombría">
+              <i class="fas fa-clipboard-check"></i> Asistencia
+            </button>
+
+            <div v-if="!confirmDelete" class="ctx-wrapper">
               <button class="btn-dots" @click.stop="toggleCtx">
                 <i class="fas fa-ellipsis-v"></i>
               </button>
@@ -93,7 +97,7 @@
                       <i class="fas fa-pen"></i> Editar
                     </button>
                     <button class="ctx-item" @click="openAttendance">
-                      <i class="fas fa-clipboard-list"></i> Ver asistencia
+                      <i class="fas fa-clipboard-list"></i> Nómina final
                     </button>
                     <button class="ctx-item" @click="toggleCompleted" :disabled="saving">
                       <i :class="currentShadowWar?.completed ? 'fas fa-rotate-left' : 'fas fa-flag-checkered'"></i>
@@ -183,6 +187,12 @@
     />
 
     <!-- Modal de asistencia -->
+    <ShadowWarAttendanceModal
+      v-if="showInstanceAttendance && currentShadowWar?._id"
+      :shadow-war-id="currentShadowWar._id"
+      @close="showInstanceAttendance = false"
+    />
+
     <HistoryAttendanceModal
       v-if="showAttendanceModal"
       :battle="currentShadowWar?.battle"
@@ -208,6 +218,7 @@ import MatchDetailsModal from './MatchDetailsModal.vue';
 import ConfirmedMembersModal from './ConfirmedMembersModal.vue';
 import HistoryBattleCard from './HistoryBattleCard.vue';
 import HistoryAttendanceModal from './HistoryAttendanceModal.vue';
+import ShadowWarAttendanceModal from './ShadowWarAttendanceModal.vue';
 import SWScoreCard from './SWScoreCard.vue';
 import MemberSelectionModal from '../ShadowWarManagement/MemberSelectionModal.vue';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
@@ -237,7 +248,8 @@ const confirmDelete         = ref(false);
 const editing               = ref(false);
 const editDate              = ref('');
 const editEnemyClan         = ref('');
-const showAttendanceModal   = ref(false);
+const showAttendanceModal   = ref(false);   // nómina final (asignados)
+const showInstanceAttendance = ref(false);  // asistencia marcada de esta instancia
 
 // Edición del resultado
 const editingResult   = ref(false);

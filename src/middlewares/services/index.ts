@@ -15,6 +15,7 @@ export { getCharacterByName } from './characterService';
 export {
   getAttendanceWeek,
   setMemberAttendance,
+  getShadowWarAttendance,
   getAttendanceCycles,
   createAttendanceCycle,
   updateAttendanceCycle,

@@ -2,7 +2,7 @@ import axios from "axios"
 import { API_URL } from "../misc/const"
 import type {
   AttendanceCycle, AttendanceCycleReport, AttendanceRange, AttendanceSummary, AttendanceWeek,
-  CycleActivityType, MembersAttendanceSummary, PaginatedResponse,
+  AttendanceStatusFilter, CycleActivityType, MembersAttendanceSummary, PaginatedResponse, ShadowWarAttendance,
 } from "../../interfaces";
 
 const BASE = API_URL + "/clan-management/attendance";
@@ -16,6 +16,17 @@ export const getClanMembersAttendanceSummary = async (characterId: string, range
 
 export const getMemberAttendanceSummary = async (characterId: string, targetId: string, range: AttendanceRange = '30'): Promise<AttendanceSummary> =>
   axios.get<AttendanceSummary>(BASE + `/member/${targetId}/summary`, { params: { characterId, range }, ...opts }).then(r => r.data);
+
+/** Asistencia de una Guerra Sombría: plantilla del clan con filtro por nombre y estado (filtrado en el backend). */
+export const getShadowWarAttendance = async (
+  shadowWarId: string,
+  characterId: string | undefined,
+  filters: { q?: string; status?: AttendanceStatusFilter } = {},
+): Promise<ShadowWarAttendance> =>
+  axios.get<ShadowWarAttendance>(BASE + `/shadow-war/${shadowWarId}`, {
+    params: { characterId, q: filters.q || undefined, status: filters.status && filters.status !== 'all' ? filters.status : undefined },
+    ...opts,
+  }).then(r => r.data);
 
 export const setMemberAttendance = async (shadowWarId: string, memberId: string, attended: boolean, characterId?: string): Promise<unknown> =>
   axios.patch(BASE + `/shadow-war/${shadowWarId}/members/${memberId}`, { attended, characterId }, opts).then(r => r.data);
