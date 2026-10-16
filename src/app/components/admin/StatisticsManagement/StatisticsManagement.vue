@@ -36,17 +36,20 @@ const MAX_CYCLE_WEEKS = 7;
 const MIN_CYCLE_DAYS  = MIN_CYCLE_WEEKS * 7; // 28
 const MAX_CYCLE_DAYS  = MAX_CYCLE_WEEKS * 7; // 49
 
-const durationError = computed(() => {
-  if (!form.value.startDate || !form.value.endDate) return null; // ciclo abierto: sin restricción
-  const start = new Date(form.value.startDate + 'T00:00:00Z').getTime();
-  const end   = new Date(form.value.endDate   + 'T00:00:00Z').getTime();
+/** Valida la duración (solo si hay fecha de fin: un ciclo abierto no tiene restricción). */
+function cycleDurationError(startDate: string, endDate: string): string | null {
+  if (!startDate || !endDate) return null;
+  const start = new Date(startDate + 'T00:00:00Z').getTime();
+  const end   = new Date(endDate   + 'T00:00:00Z').getTime();
   const days  = Math.round((end - start) / 86400000) + 1;
   if (days < 1) return 'La fecha de fin no puede ser anterior al inicio.';
   if (days < MIN_CYCLE_DAYS || days > MAX_CYCLE_DAYS) {
     return `La duración debe ser de entre ${MIN_CYCLE_WEEKS} y ${MAX_CYCLE_WEEKS} semanas (actual: ${days} días).`;
   }
   return null;
-});
+}
+
+const durationError = computed(() => cycleDurationError(form.value.startDate, form.value.endDate));
 
 // ── Finalizar ciclo (setear endDate en uno abierto) ──
 const finishingId = ref<string | null>(null);
@@ -56,9 +59,11 @@ const finishError = ref<string | null>(null);
 
 const navItems = ['actividad', 'inicio', 'fin', 'acciones'];
 
+// Las fechas de ciclo representan días (inicio 00:00 UTC, fin 23:59 UTC): se formatean
+// en UTC para no mostrar el día anterior en zonas horarias negativas.
 function formatDate(d: string | Date) {
   const date = new Date(d);
-  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 }
 
 function activityLabel(t: ActivityType) { return t === 'immortal' ? 'Guerra Inmortal' : 'Guerra Sombría'; }
@@ -106,6 +111,7 @@ async function handleDelete(cycleId: string) {
 }
 
 function startFinish(cycle: any) {
+  cancelEdit();
   finishingId.value = cycle._id;
   finishDate.value  = new Date().toISOString().slice(0, 10);
   finishError.value = null;
@@ -131,7 +137,64 @@ async function confirmFinish(cycle: any) {
   }
 }
 
+// ── Editar ciclo (actividad, inicio, fin / reabrir) ──
+const editingId  = ref<string | null>(null);
+const editForm   = ref({ activityType: 'shadow' as ActivityType, startDate: '', endDate: '', status: 'vigente' as 'vigente' | 'finalizado' });
+const savingEdit = ref(false);
+const editError  = ref<string | null>(null);
+
+const toInputDate = (d?: string | Date | null) => (d ? new Date(d).toISOString().slice(0, 10) : '');
+
+const editDurationError = computed(() =>
+  editForm.value.status === 'finalizado' ? cycleDurationError(editForm.value.startDate, editForm.value.endDate) : null);
+
+const canSaveEdit = computed(() =>
+  !savingEdit.value && !!editForm.value.startDate && !editDurationError.value &&
+  (editForm.value.status === 'vigente' || !!editForm.value.endDate));
+
+function startEdit(cycle: any) {
+  cancelFinish();
+  editingId.value = cycle._id;
+  editError.value = null;
+  editForm.value  = {
+    activityType: cycle.activityType,
+    startDate:    toInputDate(cycle.startDate),
+    endDate:      toInputDate(cycle.endDate),
+    status:       cycle.endDate ? 'finalizado' : 'vigente',
+  };
+}
+function cancelEdit() {
+  editingId.value = null;
+  editError.value = null;
+}
+async function confirmEdit(cycle: any) {
+  if (!canSaveEdit.value) return;
+  savingEdit.value = true;
+  editError.value  = null;
+  try {
+    const updated = await updateAttendanceCycle(cycle._id, {
+      activityType: editForm.value.activityType,
+      startDate:    editForm.value.startDate,
+      // Cadena vacía = reabrir el ciclo (vuelve a estar en curso).
+      endDate:      editForm.value.status === 'finalizado' ? editForm.value.endDate : '',
+    }, characterId.value);
+    // Si cambió la actividad y hay un filtro activo, el ciclo puede dejar de corresponder a la lista.
+    if (filter.value !== 'all' && updated.activityType !== filter.value) {
+      cycles.value = cycles.value.filter(c => c._id !== cycle._id);
+    } else {
+      const idx = cycles.value.findIndex(c => c._id === cycle._id);
+      if (idx !== -1) cycles.value[idx] = updated;
+    }
+    cancelEdit();
+  } catch (e: any) {
+    editError.value = e?.response?.data?.message ?? 'No se pudo guardar el ciclo.';
+  } finally {
+    savingEdit.value = false;
+  }
+}
+
 function openReport(cycle: any) {
+  if (editingId.value === cycle._id) return;
   if (cycle.activityType !== 'shadow') return;
   router.push({ name: 'ManagementOverviewCycleReport', params: { cycle_id: cycle._id } });
 }
@@ -206,9 +269,40 @@ onMounted(fetchCycles);
           v-for="cycle in cycles"
           :key="cycle._id"
           class="cycle-row"
-          :class="{ 'cycle-row--no-report': cycle.activityType !== 'shadow' }"
+          :class="{ 'cycle-row--no-report': cycle.activityType !== 'shadow' || editingId === cycle._id }"
           @click="openReport(cycle)"
         >
+          <!-- Modo edición -->
+          <template v-if="editingId === cycle._id">
+            <span @click.stop>
+              <select v-model="editForm.activityType" class="edit-select">
+                <option value="shadow">Guerra Sombría</option>
+                <option value="immortal">Guerra Inmortal</option>
+              </select>
+            </span>
+            <span @click.stop>
+              <input type="date" v-model="editForm.startDate" class="finish-date-input" />
+            </span>
+            <span @click.stop class="edit-end-cell">
+              <select v-model="editForm.status" class="edit-select">
+                <option value="vigente">En curso</option>
+                <option value="finalizado">Finalizado</option>
+              </select>
+              <input v-if="editForm.status === 'finalizado'" type="date" v-model="editForm.endDate" class="finish-date-input" />
+            </span>
+            <span @click.stop>
+              <button class="icon-button icon-button--confirm" :disabled="!canSaveEdit" @click="confirmEdit(cycle)" title="Guardar">
+                <i v-if="savingEdit" class="fas fa-spinner fa-spin"></i>
+                <i v-else class="fas fa-check"></i>
+              </button>
+              <button class="icon-button" :disabled="savingEdit" @click="cancelEdit" title="Cancelar">
+                <i class="fas fa-xmark"></i>
+              </button>
+            </span>
+            <span v-if="editDurationError || editError" class="finish-error">{{ editDurationError || editError }}</span>
+          </template>
+
+          <template v-else>
           <span>
             <span class="activity-badge">
               <i :class="activityIcon(cycle.activityType)"></i> {{ activityLabel(cycle.activityType) }}
@@ -231,6 +325,9 @@ onMounted(fetchCycles);
               </button>
             </template>
             <template v-else>
+              <button class="icon-button" @click="startEdit(cycle)" title="Editar ciclo">
+                <i class="fas fa-pen"></i>
+              </button>
               <button v-if="!cycle.endDate" class="icon-button" @click="startFinish(cycle)" title="Finalizar ciclo">
                 <i class="fas fa-flag-checkered"></i>
               </button>
@@ -240,6 +337,7 @@ onMounted(fetchCycles);
             </template>
           </span>
           <span v-if="finishError && finishingId === cycle._id" class="finish-error">{{ finishError }}</span>
+          </template>
         </div>
         <div v-if="!cycles.length" class="table-empty-row">
           <i class="fas fa-calendar-xmark"></i>

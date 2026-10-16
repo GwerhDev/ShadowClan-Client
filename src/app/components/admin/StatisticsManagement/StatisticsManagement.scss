@@ -218,6 +218,27 @@
   font-family: inherit;
 }
 
+.edit-select {
+  height: 30px;
+  padding: 0 .4rem;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 6px;
+  color: var(--color-app-white, #fff);
+  font-family: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+
+  option { background: var(--color-primary-bg); }
+}
+
+.edit-end-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem;
+}
+
 .cycle-date {
   font-size: .85rem;
   font-weight: 600;

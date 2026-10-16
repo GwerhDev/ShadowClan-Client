@@ -1,3 +1,4 @@
+import type { CycleActivityType } from './api';
 export * from './api';
 
 export interface Character {
@@ -71,9 +72,10 @@ export interface ShadowWarAttendance {
 export interface AttendanceCycle {
   _id: string;
   clan?: string;
-  name: string;
+  activityType: CycleActivityType;
   startDate: Date;
-  endDate: Date;
+  /** Sin fecha de fin = ciclo en curso. */
+  endDate?: Date | null;
 }
 
 export interface AttendanceCycleReportMember {
