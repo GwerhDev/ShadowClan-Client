@@ -26,9 +26,6 @@ export const updateAccursedTower = async (id: string, data: AccursedTowerUpdate,
 export const deactivateAccursedTower = async (id: string, characterId?: string | null): Promise<unknown> =>
   axios.delete(BASE + '/' + id, { params: actor(characterId), ...opts }).then(r => r.data);
 
-export const completeAccursedTower = async (id: string, characterId?: string | null): Promise<AccursedTower> =>
-  axios.patch<AccursedTower>(BASE + '/' + id, { completed: true, ...actor(characterId) }, opts).then(r => r.data);
-
 export const searchEnemyClans = async (q: string): Promise<EnemyClanRef[]> =>
   axios.get<EnemyClanRef[]>(BASE + '/clans', { params: { q }, ...opts }).then(r => r.data);
 

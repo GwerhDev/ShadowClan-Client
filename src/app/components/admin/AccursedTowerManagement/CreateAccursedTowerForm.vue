@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from '../../../../middlewares/store';
-import { getClanMembers, getAccursedTowers, getAccursedTowerManagement, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchClans, respondToTowerWar } from '../../../../middlewares/services';
+import { getClanMembers, getAccursedTowers, getAccursedTowerManagement, createAccursedTower, updateAccursedTower, deactivateAccursedTower, searchClans, respondToTowerWar } from '../../../../middlewares/services';
 import CreateEnemyClanModal from '../../Modals/CreateEnemyClanModal.vue';
 import { Character, EnemyClanRef } from '../../../../interfaces';
 import MemberSelectionModal from '../ShadowWarManagement/MemberSelectionModal.vue';
@@ -160,7 +160,7 @@ watch(() => store.lastUpdatedTower, (tower: any) => {
   if (expandedId.value === towerId) loadRoster(tower.roster);
 });
 
-// ── Crear / editar / completar / eliminar ─────────────────────────────────────
+// ── Crear / editar / eliminar ─────────────────────────────────────
 
 async function createInstance() {
   if (!newTowerNumber.value || !newDate.value) return;
@@ -206,12 +206,11 @@ async function saveEdit(instance: any) {
   }
 }
 
-/** Elimina ('deactivate') o completa ('complete') una instancia y la quita de la lista. */
-async function endInstance(id: string, action: 'deactivate' | 'complete') {
+/** Elimina una instancia y la quita de la lista (el completado es automático al pasar la fecha). */
+async function deleteInstance(id: string) {
   saving.value = true;
   try {
-    if (action === 'deactivate') await deactivateAccursedTower(id, store.currentCharacter ?? undefined);
-    else                         await completeAccursedTower(id, store.currentCharacter ?? undefined);
+    await deactivateAccursedTower(id, store.currentCharacter ?? undefined);
     towerWars.value = towerWars.value.filter(tw => tw._id !== id);
     if (expandedId.value === id) expandedId.value = null;
   } finally {
@@ -310,10 +309,9 @@ function toggleExpand(instance: any) {
             :saving="saving"
             @share="shareModalTower = instance"
             @publish="publishModalTower = instance"
-            @complete="endInstance(instance._id, 'complete')"
             @toggle-expand="toggleExpand(instance)"
             @edit="openEdit(instance)"
-            @delete="endInstance(instance._id, 'deactivate')"
+            @delete="deleteInstance(instance._id)"
           />
 
         </div>

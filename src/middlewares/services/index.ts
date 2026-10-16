@@ -6,10 +6,10 @@ export * from './taskService';
 export * from './requestService';
 export * from './clanManagementService';
 
-export { getActiveShadowWar, getShadowWarById, updateShadowWarClan, getShadowWars, createShadowWarManagement, closeShadowWarManagement, completeShadowWarManagement, respondToShadowWar, respondToPublicShadowWar } from './shadowWarService';
+export { getActiveShadowWar, getShadowWarById, updateShadowWarClan, getShadowWars, createShadowWarManagement, closeShadowWarManagement, respondToShadowWar, respondToPublicShadowWar } from './shadowWarService';
 export { getClanPosts, createClanPost, updateClanPost, deleteClanPost } from './clanPostService';
 export { searchClans } from './clanService';
-export { getAccursedTowers, getAccursedTowerManagement, getActiveAccursedTower, createAccursedTower, updateAccursedTower, deactivateAccursedTower, completeAccursedTower, searchEnemyClans, createEnemyClan, respondToTowerWar, respondToPublicTowerWar } from './towerWarService';
+export { getAccursedTowers, getAccursedTowerManagement, getActiveAccursedTower, createAccursedTower, updateAccursedTower, deactivateAccursedTower, searchEnemyClans, createEnemyClan, respondToTowerWar, respondToPublicTowerWar } from './towerWarService';
 export { getHistory, getAccursedTowerById } from './historyService';
 export { getCharacterByName } from './characterService';
 export {

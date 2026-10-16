@@ -396,32 +396,6 @@ input[type="date"] {
   i { font-size: .75rem; }
 }
 
-.btn-complete-sw {
-  display: inline-flex;
-  align-items: center;
-  gap: .35rem;
-  padding: .3rem .75rem;
-  font-family: 'Cinzel', serif;
-  font-size: .72rem;
-  font-weight: 600;
-  letter-spacing: .05em;
-  background: transparent;
-  border: 1px solid rgba(76, 175, 80, .35);
-  color: #81c784;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background .15s, border-color .15s;
-
-  &:hover:not(:disabled) {
-    background: rgba(76, 175, 80, .1);
-    border-color: rgba(76, 175, 80, .65);
-  }
-
-  &:disabled { opacity: .4; cursor: not-allowed; }
-
-  i { font-size: .75rem; }
-}
-
 .btn-share-trigger {
   display: inline-flex;
   align-items: center;

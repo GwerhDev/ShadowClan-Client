@@ -185,31 +185,6 @@
   i { font-size: .68rem; }
 }
 
-.btn-complete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid rgba(76, 175, 80, .35);
-  border-radius: 6px;
-  color: rgba(129, 199, 132, .7);
-  cursor: pointer;
-  transition: border-color .15s, color .15s, background .15s;
-
-  &:hover:not(:disabled) {
-    background: rgba(76, 175, 80, .1);
-    border-color: rgba(76, 175, 80, .65);
-    color: #a5d6a7;
-  }
-
-  &:disabled { opacity: .35; cursor: not-allowed; }
-
-  i { font-size: .72rem; }
-}
-
 .btn-deactivate {
   display: inline-flex;
   align-items: center;

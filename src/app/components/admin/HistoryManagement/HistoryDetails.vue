@@ -99,10 +99,6 @@
                     <button class="ctx-item" @click="openAttendance">
                       <i class="fas fa-clipboard-list"></i> Nómina final
                     </button>
-                    <button class="ctx-item" @click="toggleCompleted" :disabled="saving">
-                      <i :class="currentShadowWar?.completed ? 'fas fa-rotate-left' : 'fas fa-flag-checkered'"></i>
-                      {{ currentShadowWar?.completed ? 'Marcar activa' : 'Completar' }}
-                    </button>
                     <button class="ctx-item ctx-item--danger" @click="confirmDelete = true; showCtx = false">
                       <i class="fas fa-trash"></i> Eliminar
                     </button>
@@ -352,19 +348,6 @@ async function saveEdit() {
   }
 }
 
-async function toggleCompleted() {
-  if (!currentShadowWar.value?._id) return;
-  saving.value  = true;
-  showCtx.value = false;
-  try {
-    const newCompleted = !currentShadowWar.value.completed;
-    await updateShadowWarClan(currentShadowWar.value._id, { completed: newCompleted, characterId: store.currentCharacter });
-    await store.handleGetShadowWar(currentShadowWar.value._id);
-    if (newCompleted) router.push('/management/history');
-  } finally {
-    saving.value = false;
-  }
-}
 
 async function handleDelete() {
   if (!currentShadowWar.value?._id) return;

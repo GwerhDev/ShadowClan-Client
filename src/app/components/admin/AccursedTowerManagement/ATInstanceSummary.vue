@@ -3,7 +3,8 @@ import { ref } from 'vue';
 
 /**
  * Encabezado de solo lectura de una instancia de Torre Maldita: datos, acciones
- * (compartir, publicar, completar, expandir) y menú contextual (editar/eliminar).
+ * (compartir, publicar, expandir) y menú contextual (editar/eliminar). Las instancias
+ * se completan solas cuando pasa su fecha.
  * Se renderiza dentro de `.instance-header` (dos nodos raíz: datos + acciones).
  */
 defineProps<{
@@ -15,7 +16,6 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'share'): void;
   (e: 'publish'): void;
-  (e: 'complete'): void;
   (e: 'toggle-expand'): void;
   (e: 'edit'): void;
   (e: 'delete'): void;
@@ -64,9 +64,6 @@ function instanceAvgScore(roster: { group1?: any[]; group2?: any[]; group3?: any
     </button>
     <button class="btn-publish-trigger" @click="emit('publish')">
       <i class="fas fa-paper-plane"></i> Publicar
-    </button>
-    <button class="btn-complete" :disabled="saving" title="Completar" @click="emit('complete')">
-      <i class="fas fa-flag-checkered"></i>
     </button>
     <button class="btn-expand" @click="emit('toggle-expand')">
       <i :class="expanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>

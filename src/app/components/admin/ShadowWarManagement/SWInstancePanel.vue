@@ -2,8 +2,7 @@
 import { ref } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import {
-  searchClans, createShadowWarManagement, closeShadowWarManagement,
-  completeShadowWarManagement, updateShadowWarClan,
+  searchClans, createShadowWarManagement, closeShadowWarManagement, updateShadowWarClan,
 } from '../../../../middlewares/services';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
 import CreateEnemyClanModal from '../../Modals/CreateEnemyClanModal.vue';
@@ -11,7 +10,7 @@ import type { EnemyClanRef, ShadowWar } from '../../../../interfaces';
 
 /**
  * Panel superior del formulario de Guerra Sombría: crear instancia, o ver/editar/
- * completar/eliminar la instancia activa.
+ * eliminar la instancia activa (se completa sola cuando pasa su fecha).
  */
 const props = defineProps<{
   shadowWarData: ShadowWar | null;
@@ -26,7 +25,7 @@ const editing   = defineModel<boolean>('editing', { required: true });
 
 const emit = defineEmits<{
   (e: 'created', shadowWar: ShadowWar): void;
-  /** La instancia se eliminó o se completó. */
+  /** La instancia se eliminó. */
   (e: 'ended'): void;
   (e: 'share'): void;
   (e: 'publish'): void;
@@ -82,13 +81,12 @@ async function createInstance() {
   }
 }
 
-/** Elimina ('close') o completa ('complete') la instancia activa. */
-async function endInstance(action: 'close' | 'complete') {
+/** Elimina la instancia activa. */
+async function deleteInstance() {
   if (!props.shadowWarId) return;
   saving.value = true;
   try {
-    if (action === 'close') await closeShadowWarManagement(props.shadowWarId, store.currentCharacter ?? undefined);
-    else                    await completeShadowWarManagement(props.shadowWarId, store.currentCharacter ?? undefined);
+    await closeShadowWarManagement(props.shadowWarId, store.currentCharacter ?? undefined);
     store.setShadowWarData(null);
     emit('ended');
   } finally {
@@ -133,9 +131,6 @@ async function saveEdit() {
     <div class="panel-header">
       <h5 class="create-title">{{ shadowWarData ? 'Instancia activa' : 'Nueva instancia' }}</h5>
       <div v-if="shadowWarData && !editing && !loading" class="panel-header-actions">
-        <button class="btn-complete-sw" :disabled="saving" @click="endInstance('complete')">
-          <i class="fas fa-flag-checkered"></i> Completar
-        </button>
         <div class="context-menu-wrapper">
           <button class="btn-dots" @click.stop="showContextMenu = !showContextMenu">
             <i class="fas fa-ellipsis-v"></i>
@@ -146,7 +141,7 @@ async function saveEdit() {
             <button class="ctx-item" @click="openEdit(); showContextMenu = false">
               <i class="fas fa-pen"></i> Editar
             </button>
-            <button class="ctx-item ctx-item--danger" :disabled="saving" @click="endInstance('close'); showContextMenu = false">
+            <button class="ctx-item ctx-item--danger" :disabled="saving" @click="deleteInstance(); showContextMenu = false">
               <i class="fas fa-trash"></i> Eliminar
             </button>
           </div>

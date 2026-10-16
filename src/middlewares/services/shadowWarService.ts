@@ -17,7 +17,7 @@ export const getShadowWars = async (page: number, characterId?: string | null): 
 export const getShadowWarById = async (id: string, characterId?: string | null): Promise<ShadowWar> =>
   axios.get<ShadowWar>(`${BASE}/${id}`, { params: { characterId }, ...opts }).then(r => r.data);
 
-/** Actualiza una instancia (fecha, clan enemigo, formación, resultado, completada…). */
+/** Actualiza una instancia (fecha, clan enemigo, formación, resultado…). */
 export const updateShadowWarClan = async (id: string, formData: Record<string, any>, characterId?: string | null): Promise<ShadowWar> =>
   axios.patch<ShadowWar>(`${BASE}/${id}`, withActor(formData, characterId), opts).then(r => r.data);
 
@@ -27,10 +27,6 @@ export const createShadowWarManagement = async (date: string, enemyClan?: string
 /** Elimina una instancia. */
 export const closeShadowWarManagement = async (id: string, characterId?: string | null): Promise<unknown> =>
   axios.delete(`${BASE}/${id}`, { params: characterId ? { characterId } : {}, ...opts }).then(r => r.data);
-
-/** Marca una instancia como completada. */
-export const completeShadowWarManagement = async (id: string, characterId?: string | null): Promise<ShadowWar> =>
-  axios.patch<ShadowWar>(`${BASE}/${id}`, withActor({ completed: true }, characterId), opts).then(r => r.data);
 
 export const respondToShadowWar = async (shadowWarId: string, characterId: string, action: RespondAction = 'confirm'): Promise<unknown> =>
   axios.post(`${BASE}/${shadowWarId}/respond`, { characterId, action }, opts).then(r => r.data);
