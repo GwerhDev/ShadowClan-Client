@@ -5,7 +5,7 @@ import { useStore } from '../../middlewares/store';
 import { useRouter, useRoute } from 'vue-router';
 import LogoComponent from './LogoComponent.vue';
 defineProps(["loading"]);
-const store: any = useStore();
+const store = useStore();
 const router = useRouter();
 const route = useRoute();
 

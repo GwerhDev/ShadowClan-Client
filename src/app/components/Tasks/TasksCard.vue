@@ -3,7 +3,7 @@
 import { useStore } from '../../../middlewares/store';
 import { Ref, ref } from 'vue'
 
-const store: any = useStore();
+const store = useStore();
 const props: any = defineProps({ todo: Object });
 
 const editionActive: Ref = ref(false);
@@ -70,7 +70,7 @@ async function updateEdit() {
 };
 
 async function handleDeleteTaskConfirmation() {
-  await store.handleDeleteTask(props.todo._id, store.currentUser.taskdate);
+  await store.handleDeleteTask(props.todo._id);
   await store.handleGetTask(store.currentUser.taskdate, store.currentUser.tasktype);
 
   deleteConfirmationActive.value = false;

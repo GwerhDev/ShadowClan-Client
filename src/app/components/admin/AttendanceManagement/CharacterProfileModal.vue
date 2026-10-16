@@ -16,7 +16,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: []; refresh: [] }>();
 
-const store: any = useStore();
+const store = useStore();
 const chars       = computed(() => store.currentUser.userData?.character ?? []);
 const active      = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
 const characterId = computed(() => active.value?._id ?? store.currentCharacter);
@@ -121,9 +121,9 @@ async function confirmEdit() {
       power:            editForm.value.power             ?? undefined,
       resistance:       editForm.value.resistance       ?? undefined,
     };
-    await updateClanMember(props.clanId, props.member._id, payload);
+    await updateClanMember(props.clanId!, props.member._id, payload);
     if (props.isLeader && props.member.role !== 'leader' && editForm.value.role !== props.member.role) {
-      await updateMemberRole(props.clanId, props.member._id, editForm.value.role);
+      await updateMemberRole(props.clanId!, props.member._id, editForm.value.role);
       props.member.role = editForm.value.role;
     }
     Object.assign(props.member, payload);
@@ -137,7 +137,7 @@ async function confirmEdit() {
 async function confirmDelete() {
   saving.value = true;
   try {
-    await removeClanMember(props.clanId, props.member._id, deleteReason.value.trim() || undefined);
+    await removeClanMember(props.clanId!, props.member._id, deleteReason.value.trim() || undefined);
     emit('refresh');
     emit('close');
   } finally {

@@ -1,0 +1,31 @@
+.stat-card {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: rgba(255, 255, 255, .35);
+}
+.stat-value-row {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+.score-win  { font-size: 1.6rem; font-weight: 700; color: #4ade80; }
+.score-sep  { font-size: 1.4rem; font-weight: 300; color: rgba(255, 255, 255, .25); }
+.score-lose { font-size: 1.6rem; font-weight: 700; color: #f87171; }
+.score-total { font-size: .7rem; color: rgba(255,255,255,.3); margin-top: -.25rem; }

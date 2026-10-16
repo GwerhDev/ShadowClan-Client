@@ -1,10 +1,13 @@
 import { defineStore } from 'pinia';
-import { logout, createTask, deleteUser, getTasks, getUserData, getUsers, updateUser, updateUserData, deleteTask, updateTask, chatbotQuery, getAdminNotifications, createCompletedTask, deleteCompletedTask, getChatbotModel, getWarbands, createCharacter, getCharacter, getAdminCharacters, createAdminCharacter, updateAdminCharacter, deleteAdminCharacter, getActiveShadowWar, getClans, createClan, updateClan, deleteClan, getShadowWars, updateShadowWar, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, reviewClanRequest, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById, deactivateAccursedTower, closeShadowWarManagement, getAccursedTowerManagement } from '../services';
-import { storeState } from '../../interfaces/storeState';
-import { ShadowWar } from '../../interfaces';
-import { claimCharacterAsAdmin, unclaimCharacterAsAdmin } from '../services/admin/characters';
+import { logout, createTask, getTasks, getUserData, deleteTask, updateTask, createCompletedTask, deleteCompletedTask, getCharacter, getActiveShadowWar, getShadowWars, getShadowWarById, getClanRequests, createClanRequest, getClanRequestsManagement, deleteAccount, getClanInvitations, createCharacterClaim, createCharacterCreationRequest, getActiveAccursedTower, getHistory, getAccursedTowerById, deactivateAccursedTower, closeShadowWarManagement, getAccursedTowerManagement } from '../services';
+import type { storeState, AppNotification } from '../../interfaces/storeState';
+import type { AccursedTower, CharacterCreationInput, HistoryType, ShadowWar, TaskInput } from '../../interfaces';
 import { WEB_URL } from '../misc/const';
 import { getStoredCharacter, setStoredCharacter } from '../misc/characterStorage';
+
+// Promesa compartida de la carga inicial de /auth: el guard del router y App.vue
+// esperan la misma petición en vez de lanzar dos.
+let userDataPromise: Promise<void> | null = null;
 
 export const useStore = defineStore('store', {
   state: (): storeState => ({
@@ -15,12 +18,10 @@ export const useStore = defineStore('store', {
       taskdate: null,
       tasktype: '',
       taskloading: false,
-      guidetype: 'chatbot',
-      chatbotmodel: '',
       shadowWarData: null,
       shadowWarError: null,
-      towerWarList: [] as any[],
-      towerWarError: null as string | null,
+      towerWarList: [],
+      towerWarError: null,
     },
 
     layout: {
@@ -28,21 +29,13 @@ export const useStore = defineStore('store', {
     },
 
     admin: {
-      users: null,
-      tasks: null,
-      clantasks: null,
-      warbandtasks: null,
-      notifications: null,
-      characters: null,
-      clans: null,
       shadowWars: null,
       currentShadowWar: null,
       history: [],
       currentAccursedTower: null,
     },
     currentCharacter: "",
-    lastUpdatedTower: null as any,
-    warbands: null,
+    lastUpdatedTower: null,
     notifications: [],
     pendingInboxCount: 0,
     pendingRequestsCount: 0,
@@ -51,7 +44,7 @@ export const useStore = defineStore('store', {
 
   getters: {
     userBattleInfo(): { category: string; match: number; group: number }[] {
-      const battle = (this.currentUser as any).shadowWarData?.battle;
+      const battle = this.currentUser.shadowWarData?.battle as Record<string, any[]> | undefined;
       const charId = this.currentCharacter;
       if (!battle || !charId) return [];
       const result: { category: string; match: number; group: number }[] = [];
@@ -79,11 +72,11 @@ export const useStore = defineStore('store', {
       window.location.href = WEB_URL + '/login';
     },
 
-    setTaskDate(date: any) {
+    setTaskDate(date: Date | string | null) {
       this.currentUser.taskdate = date;
     },
 
-    setTaskType(type: any) {
+    setTaskType(type: string) {
       this.currentUser.tasktype = type;
     },
 
@@ -91,15 +84,11 @@ export const useStore = defineStore('store', {
       this.currentUser.taskloading = loading;
     },
 
-    setGuideType(type: string) {
-      this.currentUser.guidetype = type;
-    },
-
     setTab(tab: { value: string; label: string }) {
       this.layout.tab = tab;
     },
 
-    setShadowWarData(data: any) {
+    setShadowWarData(data: ShadowWar | null) {
       this.currentUser.shadowWarData = data;
     },
 
@@ -120,7 +109,7 @@ export const useStore = defineStore('store', {
       }
     },
 
-    setTowerWarList(list: any[]) {
+    setTowerWarList(list: AccursedTower[]) {
       this.currentUser.towerWarList = list;
     },
 
@@ -143,6 +132,11 @@ export const useStore = defineStore('store', {
         const fresh = await getAccursedTowerManagement(towerId, this.currentCharacter ?? undefined);
         if (fresh) this.lastUpdatedTower = fresh;
       } catch { /* ignore */ }
+    },
+
+    ensureUserData(): Promise<void> {
+      if (!userDataPromise) userDataPromise = this.handleUserData();
+      return userDataPromise;
     },
 
     async handleUserData() {
@@ -168,65 +162,17 @@ export const useStore = defineStore('store', {
       }
     },
 
-    async handleUpdateUserData(formData: any, id: string) {
-      await updateUserData(formData, id);
-      this.currentUser = await getUserData();
-    },
-
-    async handleGetUsers() {
-      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin") {
-        this.admin.users = await getUsers();
-      }
-    },
-
-    async handleGetAdminCharacters() {
-      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin") {
-        this.admin.characters = await getAdminCharacters();
-      }
-    },
-
-    async handleCreateAdminCharacter(formData: any) {
-      try {
-        const response: any = await createAdminCharacter(formData);
-        return response;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleUpdateAdminCharacter(formData: any) {
-      try {
-        const response = await updateAdminCharacter(formData);
-        this.admin.characters = response.characters;
-
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleDeleteMember(id: string) {
-      await deleteAdminCharacter(id);
-    },
-
-    async handleUpdateUser(formData: any, id: string) {
-      await updateUser(id, formData);
-    },
-
-    async handleDeleteUser(id: string) {
-      await deleteUser(id);
-    },
-
-    async handleCreateCompletedTask(id: string, formData: any) {
+    async handleCreateCompletedTask(id: string, formData: TaskInput) {
       await createCompletedTask(id, formData);
     },
 
-    async handleDeleteCompletedTask(id: string, formData: any) {
+    async handleDeleteCompletedTask(id: string, formData: TaskInput) {
       await deleteCompletedTask(id, formData);
     },
 
-    async handleGetTask(date: Date, type: string) {
+    async handleGetTask(date: Date | string | null, type: string) {
       try {
-        const response: any = await getTasks(date, type, this.currentCharacter);
+        const response = await getTasks(date, type, this.currentCharacter);
         this.currentUser.task = response;
         return;
       } catch (error) {
@@ -234,18 +180,18 @@ export const useStore = defineStore('store', {
       }
     },
 
-    async handleCreateTask(formData: any) {
+    async handleCreateTask(formData: TaskInput) {
       try {
-        const response: any = await createTask(formData);
+        const response = await createTask(formData);
         return response;
       } catch (error) {
         console.error(error);
       }
     },
 
-    async handleUpdateTask(id: string, formData: any) {
+    async handleUpdateTask(id: string, formData: TaskInput) {
       try {
-        const response: any = await updateTask(id, formData);
+        const response = await updateTask(id, formData);
         return response;
       } catch (error) {
         console.error(error);
@@ -254,35 +200,7 @@ export const useStore = defineStore('store', {
 
     async handleDeleteTask(id: string) {
       try {
-        const response: any = await deleteTask(id);
-        return response;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleChatbotQuery(formData: any) {
-      try {
-        const response: any = await chatbotQuery(formData);
-        return response;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleGetAdminNotifications() {
-      try {
-        this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin" ? this.admin.notifications = await getAdminNotifications() : null;
-        return;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleGetChatbotModel() {
-      try {
-        const response: string = await getChatbotModel();
-        this.currentUser.chatbotmodel = response;
+        const response = await deleteTask(id);
         return response;
       } catch (error) {
         console.error(error);
@@ -291,103 +209,32 @@ export const useStore = defineStore('store', {
 
     async handleGetCharacter() {
       try {
-        const response: any = await getCharacter();
-        this.currentUser.userData.character = response;
+        const response = await getCharacter();
+        this.currentUser.userData!.character = response;
         return response;
       } catch (error) {
         console.error(error);
       }
     },
 
-    async handleCreateCharacter(formData: any) {
-      const response: any = await createCharacter(formData);
-      if(response?.error) {
-        return response;
-      };
-
-      const newCharacter = response.character;
-      if (newCharacter) {
-        if (!Array.isArray(this.currentUser.userData.character)) {
-          this.currentUser.userData.character = [];
-        }
-        this.currentUser.userData.character.push(newCharacter);
-        this.setCurrentCharacter(newCharacter._id);
-      }
-      return response;
-    },
-
-    async handleClaimCharacterAsAdmin(formData: any) {
-      try {
-        const response = await claimCharacterAsAdmin(formData);
-        this.admin.users = response.users;
-        this.admin.characters = response.characters;
-
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleUnclaimCharacterAsAdmin(formData: any) {
-      try {
-        const response = await unclaimCharacterAsAdmin(formData);
-        this.admin.users = response.users;
-        this.admin.characters = response.characters;
-
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleGetWarbands() {
-      try {
-        const response: any = await getWarbands();
-        this.warbands = response;
-        return response;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleGetClans() {
-      this.admin.clans = await getClans();
-    },
-
-    async handleCreateClan(formData: any) {
-      try {
-        const response: any = await createClan(formData);
-        this.admin.clans = response;
-        return response;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async handleUpdateClan(formData: any) {
-      const response = await updateClan(formData);
-      this.admin.clans = response;
-      return;
-    },
-
-    async handleDeleteClan(id: string) {
-      const response = await deleteClan(id);
-      this.admin.clans = response;
-      return response;
-    },
 
     async handleGetShadowWars(page: number = 1, append: boolean = false) {
-      if (this.currentUser.userData?.role === "admin" || this.currentUser.userData?.role === "super_admin" || this.currentUser.userData?.role === "leader" || this.currentUser.userData?.role === "officer") {
-        const newShadowWars = await getShadowWars(page, this.currentCharacter ?? undefined);
+      // El backend filtra por el clan del personaje activo; sin personaje no hay nada que pedir.
+      if (!this.currentCharacter) return false;
+      try {
+        const newShadowWars = await getShadowWars(page, this.currentCharacter);
         if (append && this.admin.shadowWars) {
           this.admin.shadowWars = [...this.admin.shadowWars, ...newShadowWars];
         } else {
           this.admin.shadowWars = newShadowWars;
         }
         return newShadowWars.length > 0; // Return true if more data was fetched, false otherwise
+      } catch {
+        return false;
       }
-      return false;
     },
 
-    async handleGetHistory(page: number = 1, type: 'all' | 'shadow_war' | 'accursed_tower' = 'all', append: boolean = false, q?: string) {
+    async handleGetHistory(page: number = 1, type: HistoryType = 'all', append: boolean = false, q?: string) {
       try {
         const res = await getHistory(page, type, this.currentCharacter ?? undefined, q);
         const items: any[] = res.data ?? [];
@@ -404,16 +251,16 @@ export const useStore = defineStore('store', {
     },
 
     async handleDeleteTowerWar(id: string) {
-      await deactivateAccursedTower(id);
+      await deactivateAccursedTower(id, this.currentCharacter ?? undefined);
       this.admin.history = (this.admin.history ?? []).filter((w: any) => w._id !== id);
-      this.currentUser.towerWarList = this.currentUser.towerWarList.filter((w: any) => w._id !== id);
-      if ((this.admin as any).currentAccursedTower?._id === id) {
-        (this.admin as any).currentAccursedTower = null;
+      this.currentUser.towerWarList = this.currentUser.towerWarList.filter(w => w._id !== id);
+      if (this.admin.currentAccursedTower?._id === id) {
+        this.admin.currentAccursedTower = null;
       }
     },
 
     async handleDeleteShadowWarHistory(id: string) {
-      await closeShadowWarManagement(id);
+      await closeShadowWarManagement(id, this.currentCharacter ?? undefined);
       this.admin.history = (this.admin.history ?? []).filter((w: any) => w._id !== id);
       if (this.currentUser.shadowWarData?._id === id) {
         this.currentUser.shadowWarData = null;
@@ -439,18 +286,6 @@ export const useStore = defineStore('store', {
         return response;
       } catch (error) {
         console.error('Error fetching shadow war:', error);
-        throw error;
-      }
-    },
-
-    async handleUpdateShadowWar(id: string, updatedShadowWar: Partial<ShadowWar>) {
-      try {
-        const response = await updateShadowWar(id, updatedShadowWar);
-        this.admin.currentShadowWar = response;
-
-        return response;
-      } catch (error) {
-        console.error('Error updating shadow war:', error);
         throw error;
       }
     },
@@ -487,28 +322,15 @@ export const useStore = defineStore('store', {
       }
     },
 
-    async handleGetClanRequestsManagement() {
-      try {
-        return await getClanRequestsManagement(this.currentCharacter ?? undefined);
-      } catch (error) {
-        console.error(error);
-        return [];
-      }
-    },
-
-    async handleReviewClanRequest(id: string, action: 'accept' | 'reject') {
-      return await reviewClanRequest(id, action);
-    },
-
     async handleCreateCharacterClaim(characterId: string) {
       return await createCharacterClaim(characterId);
     },
 
-    async handleCreateCharacterCreationRequest(formData: { name: string; currentClass: string; resonance?: number }) {
+    async handleCreateCharacterCreationRequest(formData: CharacterCreationInput) {
       return await createCharacterCreationRequest(formData);
     },
 
-    addNotification(notification: { id: string; type: string; targetType: 'user' | 'character'; targetId?: string | null; data: any }) {
+    addNotification(notification: Omit<AppNotification, 'read' | 'targetId'> & { targetId?: string | null }) {
       if (this.notifications.some(n => n.id === notification.id)) return;
       this.notifications.unshift({ ...notification, targetId: notification.targetId ?? null, read: false });
       const isForActiveChar =
@@ -528,7 +350,7 @@ export const useStore = defineStore('store', {
     async handleFetchPendingRequests() {
       try {
         const requests = await getClanRequestsManagement(this.currentCharacter ?? undefined) ?? [];
-        this.pendingRequestsCount = (requests as any[]).filter((r: any) => r.status === 'pending').length;
+        this.pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
       } catch {
         // silently ignore
       }
@@ -542,10 +364,6 @@ export const useStore = defineStore('store', {
       } catch {
         // silently ignore — badge stays at 0
       }
-    },
-
-    markNotificationsRead() {
-      this.notifications.forEach(n => { n.read = true; });
     },
 
     clearNotifications() {

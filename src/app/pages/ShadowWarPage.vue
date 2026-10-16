@@ -5,8 +5,9 @@ import AppLayout from '../layouts/AppLayout.vue';
 import EmptyState from '../components/common/EmptyState.vue';
 import { useRoute, useRouter } from 'vue-router';
 import UnclaimedClanNotice from '../components/common/UnclaimedClanNotice.vue';
+import { SW_CATEGORY_LABELS } from '../../middlewares/misc/shadowWar';
 
-const store: any = useStore();
+const store = useStore();
 const nextWarDate    = ref('');
 const enemyClanName  = ref('');
 const loading        = ref(true);
@@ -26,10 +27,10 @@ const clanUnclaimed = computed(() => activeClan.value?.status === 'unclaimed');
 const tabs = computed(() => {
   if (!shadowWarData.value) return [];
   return [
-    { id: 'exalted', name: 'Sublime',   icon: 'fas fa-crown',       path: '/shadow-war/exalted' },
-    { id: 'eminent', name: 'Eminente',  icon: 'fas fa-trophy',      path: '/shadow-war/eminent' },
-    { id: 'famed',   name: 'Célebre',   icon: 'fas fa-medal',       path: '/shadow-war/famed'   },
-    { id: 'proud',   name: 'Imponente', icon: 'fas fa-fist-raised',  path: '/shadow-war/proud'  },
+    { id: 'exalted', name: SW_CATEGORY_LABELS.exalted, icon: 'fas fa-crown',       path: '/shadow-war/exalted' },
+    { id: 'eminent', name: SW_CATEGORY_LABELS.eminent, icon: 'fas fa-trophy',      path: '/shadow-war/eminent' },
+    { id: 'famed',   name: SW_CATEGORY_LABELS.famed,   icon: 'fas fa-medal',       path: '/shadow-war/famed'   },
+    { id: 'proud',   name: SW_CATEGORY_LABELS.proud,   icon: 'fas fa-fist-raised', path: '/shadow-war/proud'   },
   ];
 });
 

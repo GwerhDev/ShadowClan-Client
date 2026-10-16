@@ -1,89 +1,43 @@
 import axios from "axios"
 import { API_URL } from "../misc/const"
+import type {
+  AttendanceCycle, AttendanceCycleReport, AttendanceRange, AttendanceSummary, AttendanceWeek,
+  CycleActivityType, MembersAttendanceSummary, PaginatedResponse,
+} from "../../interfaces";
 
-export const getShadowWarByDate: any = async (date: string, characterId?: string) => {
-  const response: any = await axios.get(API_URL + "/clan-management/shadow-wars/by-date", { params: { date, characterId }, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+const BASE = API_URL + "/clan-management/attendance";
+const opts = { withCredentials: true };
 
-export const getAttendanceWeek: any = async (date: string, characterId?: string, opts?: { page?: number; limit?: number; q?: string }) => {
-  const response: any = await axios.get(API_URL + "/clan-management/attendance/week", {
-    params: { date, characterId, ...opts },
-    withCredentials: true,
-  }).then(response => response.data)
-  return response;
-};
+export const getAttendanceWeek = async (date: string, characterId?: string, pageOpts?: { page?: number; limit?: number; q?: string }): Promise<AttendanceWeek> =>
+  axios.get<AttendanceWeek>(BASE + "/week", { params: { date, characterId, ...pageOpts }, ...opts }).then(r => r.data);
 
-export const getShadowWarAttendance: any = async (shadowWarId: string, characterId?: string) => {
-  const response: any = await axios.get(API_URL + `/clan-management/attendance/shadow-war/${shadowWarId}`, { params: { characterId }, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+export const getClanMembersAttendanceSummary = async (characterId: string, range: AttendanceRange = '30'): Promise<MembersAttendanceSummary> =>
+  axios.get<MembersAttendanceSummary>(BASE + '/members-summary', { params: { characterId, range }, ...opts }).then(r => r.data);
 
-export const getClanMembersAttendanceSummary: any = async (characterId: string, range: '30' | '60' | '90' | 'cycle' = '30') => {
-  const response: any = await axios.get(API_URL + '/clan-management/attendance/members-summary', {
-    params: { characterId, range },
-    withCredentials: true,
-  }).then(r => r.data);
-  return response as { hasCycle: boolean; cycleIsOpen: boolean; clanPercentage: number; data: Record<string, { percentage: number; attended: number; totalActivities: number }> };
-};
+export const getMemberAttendanceSummary = async (characterId: string, targetId: string, range: AttendanceRange = '30'): Promise<AttendanceSummary> =>
+  axios.get<AttendanceSummary>(BASE + `/member/${targetId}/summary`, { params: { characterId, range }, ...opts }).then(r => r.data);
 
-export const getMemberAttendanceSummary: any = async (characterId: string, targetId: string, range: '30' | '60' | '90' | 'cycle' = '30') => {
-  const response: any = await axios.get(API_URL + `/clan-management/attendance/member/${targetId}/summary`, {
-    params: { characterId, range },
-    withCredentials: true,
-  }).then(r => r.data);
-  return response;
-};
+export const setMemberAttendance = async (shadowWarId: string, memberId: string, attended: boolean, characterId?: string): Promise<unknown> =>
+  axios.patch(BASE + `/shadow-war/${shadowWarId}/members/${memberId}`, { attended, characterId }, opts).then(r => r.data);
 
-export const setMemberAttendance: any = async (shadowWarId: string, memberId: string, attended: boolean, characterId?: string) => {
-  const response: any = await axios.patch(
-    API_URL + `/clan-management/attendance/shadow-war/${shadowWarId}/members/${memberId}`,
-    { attended, characterId },
-    { withCredentials: true }
-  ).then(response => response.data)
-  return response;
-};
+// ── Ciclos ───────────────────────────────────────────────────────────────────
 
-export const getAttendanceCycles: any = async (page?: number, characterId?: string, activityType?: 'shadow' | 'immortal') => {
-  const response: any = await axios.get(API_URL + "/clan-management/attendance/cycles", { params: { page: page || 1, characterId, activityType }, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+export const getAttendanceCycles = async (page?: number, characterId?: string, activityType?: CycleActivityType): Promise<PaginatedResponse<AttendanceCycle>> =>
+  axios.get<PaginatedResponse<AttendanceCycle>>(BASE + "/cycles", { params: { page: page || 1, characterId, activityType }, ...opts }).then(r => r.data);
 
-export const createAttendanceCycle: any = async (data: { startDate: string; endDate?: string; activityType: 'shadow' | 'immortal' }, characterId?: string) => {
-  const response: any = await axios.post(
-    API_URL + "/clan-management/attendance/cycles",
-    { ...data, characterId },
-    { withCredentials: true }
-  ).then(response => response.data)
-  return response;
-};
+export const createAttendanceCycle = async (data: { startDate: string; endDate?: string; activityType: CycleActivityType }, characterId?: string): Promise<AttendanceCycle> =>
+  axios.post<AttendanceCycle>(BASE + "/cycles", { ...data, characterId }, opts).then(r => r.data);
 
-export const updateAttendanceCycle: any = async (cycleId: string, data: { startDate?: string; endDate?: string; activityType?: 'shadow' | 'immortal' }, characterId?: string) => {
-  const response: any = await axios.patch(
-    API_URL + `/clan-management/attendance/cycles/${cycleId}`,
-    { ...data, characterId },
-    { withCredentials: true }
-  ).then(response => response.data)
-  return response;
-};
+export const updateAttendanceCycle = async (cycleId: string, data: { startDate?: string; endDate?: string; activityType?: CycleActivityType }, characterId?: string): Promise<AttendanceCycle> =>
+  axios.patch<AttendanceCycle>(BASE + `/cycles/${cycleId}`, { ...data, characterId }, opts).then(r => r.data);
 
-export const deleteAttendanceCycle: any = async (cycleId: string, characterId?: string) => {
-  const response: any = await axios.delete(API_URL + `/clan-management/attendance/cycles/${cycleId}`, { params: { characterId }, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+export const deleteAttendanceCycle = async (cycleId: string, characterId?: string): Promise<unknown> =>
+  axios.delete(BASE + `/cycles/${cycleId}`, { params: { characterId }, ...opts }).then(r => r.data);
 
-export const getAttendanceCycleReport: any = async (cycleId: string, characterId?: string) => {
-  const response: any = await axios.get(API_URL + `/clan-management/attendance/cycles/${cycleId}`, { params: { characterId }, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+export const getAttendanceCycleReport = async (cycleId: string, characterId?: string): Promise<AttendanceCycleReport> =>
+  axios.get<AttendanceCycleReport>(BASE + `/cycles/${cycleId}`, { params: { characterId }, ...opts }).then(r => r.data);
 
-export const getMyAttendance: any = async (characterId: string, range: '30' | '60' | '90' | 'cycle' = '30') => {
-  const response: any = await axios.get(API_URL + `/attendance/character/${characterId}`, { params: { range }, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+// ── Público ──────────────────────────────────────────────────────────────────
+
+export const getMyAttendance = async (characterId: string, range: AttendanceRange = '30'): Promise<AttendanceSummary> =>
+  axios.get<AttendanceSummary>(API_URL + `/attendance/character/${characterId}`, { params: { range }, ...opts }).then(r => r.data);

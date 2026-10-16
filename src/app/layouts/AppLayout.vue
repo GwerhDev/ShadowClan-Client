@@ -9,7 +9,7 @@ import { computed } from 'vue';
 import NavComponent from '../components/NavComponent.vue';
 import NavMobileComponent from '../components/NavMobileComponent.vue';
 
-const store: any = useStore();
+const store = useStore();
 const route = useRoute();
 
 const props = defineProps({

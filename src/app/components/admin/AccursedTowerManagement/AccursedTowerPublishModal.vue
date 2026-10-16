@@ -7,7 +7,7 @@ import CustomModal from '../../Modals/CustomModal.vue';
 const props = defineProps<{ tower: any }>();
 const emit = defineEmits(['close']);
 
-const store            = useStore() as any;
+const store            = useStore();
 const content          = ref('');
 const posting          = ref(false);
 const error            = ref('');

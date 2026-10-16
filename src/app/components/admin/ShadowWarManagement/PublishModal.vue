@@ -4,7 +4,7 @@ import { useStore } from '../../../../middlewares/store';
 import { createClanPost } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
 
-const store: any = useStore();
+const store = useStore();
 const emit = defineEmits(['close']);
 
 const content = ref('');

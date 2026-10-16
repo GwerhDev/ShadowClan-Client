@@ -6,7 +6,7 @@ import EmptyState from '../components/common/EmptyState.vue';
 import UnclaimedClanNotice from '../components/common/UnclaimedClanNotice.vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const store: any = useStore();
+const store = useStore();
 const loading       = ref(true);
 const route         = useRoute();
 const router        = useRouter();

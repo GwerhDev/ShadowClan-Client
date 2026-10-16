@@ -12,7 +12,7 @@ import { updateCharacter, leaveClan, getMyAttendance } from '../../../middleware
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const store: any = useStore();
+const store = useStore();
 const router = useRouter();
 const showAddModal = ref(false);
 const linkingCharacter = ref(false);
@@ -263,7 +263,7 @@ function getClassName(value: string) {
   return classes.find(c => c.value === value)?.name ?? value;
 }
 
-function getClassImage(value: string) {
+function getClassImage(value: string | undefined) {
   return classes.find(c => c.value === value)?.image ?? '';
 }
 

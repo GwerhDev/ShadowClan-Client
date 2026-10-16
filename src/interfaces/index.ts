@@ -1,3 +1,5 @@
+export * from './api';
+
 export interface Character {
   _id: string;
   name?: string;
@@ -85,4 +87,27 @@ export interface AttendanceCycleReport {
   cycle: AttendanceCycle;
   shadowWars: Array<{ _id: string; date: Date; enemyClan?: Clan; result?: string }>;
   members: AttendanceCycleReportMember[];
+}
+/** Referencia mínima a un clan (p. ej. un clan enemigo recién creado). */
+export interface EnemyClanRef {
+  _id: string;
+  name: string;
+}
+
+/** Plantilla de formación guardada por el clan (Guerra Sombría o Torre Maldita). */
+export interface AlignmentSlot {
+  name: string;
+  data: any;
+}
+
+export interface SavedAlignments {
+  last: any | null;
+  custom: AlignmentSlot[];
+}
+
+
+/** Elemento de la bandeja de misivas (invitación, solicitud revisada o asignación). */
+export interface InboxItem {
+  type: 'clan-invitation' | 'clan-request-reviewed' | 'character-request-reviewed' | 'shadowwar-assignment' | 'tower-assignment' | string;
+  raw: any;
 }

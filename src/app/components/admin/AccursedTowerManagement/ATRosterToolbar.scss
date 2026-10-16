@@ -1,0 +1,104 @@
+// ── Alignment toolbar ─────────────────────────────────────────────────────────
+
+.roster-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding-bottom: .75rem;
+  margin-bottom: .75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+}
+
+.roster-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+
+  &--apply { gap: .35rem; }
+}
+
+.apply-label {
+  font-size: .62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255, 255, 255, .25);
+  flex-shrink: 0;
+}
+
+.alignment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.btn-chip-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-left: none;
+  border-radius: 0 5px 5px 0;
+  color: rgba(255, 255, 255, .25);
+  cursor: pointer;
+  font-size: .55rem;
+  transition: color .12s, background .12s;
+
+  &:hover:not(:disabled) { color: rgba(229, 115, 115, .8); background: rgba(229, 115, 115, .07); }
+  &:disabled { opacity: .4; cursor: not-allowed; }
+}
+
+.btn-roster-action {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .25rem .7rem;
+  height: 30px;
+  font-family: 'Cinzel', serif;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .15);
+  color: rgba(255, 255, 255, .45);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+
+  i { font-size: .62rem; }
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, .05);
+    border-color: rgba(255, 255, 255, .3);
+    color: rgba(255, 255, 255, .8);
+  }
+
+  &:disabled { opacity: .4; cursor: not-allowed; }
+
+  &--apply {
+    border-color: rgba(227, 210, 168, .2);
+    color: rgba(227, 210, 168, .5);
+    border-radius: 5px 0 0 5px;
+
+    &:hover:not(:disabled) {
+      background: rgba(227, 210, 168, .06);
+      border-color: rgba(227, 210, 168, .45);
+      color: rgba(227, 210, 168, .9);
+    }
+  }
+
+  &--reset {
+    border-color: rgba(229, 115, 115, .2);
+    color: rgba(229, 115, 115, .45);
+
+    &:hover:not(:disabled) {
+      background: rgba(229, 115, 115, .07);
+      border-color: rgba(229, 115, 115, .4);
+      color: rgba(229, 115, 115, .85);
+    }
+  }
+}

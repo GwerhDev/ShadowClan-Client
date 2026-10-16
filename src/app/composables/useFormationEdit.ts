@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue';
+import { swCategoryLabel } from '../../middlewares/misc/shadowWar';
 
 export interface SWSlotRef {
   cat: string;
@@ -7,12 +8,10 @@ export interface SWSlotRef {
   memberIndex: number;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  exalted: 'Sublime',
-  eminent: 'Eminente',
-  famed:   'Célebre',
-  proud:   'Imponente',
-};
+/** Clave única de un espacio de la formación (usada para el estado de arrastre). */
+export function swSlotKey(s: SWSlotRef): string {
+  return `${s.cat}-${s.matchIdx}-${s.group}-${s.memberIndex}`;
+}
 
 export interface AssignedDetail {
   label: string;
@@ -26,9 +25,7 @@ export function useSWFormationEdit(getBuffer: () => Record<string, any[]>) {
   const dragSource  = ref<SWSlotRef | null>(null);
   const dragOverKey = ref<string | null>(null);
 
-  function slotKey(s: SWSlotRef) {
-    return `${s.cat}-${s.matchIdx}-${s.group}-${s.memberIndex}`;
-  }
+  const slotKey = swSlotKey;
 
   function getDragChar(s: SWSlotRef) {
     return getBuffer()[s.cat]?.[s.matchIdx]?.[s.group]?.character?.[s.memberIndex];
@@ -75,7 +72,7 @@ export function useSWFormationEdit(getBuffer: () => Record<string, any[]>) {
     for (const [cat, matches] of Object.entries(getBuffer())) {
       for (let i = 0; i < matches.length; i++) {
         const match = matches[i];
-        const base = (CATEGORY_LABELS[cat] ?? cat) + ' · P' + (i + 1);
+        const base = swCategoryLabel(cat) + ' · P' + (i + 1);
         for (const grp of ['group1', 'group2'] as const) {
           (match[grp]?.character ?? []).forEach((c: any, memberIndex: number) => {
             if (c?._id) {

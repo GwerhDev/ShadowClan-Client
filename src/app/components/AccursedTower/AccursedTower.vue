@@ -6,7 +6,7 @@ import { respondToPublicTowerWar } from '../../../middlewares/services';
 import ShadowWarMemberCard from '../ShadowWar/ShadowWarMemberCard.vue';
 import EmptyState from '../common/EmptyState.vue';
 
-const store: any = useStore();
+const store = useStore();
 const route      = useRoute();
 
 const towerWarList = computed(() => store.currentUser.towerWarList as any[]);

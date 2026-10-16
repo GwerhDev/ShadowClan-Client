@@ -3,7 +3,7 @@ import { computed, onMounted } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import { useStore } from '../../middlewares/store';
 
-const store: any = useStore();
+const store = useStore();
 
 const DASHBOARD_URL = import.meta.env.DEV ? 'http://localhost:5175' : 'https://dashboard.shadowclan.cl';
 

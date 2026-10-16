@@ -5,7 +5,7 @@ import SearchSelector from '../Selectors/SearchSelector.vue';
 import LinkCharacterForm from './LinkCharacterForm.vue';
 import { getMyCharacterClaims, getMyCharacterCreationRequests, searchClans, createClanCreationRequest, getMyClanCreationRequests, cancelClanRequest } from '../../../middlewares/services';
 import { getSocket } from '../../../middlewares/socket';
-const store: any = useStore();
+const store = useStore();
 
 const linkingCharacter = ref(false);
 const selectedClanId = ref('');

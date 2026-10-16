@@ -20,7 +20,7 @@ const searchQuery   = ref('');
 const sentinel      = ref<HTMLElement | null>(null);
 let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
-const store: any = useStore();
+const store = useStore();
 const loading    = ref(true);
 const route      = useRoute();
 

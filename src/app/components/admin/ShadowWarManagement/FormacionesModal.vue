@@ -7,8 +7,8 @@ import { getHistory } from '../../../../middlewares/services';
 const props = defineProps<{
   savedAlignments: { last: any | null; custom: { name: string; data: any }[] };
   clanMembers: any[];
-  clanId: string;
-  characterId: string;
+  clanId: string | null;
+  characterId: string | null;
   currentWarId?: string | null;
 }>();
 
@@ -93,7 +93,7 @@ async function loadHistory(reset = false) {
   if (reset) { page.value = 1; history.value = []; }
   loadingHist.value = true;
   try {
-    const res = await getHistory(page.value, 'shadow_war', props.characterId, search.value || undefined);
+    const res = await getHistory(page.value, 'shadow_war', props.characterId ?? undefined, search.value || undefined);
     const incoming = (res.data ?? []).filter((e: any) => !props.currentWarId || String(e._id) !== String(props.currentWarId));
     history.value   = reset ? incoming : [...history.value, ...incoming];
     totalPages.value = res.pages ?? 1;

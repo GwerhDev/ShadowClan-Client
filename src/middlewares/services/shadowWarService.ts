@@ -1,76 +1,44 @@
 import axios from "axios"
 import { API_URL } from "../misc/const"
+import type { RespondAction, ShadowWar } from "../../interfaces";
 
-export const createShadowWar: any = async (formData: any) => {
-  const response: any = await axios.post(API_URL + "/clan-management/shadow-wars", formData, { withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+const BASE = API_URL + "/clan-management/shadow-wars";
+const opts = { withCredentials: true };
 
-export const getShadowWars: any = async (page: number, characterId?: string) => {
-  const response: any = await axios.get(API_URL + "/clan-management/shadow-wars", { params: { page: page || 1, characterId }, withCredentials: true })
-    .then(response => response.data.data)
-  return response;
-};
+/** Agrega `characterId` al cuerpo solo si viene definido. */
+const withActor = <T extends object>(body: T, characterId?: string | null) =>
+  characterId ? { ...body, characterId } : body;
 
-export const getShadowWarById: any = async (id: string, characterId?: string) => {
-  const response: any = await axios.get(API_URL + `/clan-management/shadow-wars/${id}`, { params: { characterId }, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+// ── Gestión (líder/oficial) ──────────────────────────────────────────────────
 
-export const updateShadowWar: any = async (id: string, formData: any, characterId?: string) => {
-  const body = characterId ? { ...formData, characterId } : formData;
-  const response: any = await axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, body, { withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+export const getShadowWars = async (page: number, characterId?: string | null): Promise<ShadowWar[]> =>
+  axios.get(BASE, { params: { page: page || 1, characterId }, ...opts }).then(r => r.data.data);
 
-// Clan-management-scoped update (leader/officer)
-export const updateShadowWarClan: any = async (id: string, formData: any, characterId?: string) => {
-  const body = characterId ? { ...formData, characterId } : formData;
-  const response: any = await axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, body, { withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+export const getShadowWarById = async (id: string, characterId?: string | null): Promise<ShadowWar> =>
+  axios.get<ShadowWar>(`${BASE}/${id}`, { params: { characterId }, ...opts }).then(r => r.data);
 
-// Create a shadow war instance (leader/officer)
-export const createShadowWarManagement: any = async (date: string, enemyClan?: string | null, characterId?: string) => {
-  const response: any = await axios.post(
-    API_URL + '/clan-management/shadow-wars',
-    { date, enemyClan: enemyClan || null, characterId },
-    { withCredentials: true }
-  ).then(response => response.data);
-  return response;
-};
+/** Actualiza una instancia (fecha, clan enemigo, formación, resultado, completada…). */
+export const updateShadowWarClan = async (id: string, formData: Record<string, any>, characterId?: string | null): Promise<ShadowWar> =>
+  axios.patch<ShadowWar>(`${BASE}/${id}`, withActor(formData, characterId), opts).then(r => r.data);
 
-// Close/delete a shadow war instance (leader/officer)
-export const closeShadowWarManagement: any = async (id: string, characterId?: string) => {
-  const params = characterId ? { characterId } : {};
-  const response: any = await axios.delete(API_URL + `/clan-management/shadow-wars/${id}`, { params, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+export const createShadowWarManagement = async (date: string, enemyClan?: string | null, characterId?: string | null): Promise<ShadowWar> =>
+  axios.post<ShadowWar>(BASE, { date, enemyClan: enemyClan || null, characterId }, opts).then(r => r.data);
 
-// Mark a shadow war instance as completed (leader/officer)
-export const completeShadowWarManagement: any = async (id: string, characterId?: string) =>
-  axios.patch(API_URL + `/clan-management/shadow-wars/${id}`, { completed: true, ...(characterId ? { characterId } : {}) }, { withCredentials: true })
-    .then(r => r.data);
+/** Elimina una instancia. */
+export const closeShadowWarManagement = async (id: string, characterId?: string | null): Promise<unknown> =>
+  axios.delete(`${BASE}/${id}`, { params: characterId ? { characterId } : {}, ...opts }).then(r => r.data);
 
-export const getActiveShadowWar: any = async (characterId?: string) => {
-  const response: any = await axios.get(API_URL + "/shadow-war/active", { params: { characterId }, withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+/** Marca una instancia como completada. */
+export const completeShadowWarManagement = async (id: string, characterId?: string | null): Promise<ShadowWar> =>
+  axios.patch<ShadowWar>(`${BASE}/${id}`, withActor({ completed: true }, characterId), opts).then(r => r.data);
 
-export const confirmShadowWar: any = async (shadowWarId: string) => {
-  const response: any = await axios.patch(API_URL + `/shadow-war/${shadowWarId}/confirm`, {}, { withCredentials: true })
-    .then(response => response.data)
-  return response;
-};
+export const respondToShadowWar = async (shadowWarId: string, characterId: string, action: RespondAction = 'confirm'): Promise<unknown> =>
+  axios.post(`${BASE}/${shadowWarId}/respond`, { characterId, action }, opts).then(r => r.data);
 
-export const respondToShadowWar = async (shadowWarId: string, characterId: string, action: 'confirm' | 'decline' | 'pending' = 'confirm') =>
-  axios.post(API_URL + `/clan-management/shadow-wars/${shadowWarId}/respond`, { characterId, action }, { withCredentials: true }).then(r => r.data);
+// ── Público (miembros) ───────────────────────────────────────────────────────
 
-export const respondToPublicShadowWar = async (shadowWarId: string, characterId: string, action: 'confirm' | 'decline' | 'pending' = 'confirm') =>
-  axios.post(API_URL + `/shadow-war/${shadowWarId}/respond`, { characterId, action }, { withCredentials: true }).then(r => r.data);
+export const getActiveShadowWar = async (characterId?: string | null): Promise<ShadowWar | null> =>
+  axios.get(API_URL + "/shadow-war/active", { params: { characterId }, ...opts }).then(r => r.data);
+
+export const respondToPublicShadowWar = async (shadowWarId: string, characterId: string, action: RespondAction = 'confirm'): Promise<unknown> =>
+  axios.post(API_URL + `/shadow-war/${shadowWarId}/respond`, { characterId, action }, opts).then(r => r.data);

@@ -5,7 +5,7 @@ import { useStore } from '../../../middlewares/store';
 import AppLayout from '../../layouts/AppLayout.vue';
 import DeniedAccess from '../../utils/DeniedAccess.vue';
 
-const store: any = useStore();
+const store = useStore();
 const route = useRoute();
 
 const chars  = computed(() => store.currentUser.userData?.character ?? []);

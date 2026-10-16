@@ -168,7 +168,7 @@ const routes: RouteRecordRaw[] = [
     path: '/u',
     name: 'UserPage',
     component: UserPage,
-    redirect: '/profile',
+    redirect: '/u/profile',
     meta: { title: 'Usuario' },
     children: [
       {
@@ -234,9 +234,11 @@ const router = createRouter({
 
 const WALKER_ALLOWED: string[] = ['Home', 'Feed', 'TaskPage', 'MyTasks', 'ClanTasks', 'UserPage', 'Profile', 'Account', 'Requests'];
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const store = useStore();
 
+  // En la primera navegación (incluye enlaces directos) esperar a /auth antes de evaluar permisos.
+  if (!store.currentUser.logged) await store.ensureUserData();
   if (!store.currentUser.logged) return next();
 
   const role         = store.currentUser.userData?.role;

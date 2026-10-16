@@ -233,63 +233,37 @@
     </template>
   </div>
 
-  <Teleport to="body">
-    <div v-if="showCreateClanModal" class="create-clan-overlay" @click.self="showCreateClanModal = false; createClanError = ''">
-      <div class="create-clan-modal">
-        <h4 class="create-clan-title">Crear clan enemigo</h4>
-        <input class="create-clan-input" type="text" v-model="newClanName"
-          placeholder="Nombre del clan" @keydown.enter="handleCreateClan" @keydown.esc="showCreateClanModal = false" />
-        <p v-if="createClanError" class="create-clan-error">{{ createClanError }}</p>
-        <div class="create-clan-actions">
-          <button class="btn-create-clan" :disabled="!newClanName.trim() || creatingClan" @click="handleCreateClan">
-            <i class="fas fa-check"></i> Crear
-          </button>
-          <button class="btn-cancel-modal" @click="showCreateClanModal = false; createClanError = ''">
-            <i class="fas fa-times"></i> Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  </Teleport>
+  <CreateEnemyClanModal
+    v-if="showCreateClanModal"
+    @close="showCreateClanModal = false"
+    @created="handleClanCreated"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from '../../../../middlewares/store';
-import { updateAccursedTower, searchClans, createEnemyClan, getClanMembers } from '../../../../middlewares/services';
+import { updateAccursedTower, searchClans, getClanMembers } from '../../../../middlewares/services';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
+import CreateEnemyClanModal from '../../Modals/CreateEnemyClanModal.vue';
+import type { EnemyClanRef } from '../../../../interfaces';
 import MemberSelectionModal from '../ShadowWarManagement/MemberSelectionModal.vue';
 
 const route  = useRoute();
 const router = useRouter();
-const store: any = useStore();
+const store = useStore();
 
 const loading             = ref(true);
 const error               = ref(false);
 const saving              = ref(false);
 const showCreateClanModal = ref(false);
-const newClanName         = ref('');
-const creatingClan        = ref(false);
-const createClanError     = ref('');
 const editEnemyClanName   = ref('');
 
-async function handleCreateClan() {
-  if (!newClanName.value.trim()) return;
-  creatingClan.value    = true;
-  createClanError.value = '';
-  try {
-    const name    = newClanName.value.trim();
-    const created = await createEnemyClan(name, store.currentCharacter);
-    editEnemyClan.value       = created._id;
-    editEnemyClanName.value   = name;
-    showCreateClanModal.value = false;
-    newClanName.value         = '';
-  } catch (err: any) {
-    createClanError.value = err?.response?.data?.message ?? 'Error al crear el clan.';
-  } finally {
-    creatingClan.value = false;
-  }
+function handleClanCreated(created: EnemyClanRef, requestedName: string) {
+  editEnemyClan.value       = created._id;
+  editEnemyClanName.value   = requestedName;
+  showCreateClanModal.value = false;
 }
 const showCtx          = ref(false);
 const ctxPos           = ref({ top: 0, left: 0 });

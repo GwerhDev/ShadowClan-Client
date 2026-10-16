@@ -1,3 +1,5 @@
+import { SW_CATEGORY_LABELS, SWCategory } from '../middlewares/misc/shadowWar';
+
 export const optionTodoList: string[] = [
   "Asamblea de las sombras",
   "Mazmorras aleatorias",
@@ -21,17 +23,5 @@ export const translateResult = (result: string | undefined) => {
   }
 };
 
-export const translateBattle = (battle: string | undefined) => {
-  switch (battle) {
-    case 'exalted':
-      return 'Sublime';
-    case 'eminent':
-      return 'Eminente';
-    case 'famed':
-      return 'Célebre';
-    case 'proud':
-      return 'Imponente';
-    default:
-      return;
-  }
-};
+export const translateBattle = (battle: string | undefined) =>
+  battle && battle in SW_CATEGORY_LABELS ? SW_CATEGORY_LABELS[battle as SWCategory] : undefined;

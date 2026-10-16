@@ -1,0 +1,141 @@
+// ── Battle category cards (collapsible) ──────────────────────────────────────
+
+.battle-card {
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.battle-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem 1rem;
+  cursor: pointer;
+  transition: background .15s;
+
+  &:hover { background: rgba(255, 255, 255, .03); }
+}
+
+.battle-card-meta {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+
+  i {
+    font-size: .9rem;
+    color: rgba(227, 210, 168, .6);
+    flex-shrink: 0;
+  }
+}
+
+.battle-card-name {
+  font-family: 'Cinzel', serif;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--color-app-white);
+}
+
+.battle-card-count {
+  font-size: .65rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, .35);
+  font-family: inherit;
+  letter-spacing: .03em;
+}
+
+.battle-card-body {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.battle-match {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.match-title {
+  margin: 0;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255, 255, 255, .35);
+}
+
+.btn-expand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, .4);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color .15s, color .15s;
+
+  &:hover { border-color: rgba(255, 255, 255, .25); color: rgba(255, 255, 255, .7); }
+
+  i { font-size: .72rem; }
+}
+
+// ── Battle categories ─────────────────────────────────────────────────────────
+
+.match-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-inline: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: .5rem;
+    padding-inline: .25rem;
+  }
+}
+
+.group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.character-cards-grid {
+  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Drag & drop ───────────────────────────────────────────────────────────────
+
+.drag-slot {
+  border-radius: 8px;
+  transition: opacity .15s, box-shadow .15s;
+
+  &[draggable="true"] {
+    cursor: grab;
+    &:active { cursor: grabbing; }
+  }
+
+  &.is-dragging { opacity: .35; }
+  &.drag-over   { box-shadow: 0 0 0 2px var(--color-primary); }
+}
+
+.group-avg-score {
+  font-size: .6rem;
+  font-weight: 400;
+  font-family: inherit;
+  color: rgba(227, 210, 168, .45);
+  margin-left: .25rem;
+}

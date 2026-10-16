@@ -6,7 +6,7 @@ import ClassImage from '../../common/ClassImage.vue';
 import CharacterProfileModal from './CharacterProfileModal.vue';
 import { getAttendanceWeek, setMemberAttendance, createShadowWarManagement } from '../../../../middlewares/services';
 
-const store: any = useStore();
+const store = useStore();
 
 const chars       = computed(() => store.currentUser.userData?.character ?? []);
 const active      = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);

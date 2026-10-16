@@ -3,8 +3,9 @@ import { computed, ref, onMounted, nextTick } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import TabModal from '../../Modals/TabModal.vue';
 import { toPng } from 'html-to-image';
+import { SW_CATEGORIES, SW_CATEGORY_LABELS, SW_CATEGORY_POINTS_LABEL, swCategoryLabel } from '../../../../middlewares/misc/shadowWar';
 
-const store: any = useStore();
+const store = useStore();
 defineEmits(['close']);
 
 const imageUrl      = ref<string | null>(null);
@@ -22,20 +23,6 @@ const TABS = [
 
 const shadowWarData = computed(() => store.currentUser.shadowWarData);
 
-const CATS = ['exalted', 'eminent', 'famed', 'proud'] as const;
-const categoryLabels: Record<string, string> = {
-  exalted: 'Sublime',
-  eminent: 'Eminente',
-  famed:   'Célebre',
-  proud:   'Imponente',
-};
-
-const categoryPoints: Record<string, string> = {
-  exalted: '8pts',
-  eminent: '4pts',
-  famed:   '2pts',
-  proud:   '1pt',
-};
 
 const formattedDate = computed(() => {
   const d = shadowWarData.value?.date;
@@ -47,10 +34,10 @@ const enemyName = computed(() => shadowWarData.value?.enemyClan?.name ?? 'Por de
 
 const battleCategories = computed(() => {
   const battle = shadowWarData.value?.battle ?? {};
-  return CATS
+  return SW_CATEGORIES
     .map(cat => ({
       key: cat,
-      label: categoryLabels[cat],
+      label: SW_CATEGORY_LABELS[cat],
       matches: ((battle as any)[cat] ?? [] as any[])
         .map((m: any) => ({
           g1: (m.group1?.character ?? []).filter(Boolean).map((c: any) => c.name ?? '—'),
@@ -72,7 +59,7 @@ const formattedText = computed(() => {
   const battle = data.battle ?? {};
   for (const [cat, matches] of Object.entries(battle) as [string, any[]][]) {
     if (!matches?.length) continue;
-    lines.push(`*═══ BATALLA ${categoryLabels[cat]?.toUpperCase() ?? cat.toUpperCase()} ═══*`);
+    lines.push(`*═══ BATALLA ${swCategoryLabel(cat).toUpperCase()} ═══*`);
     matches.forEach((match: any, i: number) => {
       const g1 = (match.group1?.character ?? []).filter(Boolean).map((c: any) => c.name ?? '—').join(', ') || '—';
       const g2 = (match.group2?.character ?? []).filter(Boolean).map((c: any) => c.name ?? '—').join(', ') || '—';
@@ -202,7 +189,7 @@ async function copyText() {
       <div v-for="cat in battleCategories" :key="cat.key" class="img-tpl__cat">
         <div class="img-tpl__cat-title">
           BATALLA {{ cat.label.toUpperCase() }}
-          <span class="img-tpl__cat-pts">{{ categoryPoints[cat.key] }}</span>
+          <span class="img-tpl__cat-pts">{{ SW_CATEGORY_POINTS_LABEL[cat.key] }}</span>
         </div>
         <div class="img-tpl__matches">
           <div v-for="(match, i) in cat.matches" :key="i" class="img-tpl__match">

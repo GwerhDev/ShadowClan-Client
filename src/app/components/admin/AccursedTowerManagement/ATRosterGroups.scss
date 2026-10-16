@@ -1,0 +1,70 @@
+// ── Groups layout ─────────────────────────────────────────────────────────────
+
+.groups-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.group-section {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+
+  h5 {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin: 0;
+  }
+}
+
+.group3-section {
+  grid-column: 1 / -1;
+
+  @media (max-width: 600px) {
+    grid-column: 1;
+  }
+}
+
+.size-badge {
+  font-size: .6rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, .35);
+  font-family: inherit;
+}
+
+.cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.cards-grid--2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Drag & Drop ───────────────────────────────────────────────────────────────
+
+.drag-slot {
+  border-radius: 8px;
+  transition: opacity .15s, box-shadow .15s;
+
+  &[draggable="true"] {
+    cursor: grab;
+    &:active { cursor: grabbing; }
+  }
+
+  &.is-dragging { opacity: .35; }
+  &.drag-over   { box-shadow: 0 0 0 2px var(--color-primary); }
+}

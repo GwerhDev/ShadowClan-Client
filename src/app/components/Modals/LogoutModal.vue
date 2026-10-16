@@ -4,7 +4,7 @@ import { useStore } from '../../../middlewares/store';
 import CustomModal from './CustomModal.vue';
 
 const emit = defineEmits(['close']);
-const store: any = useStore();
+const store = useStore();
 const loading = ref(false);
 
 async function confirm() {

@@ -1,0 +1,322 @@
+/* ── card ── */
+.feed-item {
+  background: var(--color-secondary-bg);
+  border: 1px solid rgba(255, 255, 255, .06);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── call-to-arms body ── */
+.feed-cta-body {
+  padding: .5rem 1rem .75rem;
+
+  p {
+    margin: 0;
+    font-size: .88rem;
+    color: rgba(255, 255, 255, .7);
+    line-height: 1.5;
+
+    strong { color: var(--color-app-white); }
+  }
+}
+
+/* ── call-to-arms header ── */
+.feed-cta-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .9rem 1rem .65rem;
+}
+
+.feed-cta-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(227, 210, 168, .08);
+  border: 1px solid rgba(227, 210, 168, .2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgb(227, 210, 168);
+  font-size: 1rem;
+}
+
+.feed-cta-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+}
+
+.feed-cta-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--color-app-white);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.feed-cta-vs {
+  font-size: .78rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, .5);
+}
+
+.feed-cta-meta {
+  font-size: .72rem;
+  color: rgba(255, 255, 255, .38);
+}
+
+/* ── header ── */
+.feed-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .9rem 1rem .65rem;
+}
+
+.feed-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+
+  &--empty {
+    background: rgba(255, 255, 255, .08);
+  }
+}
+
+.feed-author-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+}
+
+.feed-author-name-row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.feed-author-name {
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--color-app-white);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-role-badge {
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  padding: .1rem .4rem;
+  border-radius: 4px;
+  line-height: 1.4;
+  flex-shrink: 0;
+  text-transform: uppercase;
+
+  &--leader {
+    background: rgba(227, 210, 168, .12);
+    color: rgb(227, 210, 168);
+    border: 1px solid rgba(227, 210, 168, .3);
+  }
+
+  &--officer {
+    background: rgba(105, 169, 228, .12);
+    color: rgb(105, 169, 228);
+    border: 1px solid rgba(105, 169, 228, .3);
+  }
+}
+
+.feed-author-meta {
+  font-size: .72rem;
+  color: rgba(255, 255, 255, .38);
+  line-height: 1.2;
+}
+
+/* ── three-dots ── */
+.feed-menu-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, .45);
+  font-size: .88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .12s, color .12s;
+
+  &:hover, &.active {
+    background: rgba(255, 255, 255, .09);
+    color: rgba(255, 255, 255, .9);
+  }
+}
+
+/* ── body ── */
+.feed-body {
+  padding: 0 1rem .9rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+
+.feed-content {
+  margin: 0;
+  font-size: .92rem;
+  color: rgba(255, 255, 255, .85);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── shadow war banner ── */
+.feed-sw-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-sw-actions {
+  display: flex;
+  border-top: 1px solid rgba(255, 255, 255, .05);
+}
+
+.feed-sw-banner {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  border-top: 1px solid rgba(255, 255, 255, .05);
+}
+
+.feed-sw-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  flex: 1;
+  padding: .6rem 1rem;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+  border-radius: 0;
+  background: rgba(227, 210, 168, .06);
+  border: none;
+  color: rgb(227, 210, 168);
+  transition: background .15s, color .15s;
+
+  i { font-size: .72rem; }
+
+  &:hover:not(:disabled) {
+    background: rgba(227, 210, 168, .12);
+    color: #fff;
+  }
+
+  &:disabled { cursor: default; }
+
+  & + & {
+    border-left: 1px solid rgba(255, 255, 255, .05);
+  }
+
+  &--respond {
+    background: rgba(255, 255, 255, .03);
+    color: rgba(255, 255, 255, .6);
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, .07);
+      color: rgba(255, 255, 255, .9);
+    }
+  }
+
+  &--confirmed {
+    color: #4ade80;
+    background: rgba(34, 197, 94, .06);
+
+    &:hover:not(:disabled) {
+      background: rgba(34, 197, 94, .06);
+      color: #4ade80;
+    }
+  }
+}
+
+/* ── edit mode ── */
+.feed-edit-textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 8px;
+  color: var(--color-app-white);
+  font-size: .9rem;
+  padding: .65rem .9rem;
+  resize: none;
+  overflow: auto;
+  font-family: inherit;
+  line-height: 1.6;
+  transition: border-color .15s;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, .25);
+  }
+}
+
+.feed-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+}
+
+.btn-cancel-edit,
+.btn-save-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .35rem .9rem;
+  border-radius: 6px;
+  font-size: .78rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .15s, border-color .15s, opacity .15s;
+
+  &:disabled { opacity: .4; cursor: not-allowed; }
+}
+
+.btn-cancel-edit {
+  background: transparent;
+  border-color: rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .5);
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, .06);
+    border-color: rgba(255, 255, 255, .22);
+    color: rgba(255, 255, 255, .8);
+  }
+}
+
+.btn-save-edit {
+  background: transparent;
+  border-color: rgba(227, 210, 168, .35);
+  color: rgb(227, 210, 168);
+
+  &:hover:not(:disabled) {
+    background: rgba(227, 210, 168, .08);
+    border-color: rgba(227, 210, 168, .6);
+  }
+}

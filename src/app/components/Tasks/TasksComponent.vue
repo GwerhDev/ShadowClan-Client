@@ -8,7 +8,7 @@ import TasksCard from "./TasksCard.vue";
 import DeniedAccess from "../../utils/DeniedAccess.vue";
 import EmptyState from "../common/EmptyState.vue";
 
-const store: any = useStore();
+const store = useStore();
 const route = useRoute();
 
 const title: Ref = ref("");
@@ -59,7 +59,7 @@ async function createTask() {
     type: type.value,
     title: title.value,
     fixed: false,
-    user: !store.currentCharacter ? store.currentUser.userData.id : null,
+    user: !store.currentCharacter ? store.currentUser.userData!.id : null,
     character: store.currentCharacter,
   };
 

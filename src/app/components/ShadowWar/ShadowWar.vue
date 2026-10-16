@@ -5,7 +5,7 @@ import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';
 import { respondToPublicShadowWar } from '../../../middlewares/services';
 
-const store: any = useStore();
+const store = useStore();
 
 const props = defineProps({
   activeTab: {
@@ -32,7 +32,7 @@ const declinedIds = computed<string[]>(() => {
   return declined.map((c: any) => (typeof c === 'string' ? c : c._id));
 });
 
-type MemberOrId = { _id: string; currentClass?: string; name?: string; resonance?: number; [key: string]: any } | undefined;
+type MemberOrId = { _id: string; currentClass?: string; name?: string; resonance?: number | null; [key: string]: any } | undefined;
 
 const getPaddedMembers = (members: MemberOrId[] | undefined): MemberOrId[] => {
   const padded: MemberOrId[] = members ? [...members] : [];

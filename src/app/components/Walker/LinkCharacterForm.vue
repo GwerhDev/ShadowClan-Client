@@ -7,7 +7,7 @@ import LabeledInput from '../Inputs/LabeledInput.vue';
 import CharacterCard from '../Cards/CharacterCard.vue';
 
 const emit = defineEmits(['done', 'cancel']);
-const store: any = useStore();
+const store = useStore();
 
 const step = ref(1);
 const characterName = ref('');

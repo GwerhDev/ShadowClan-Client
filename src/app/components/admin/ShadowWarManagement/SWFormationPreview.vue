@@ -1,15 +1,16 @@
 <script setup lang="ts">
+import { SW_CATEGORIES, SW_CATEGORY_LABELS, SW_CATEGORY_POINTS_LABEL } from '../../../../middlewares/misc/shadowWar';
+
 const props = defineProps<{
   battle: Record<string, any[]>;
   members: any[];
 }>();
 
-const TIERS = [
-  { key: 'exalted', label: 'Sublime',   pts: '8pts' },
-  { key: 'eminent', label: 'Eminente',  pts: '4pts' },
-  { key: 'famed',   label: 'Célebre',   pts: '2pts' },
-  { key: 'proud',   label: 'Imponente', pts: '1pt'  },
-];
+const TIERS = SW_CATEGORIES.map(key => ({
+  key,
+  label: SW_CATEGORY_LABELS[key],
+  pts:   SW_CATEGORY_POINTS_LABEL[key],
+}));
 
 function resolveName(id: any): string {
   if (!id) return '—';

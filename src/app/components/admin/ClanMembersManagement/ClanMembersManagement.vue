@@ -3,33 +3,20 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
-import CustomModal from '../../Modals/CustomModal.vue';
-import LabeledInput from '../../Inputs/LabeledInput.vue';
 import ClanMemberCard from './ClanMemberCard.vue';
 import PendingInvitationCard from './PendingInvitationCard.vue';
 import ExMemberCard from './ExMemberCard.vue';
 import CharacterProfileModal from '../AttendanceManagement/CharacterProfileModal.vue';
-import { classes } from '../../../../middlewares/misc/const';
-import {
-  getClanMembers,
-  addClanMember,
-  createClanCharacter,
-  updateMemberRole,
-  updateClanMember,
-  sendClanInvitation,
-  getClanRequestsManagement,
-  reviewClanRequest,
-  bulkImportMembers,
-  syncClanMembers,
-  getClanMembersPage,
-} from '../../../../middlewares/services';
-import { getCharacterByName } from '../../../../middlewares/services/characterService';
+import SyncClanModal from './SyncClanModal.vue';
+import ClanRequestsModal from './ClanRequestsModal.vue';
+import AddMemberModal from './AddMemberModal.vue';
+import { getClanMembers, getClanMembersPage } from '../../../../middlewares/services';
+import { useActiveCharacter } from '../../../composables/useActiveCharacter';
 
-const store: any = useStore();
-
-const chars  = computed(() => store.currentUser.userData?.character ?? []);
-const active = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
-const clanId = computed(() => active.value?.clan?._id ?? active.value?.clan ?? null);
+const store = useStore();
+const { active, clanId } = useActiveCharacter();
+// Solo para tipar las props de los hijos: la vista requiere un clan (el valor no cambia).
+const clanIdProp = computed(() => clanId.value as string);
 
 const clan    = ref<any>(null);
 const loading = ref(true);
@@ -50,19 +37,16 @@ let   searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 const navItems = ['estado', 'nombre', 'rol', 'clase', 'puntaje'];
 
+// Los permisos se evalúan sobre el personaje activo, igual que en el backend.
 const isLeader = computed(() => {
-  if (!clan.value) return false;
+  if (!clan.value || !store.currentCharacter) return false;
   const leaderId = String(clan.value.leader?._id ?? clan.value.leader ?? '');
-  if (!leaderId) return false;
-  const userChars = store.currentUser.userData?.character ?? [];
-  return (userChars as any[]).some((c: any) => String(c._id ?? c) === leaderId);
+  return !!leaderId && leaderId === String(store.currentCharacter);
 });
 
 const isOfficer = computed(() => {
-  if (!clan.value) return false;
-  const userChars = store.currentUser.userData?.character ?? [];
-  const userCharIds = (userChars as any[]).map((c: any) => String(c._id ?? c));
-  return (clan.value.officer ?? []).some((o: any) => userCharIds.includes(String(o._id ?? o)));
+  if (!clan.value || !store.currentCharacter) return false;
+  return (clan.value.officer ?? []).some((o: any) => String(o._id ?? o) === String(store.currentCharacter));
 });
 
 onMounted(() => {
@@ -136,283 +120,10 @@ async function loadMembers(reset: boolean) {
   }
 }
 
-// ── Incoming clan requests modal ──
-const showRequestsModal  = ref(false);
-const clanRequests       = ref<any[]>([]);
-const requestsLoading    = ref(false);
-const requestsError      = ref('');
-const reviewingId        = ref<string | null>(null);
-
-async function openRequestsModal() {
-  showRequestsModal.value = true;
-  requestsLoading.value   = true;
-  requestsError.value     = '';
-  try {
-    clanRequests.value = await getClanRequestsManagement(active.value?._id);
-  } catch {
-    requestsError.value = 'Error al cargar las solicitudes.';
-  } finally {
-    requestsLoading.value = false;
-  }
-}
-
-async function handleReviewRequest(id: string, action: 'accept' | 'reject') {
-  reviewingId.value = id;
-  requestsError.value = '';
-  try {
-    await reviewClanRequest(id, action);
-    clanRequests.value = clanRequests.value.filter(r => r._id !== id);
-    if (store.pendingRequestsCount > 0) store.pendingRequestsCount--;
-    await loadClan();
-  } catch {
-    requestsError.value = 'Error al procesar la solicitud.';
-  } finally {
-    reviewingId.value = null;
-  }
-}
-
-// ── Add member modal (3-step flow) ──
-const showAddModal    = ref(false);
-const addStep         = ref<1 | 2 | 3>(1);
-const searchName      = ref('');
-const searchResults   = ref<any[]>([]);
-const selectedChar    = ref<any>(null);
-const searchLoading   = ref(false);
-const newClass        = ref('');
-const newResonance    = ref<number | ''>('');
-const addRole         = ref<'officer' | 'member'>('member');
-const addEditClass    = ref('');
-const addEditResonance = ref<number | ''>('');
-const addLoading      = ref(false);
-const addError        = ref('');
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-// ── Sync modal ──
-const showSyncModal   = ref(false);
-const syncFile        = ref<File | null>(null);
-const syncLoading     = ref(false);
-const syncError       = ref('');
-const syncResults     = ref<{ name: string; status: string }[]>([]);
-const syncRemoved     = ref(0);
-const syncDone        = ref(false);
-
-function openSyncModal() {
-  syncFile.value    = null;
-  syncError.value   = '';
-  syncResults.value = [];
-  syncDone.value    = false;
-  showSyncModal.value = true;
-}
-
-function onSyncFileChange(e: Event) {
-  syncFile.value  = (e.target as HTMLInputElement).files?.[0] ?? null;
-  syncError.value = '';
-  syncDone.value  = false;
-}
-
-async function handleSync() {
-  if (!syncFile.value) return;
-  syncLoading.value = true;
-  syncError.value   = '';
-  syncDone.value    = false;
-  try {
-    const res = await syncClanMembers(clanId.value, syncFile.value);
-    syncResults.value = res.results ?? [];
-    syncRemoved.value = res.removed ?? 0;
-    syncDone.value    = true;
-  } catch (e: any) {
-    const data = e?.response?.data;
-    syncError.value = data?.message ?? data?.details ?? data?.error ?? 'Error al sincronizar.';
-  } finally {
-    syncLoading.value = false;
-    await loadClan();
-  }
-}
-
-// ── Step 4: bulk import ──
-const importFile      = ref<File | null>(null);
-const importLoading   = ref(false);
-const importError     = ref('');
-const importResults   = ref<{ name: string; status: string; reason?: string }[]>([]);
-const importDone      = ref(false);
-
-function goToImport() {
-  importFile.value    = null;
-  importError.value   = '';
-  importResults.value = [];
-  importDone.value    = false;
-  addStep.value       = 4 as any;
-}
-
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  importFile.value  = input.files?.[0] ?? null;
-  importError.value = '';
-}
-
-async function handleBulkImport() {
-  if (!importFile.value) return;
-  importLoading.value = true;
-  importError.value   = '';
-  importResults.value = [];
-  importDone.value    = false;
-  try {
-    const res = await bulkImportMembers(clanId.value, importFile.value);
-    importResults.value = res.results ?? [];
-    importDone.value    = true;
-    await loadClan();
-  } catch (e: any) {
-    importError.value = e?.response?.data?.message ?? 'Error al importar el archivo.';
-  } finally {
-    importLoading.value = false;
-  }
-}
-
-function openAddModal() {
-  addStep.value        = 1;
-  searchName.value     = '';
-  searchResults.value  = [];
-  selectedChar.value   = null;
-  newClass.value       = '';
-  newResonance.value   = '';
-  addRole.value        = 'member';
-  addEditClass.value   = '';
-  addEditResonance.value = '';
-  addError.value       = '';
-  showAddModal.value   = true;
-}
-
-function closeAddModal() {
-  showAddModal.value = false;
-  if (debounceTimer) clearTimeout(debounceTimer);
-}
-
-watch(searchName, (val) => {
-  if (addStep.value !== 1) return;
-  if (debounceTimer) clearTimeout(debounceTimer);
-  if (val.trim().length < 2) { searchResults.value = []; return; }
-  debounceTimer = setTimeout(doSearch, 800);
-});
-
-async function doSearch() {
-  searchLoading.value = true;
-  const res = await getCharacterByName(searchName.value.trim());
-  searchResults.value = res?.found ? res.characters : [];
-  searchLoading.value = false;
-}
-
-function selectCharacter(char: any) {
-  selectedChar.value     = char;
-  addEditClass.value     = char.currentClass ?? '';
-  addEditResonance.value = char.resonance    ?? '';
-  addStep.value = 2;
-}
-
-function goToCreate() {
-  addError.value = '';
-  addStep.value = 3;
-}
-
-function backToSearch() {
-  addError.value = '';
-  addStep.value = 1;
-}
-
-async function confirmAdd() {
-  if (!selectedChar.value) return;
-  addLoading.value = true;
-  addError.value   = '';
-  try {
-    await addClanMember(clanId.value, selectedChar.value._id);
-    if (isLeader.value && addRole.value === 'officer') {
-      await updateMemberRole(clanId.value, selectedChar.value._id, 'officer');
-    }
-    if (isLeader.value || isOfficer.value) {
-      await updateClanMember(clanId.value, selectedChar.value._id, {
-        currentClass: addEditClass.value || undefined,
-        resonance:    addEditResonance.value !== '' ? Number(addEditResonance.value) : undefined,
-      });
-    }
-    showAddModal.value = false;
-    await loadClan();
-  } catch {
-    addError.value = 'Error al agregar el miembro.';
-  } finally {
-    addLoading.value = false;
-  }
-}
-
-async function confirmSendInvitation() {
-  if (!selectedChar.value) return;
-  addLoading.value = true;
-  addError.value   = '';
-  try {
-    await sendClanInvitation(clanId.value, {
-      characterId:       selectedChar.value._id,
-      role:              addRole.value,
-      proposedClass:     addEditClass.value     || undefined,
-      proposedResonance: addEditResonance.value !== '' ? Number(addEditResonance.value) : undefined,
-    });
-    showAddModal.value = false;
-    await loadClan();
-  } catch (e: any) {
-    addError.value = e?.response?.data?.message ?? 'Error al enviar la invitación.';
-  } finally {
-    addLoading.value = false;
-  }
-}
-
-async function handleCreate() {
-  if (!searchName.value.trim()) return;
-  addLoading.value = true;
-  addError.value   = '';
-  try {
-    const response = await createClanCharacter(clanId.value, {
-      name:         searchName.value.trim(),
-      resonance:    newResonance.value !== '' ? Number(newResonance.value) : undefined,
-      currentClass: newClass.value || undefined,
-    });
-    if (isLeader.value && addRole.value === 'officer') {
-      const newChar = response?.member?.[response.member.length - 1];
-      const newCharId = newChar?._id ?? (typeof newChar === 'string' ? newChar : null);
-      if (newCharId) await updateMemberRole(clanId.value, String(newCharId), 'officer');
-    }
-    showAddModal.value = false;
-    await loadClan();
-  } catch {
-    addError.value = 'Error al crear el personaje.';
-  } finally {
-    addLoading.value = false;
-  }
-}
-
-function getClassImage(value: string) {
-  return classes.find(c => c.value === value)?.image ?? '';
-}
-function getClassName(value: string) {
-  return classes.find(c => c.value === value)?.name ?? value;
-}
-
-// Resumen breve del historial de clanes de un personaje, para mostrar al agregarlo
-// o al revisar su solicitud de ingreso — no bloqueante, solo informativo.
-function formatHistoryDate(d: string | Date) {
-  const date = new Date(d);
-  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
-}
-
-function clanHistorySummary(char: any) {
-  const history = char?.clanHistory;
-  if (!history?.length) return null;
-  const last     = history[0];
-  const clanName = last.clan?.name ?? 'clan desconocido';
-  const range    = !last.joinedAt
-    ? `hasta ${formatHistoryDate(last.leftAt)}`
-    : last.leftAt
-      ? `${formatHistoryDate(last.joinedAt)} – ${formatHistoryDate(last.leftAt)}`
-      : `desde ${formatHistoryDate(last.joinedAt)}`;
-  const extra = history.length > 1 ? ` · +${history.length - 1} más` : '';
-  return `Historial: ${clanName} (${range})${extra}`;
-}
+// ── Modales ──
+const showRequestsModal = ref(false);
+const showAddModal      = ref(false);
+const showSyncModal     = ref(false);
 </script>
 
 <template>
@@ -433,14 +144,14 @@ function clanHistorySummary(char: any) {
       </div>
 
       <span class="button-list">
-        <button class="btn-secondary btn-with-badge" @click="openRequestsModal">
+        <button class="btn-secondary btn-with-badge" @click="showRequestsModal = true">
           <i class="fas fa-inbox"></i> Ver solicitudes
           <span v-if="store.pendingRequestsCount > 0" class="btn-badge">{{ store.pendingRequestsCount }}</span>
         </button>
-        <button class="btn-secondary" @click="openSyncModal">
+        <button class="btn-secondary" @click="showSyncModal = true">
           <i class="fas fa-rotate"></i> Actualizar
         </button>
-        <button @click="openAddModal">
+        <button @click="showAddModal = true">
           <i class="fas fa-user-plus"></i> Agregar miembro
         </button>
       </span>
@@ -476,7 +187,7 @@ function clanHistorySummary(char: any) {
             v-for="inv in pendingInvitations"
             :key="inv._id"
             :inv="inv"
-            :clanId="clanId"
+            :clanId="clanIdProp"
             @refresh="loadClan"
           />
           <div
@@ -515,7 +226,7 @@ function clanHistorySummary(char: any) {
   <CharacterProfileModal
     v-if="selectedMember"
     :member="selectedMember"
-    :clan-id="clanId"
+    :clan-id="clanIdProp"
     :is-leader="isLeader"
     :is-officer="isOfficer"
     @refresh="loadClan"
@@ -523,242 +234,28 @@ function clanHistorySummary(char: any) {
   />
 
   <!-- Modal: sincronizar desde archivo -->
-  <CustomModal v-if="showSyncModal" title="Actualizar clan desde archivo" @close="showSyncModal = false">
-    <div class="modal-form">
-      <p class="modal-hint">
-        El archivo reemplaza los <strong>miembros</strong> del clan. Los personajes del archivo son creados o actualizados; los que no aparezcan pasan a exmiembros (no se borran, quedan en su historial).<br />
-        Columnas: <strong>Jugador, Resonancia, Armadura, Penetracion, Potencia, Resistencia, Clase, Whatsapp</strong>.
-      </p>
-      <div class="hint-attendance">
-        <i class="fas fa-calendar-check hint-attendance__icon"></i>
-        <p class="hint-attendance__text">
-          <strong>Nuevo:</strong> columnas de fecha (<em>28may</em>, <em>4jun</em>…) con valor <strong>1</strong> registran asistencia a la Guerra de Sombras de ese día.
-        </p>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Archivo (.csv o .xlsx)</label>
-        <input type="file" accept=".csv,.xlsx" class="sync-file-input" @change="onSyncFileChange" :disabled="syncLoading" />
-      </div>
-      <div class="step-actions">
-        <button :disabled="syncLoading || !syncFile" @click="handleSync">
-          <i :class="['fas', 'fa-rotate', { 'fa-spin': syncLoading }]"></i>
-          {{ syncLoading ? 'Sincronizando...' : 'Sincronizar' }}
-        </button>
-      </div>
-      <div v-if="syncLoading" class="sync-progress-wrap">
-        <div class="sync-progress-bar" />
-        <span class="sync-progress-label">Procesando archivo, puede tomar unos segundos…</span>
-      </div>
-      <p v-if="syncError" class="modal-error">{{ syncError }}</p>
-      <template v-if="syncDone">
-        <p class="modal-hint">
-          {{ syncResults.length }} procesados
-          <span v-if="syncRemoved > 0"> · {{ syncRemoved }} pasados a exmiembros</span>
-        </p>
-        <ul class="search-results">
-          <li v-for="r in syncResults" :key="r.name" class="search-result-card" style="cursor:default">
-            <div class="result-info">
-              <div>
-                <strong>{{ r.name }}</strong>
-                <small>{{ r.status === 'created' ? 'Creado' : 'Actualizado' }}</small>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </template>
-    </div>
-  </CustomModal>
+  <SyncClanModal
+    v-if="showSyncModal"
+    :clan-id="clanIdProp"
+    :reload="loadClan"
+    @close="showSyncModal = false"
+  />
 
   <!-- Modal: solicitudes de ingreso -->
-  <CustomModal v-if="showRequestsModal" title="Solicitudes de ingreso" @close="showRequestsModal = false">
-    <div class="modal-form">
-      <p v-if="requestsLoading" class="modal-hint">Cargando solicitudes...</p>
-      <p v-else-if="requestsError" class="modal-error">{{ requestsError }}</p>
-      <p v-else-if="!clanRequests.length" class="modal-hint">No hay solicitudes pendientes.</p>
-      <div v-for="req in clanRequests" :key="req._id" class="request-card">
-        <div class="inv-char">
-          <img v-if="req.character?.currentClass && getClassImage(req.character.currentClass)"
-            :src="getClassImage(req.character.currentClass)"
-            :alt="getClassName(req.character.currentClass)"
-            width="28" />
-          <i v-else class="fas fa-user-circle inv-placeholder"></i>
-          <div class="inv-info">
-            <strong>{{ req.character?.name ?? '—' }}</strong>
-            <small>{{ req.user?.battletag ?? '—' }} · {{ req.character?.currentClass ? getClassName(req.character.currentClass) : 'Sin clase' }} · {{ req.character?.resonance ?? '—' }} res.</small>
-            <small v-if="clanHistorySummary(req.character)" class="history-hint">{{ clanHistorySummary(req.character) }}</small>
-          </div>
-        </div>
-        <div class="request-actions">
-          <button
-            class="btn-accept"
-            :disabled="reviewingId === req._id"
-            @click="handleReviewRequest(req._id, 'accept')"
-          ><i class="fas fa-check"></i></button>
-          <button
-            class="btn-reject"
-            :disabled="reviewingId === req._id"
-            @click="handleReviewRequest(req._id, 'reject')"
-          ><i class="fas fa-times"></i></button>
-        </div>
-      </div>
-    </div>
-  </CustomModal>
+  <ClanRequestsModal
+    v-if="showRequestsModal"
+    :character-id="active?._id ?? undefined"
+    :reload="loadClan"
+    @close="showRequestsModal = false"
+  />
 
   <!-- Modal: agregar miembro -->
-  <CustomModal v-if="showAddModal" title="Agregar miembro" @close="closeAddModal">
-    <div class="modal-form">
-
-      <!-- Step 1: buscar -->
-      <template v-if="addStep === 1">
-        <p class="step-label">Buscar personaje existente</p>
-        <LabeledInput label="Nombre del personaje" id="searchName" v-model="searchName" />
-        <p v-if="searchLoading" class="modal-hint">Buscando...</p>
-
-        <ul v-if="searchResults.length" class="search-results">
-          <li v-for="char in searchResults" :key="char._id" class="search-result-card" @click="selectCharacter(char)">
-            <div class="result-info">
-              <img v-if="char.currentClass && getClassImage(char.currentClass)"
-                :src="getClassImage(char.currentClass)" :alt="getClassName(char.currentClass)" width="32" />
-              <i v-else class="fas fa-user-circle result-placeholder"></i>
-              <div>
-                <strong>{{ char.name }}</strong>
-                <small>{{ char.currentClass ? getClassName(char.currentClass) : 'Sin clase' }} · {{ char.resonance ?? '—' }} res.</small>
-                <small v-if="clanHistorySummary(char)" class="history-hint">{{ clanHistorySummary(char) }}</small>
-              </div>
-            </div>
-          </li>
-        </ul>
-
-        <p v-if="addError" class="modal-error">{{ addError }}</p>
-        <div class="step-actions">
-          <button :disabled="searchName.trim().length < 2" @click="goToCreate">
-            <i class="fas fa-plus"></i> Crear nuevo personaje
-          </button>
-          <button @click="goToImport">
-            <i class="fas fa-file-import"></i> Importar CSV / XLSX
-          </button>
-        </div>
-      </template>
-
-      <!-- Step 2: confirmar / invitar -->
-      <template v-if="addStep === 2 && selectedChar">
-        <p class="step-label">{{ selectedChar.status === 'claimed' ? 'Invitar al clan' : 'Confirmar personaje' }}</p>
-        <div class="search-result-card selected">
-          <div class="result-info">
-            <img v-if="selectedChar.currentClass && getClassImage(selectedChar.currentClass)"
-              :src="getClassImage(selectedChar.currentClass)" :alt="getClassName(selectedChar.currentClass)" width="36" />
-            <i v-else class="fas fa-user-circle result-placeholder"></i>
-            <div>
-              <strong>{{ selectedChar.name }}</strong>
-              <small>{{ selectedChar.currentClass ? getClassName(selectedChar.currentClass) : 'Sin clase' }} · {{ selectedChar.resonance ?? '—' }} res.</small>
-              <small v-if="clanHistorySummary(selectedChar)" class="history-hint">{{ clanHistorySummary(selectedChar) }}</small>
-            </div>
-          </div>
-        </div>
-        <p v-if="selectedChar.status === 'claimed'" class="modal-hint">
-          <i class="fas fa-info-circle"></i> Este personaje está vinculado a un usuario. Se le enviará una invitación para que acepte el ingreso y los cambios propuestos.
-        </p>
-        <div v-if="isLeader || isOfficer" class="field-group">
-          <label class="field-label">Clase{{ selectedChar.status === 'claimed' ? ' (propuesta)' : '' }}</label>
-          <select v-model="addEditClass">
-            <option value="">Sin clase</option>
-            <option v-for="cls in classes" :key="cls.value" :value="cls.value">{{ cls.name }}</option>
-          </select>
-        </div>
-        <div v-if="isLeader || isOfficer" class="field-group">
-          <label class="field-label">Resonancia{{ selectedChar.status === 'claimed' ? ' (propuesta)' : '' }}</label>
-          <input type="number" v-model.number="addEditResonance" />
-        </div>
-        <div v-if="isLeader" class="field-group">
-          <label class="field-label">Rol</label>
-          <select v-model="addRole">
-            <option value="member">Miembro</option>
-            <option value="officer">Oficial</option>
-          </select>
-        </div>
-        <p v-if="addError" class="modal-error">{{ addError }}</p>
-        <div class="step-actions">
-          <button
-            :disabled="addLoading"
-            class="w-100"
-            @click="selectedChar.status === 'claimed' ? confirmSendInvitation() : confirmAdd()"
-          >
-            {{ addLoading
-              ? (selectedChar.status === 'claimed' ? 'Enviando...' : 'Agregando...')
-              : (selectedChar.status === 'claimed' ? 'Enviar invitación' : 'Agregar al clan') }}
-          </button>
-          <button class="btn-ghost" @click="backToSearch">Volver</button>
-        </div>
-      </template>
-
-      <!-- Step 4: importar CSV / XLSX -->
-      <template v-if="(addStep as any) === 4">
-        <p class="step-label">Importar miembros desde archivo</p>
-        <p class="modal-hint">
-          El archivo debe tener las columnas: <strong>Jugador, Resonancia, Armadura, Penetracion, Potencia, Resistencia, Clase, Whatsapp</strong>.
-        </p>
-
-        <div class="field-group">
-          <label class="field-label">Archivo (.csv o .xlsx)</label>
-          <input type="file" accept=".csv,.xlsx" @change="onFileChange" class="file-input" />
-        </div>
-
-        <div v-if="importDone && importResults.length" class="import-results">
-          <div v-for="r in importResults" :key="r.name" class="import-row" :class="'import-row--' + r.status">
-            <span class="import-name">{{ r.name }}</span>
-            <span class="import-badge">
-              <template v-if="r.status === 'created'">Creado</template>
-              <template v-else-if="r.status === 'updated'">Actualizado</template>
-              <template v-else-if="r.status === 'invited'">Invitado</template>
-              <template v-else>Omitido</template>
-            </span>
-            <span v-if="r.reason" class="import-reason">{{ r.reason }}</span>
-          </div>
-        </div>
-
-        <p v-if="importError" class="modal-error">{{ importError }}</p>
-
-        <div class="step-actions">
-          <button
-            :disabled="importLoading || !importFile"
-            class="w-100"
-            @click="handleBulkImport"
-          >
-            <i class="fas fa-upload"></i>
-            {{ importLoading ? 'Importando...' : 'Importar' }}
-          </button>
-          <button class="btn-ghost" @click="backToSearch">Volver</button>
-        </div>
-      </template>
-
-      <!-- Step 3: crear -->
-      <template v-if="addStep === 3">
-        <p class="step-label">Datos del nuevo personaje</p>
-        <LabeledInput label="Nombre" id="newName" v-model="searchName" />
-        <div class="field-group">
-          <label class="field-label">Clase</label>
-          <select v-model="newClass">
-            <option value="">Sin clase</option>
-            <option v-for="cls in classes" :key="cls.value" :value="cls.value">{{ cls.name }}</option>
-          </select>
-        </div>
-        <div v-if="isLeader" class="field-group">
-          <label class="field-label">Rol</label>
-          <select v-model="addRole">
-            <option value="member">Miembro</option>
-            <option value="officer">Oficial</option>
-          </select>
-        </div>
-        <LabeledInput label="Resonancia" id="newRes" v-model.number="newResonance" type="number" />
-        <p v-if="addError" class="modal-error">{{ addError }}</p>
-        <div class="step-actions">
-          <button :disabled="addLoading || !searchName.trim()" class="w-100" @click="handleCreate">
-            {{ addLoading ? 'Creando...' : 'Crear y agregar al clan' }}
-          </button>
-          <button class="btn-ghost" @click="backToSearch">Volver</button>
-        </div>
-      </template>
-
-    </div>
-  </CustomModal>
+  <AddMemberModal
+    v-if="showAddModal"
+    :clan-id="clanIdProp"
+    :is-leader="isLeader"
+    :is-officer="isOfficer"
+    :reload="loadClan"
+    @close="showAddModal = false"
+  />
 </template>

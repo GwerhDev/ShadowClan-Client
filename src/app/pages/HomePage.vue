@@ -5,7 +5,7 @@ import AppLayout from '../layouts/AppLayout.vue';
 import WalkerHomeComponent from '../components/Walker/WalkerHomeComponent.vue';
 import { useStore } from '../../middlewares/store';
 
-const store: any = useStore();
+const store = useStore();
 const route = useRoute();
 
 const activeChar = computed(() => {

@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import { useStore } from '../../middlewares/store';
 
 defineProps(["loading"]);
-const store: any = useStore();
+const store = useStore();
 
 const hasCharacter = computed(() => (store.currentUser.userData?.character ?? []).length > 0);
 const activeChar = computed(() => {

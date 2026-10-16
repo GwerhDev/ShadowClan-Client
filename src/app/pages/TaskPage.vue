@@ -3,7 +3,7 @@ import AppLayout from '../layouts/AppLayout.vue';
 import { ref, computed } from 'vue';
 import { useStore } from '../../middlewares/store';
 
-const store: any = useStore();
+const store = useStore();
 const loading = ref(false);
 
 const activeChar = computed(() => {

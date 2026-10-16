@@ -1,24 +1,19 @@
 import axios from 'axios';
 import { API_URL } from '../misc/const';
+import type { AccursedTower, HistoryEntryInput, HistoryPage, HistoryType } from '../../interfaces';
 
 const BASE = API_URL + '/clan-management';
 
-export const getHistory = async (page: number = 1, type: 'all' | 'shadow_war' | 'accursed_tower' = 'all', characterId?: string, q?: string) =>
+export const getHistory = async (page: number = 1, type: HistoryType = 'all', characterId?: string, q?: string): Promise<HistoryPage> =>
   axios
-    .get(`${BASE}/history`, { params: { page, type, characterId, q: q || undefined }, withCredentials: true })
+    .get<HistoryPage>(`${BASE}/history`, { params: { page, type, characterId, q: q || undefined }, withCredentials: true })
     .then(r => r.data);
 
-export const createHistoryEntry = async (data: {
-  characterId: string;
-  type: 'shadow_war' | 'accursed_tower';
-  date: string;
-  enemyClanName?: string;
-  result: string;
-  towerNumber?: number;
-}) =>
+/** Registra manualmente una actividad pasada en el historial. */
+export const createHistoryEntry = async (data: HistoryEntryInput): Promise<unknown> =>
   axios.post(`${BASE}/history`, data, { withCredentials: true }).then(r => r.data);
 
-export const getAccursedTowerById = async (id: string, characterId?: string) =>
+export const getAccursedTowerById = async (id: string, characterId?: string): Promise<AccursedTower> =>
   axios
-    .get(`${BASE}/accursed-tower/${id}`, { params: { characterId }, withCredentials: true })
+    .get<AccursedTower>(`${BASE}/accursed-tower/${id}`, { params: { characterId }, withCredentials: true })
     .then(r => r.data);

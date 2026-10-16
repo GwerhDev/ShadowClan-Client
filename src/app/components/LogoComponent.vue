@@ -3,7 +3,7 @@
 import { computed } from 'vue';
 import { useStore } from '../../middlewares/store';
 
-const store: any = useStore();
+const store = useStore();
 
 const clanLabel = computed(() => {
   const chars = store.currentUser.userData?.character ?? [];

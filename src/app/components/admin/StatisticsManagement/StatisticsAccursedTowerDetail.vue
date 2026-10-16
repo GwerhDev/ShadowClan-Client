@@ -14,9 +14,9 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const store  = useStore();
 const router = useRouter();
 
-const chars       = computed(() => (store as any).currentUser.userData?.character ?? []);
-const active      = computed(() => (chars.value as any[]).find((c: any) => c._id === (store as any).currentCharacter) ?? chars.value[0] ?? null);
-const characterId = computed(() => active.value?._id ?? (store as any).currentCharacter);
+const chars       = computed(() => store.currentUser.userData?.character ?? []);
+const active      = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
+const characterId = computed(() => active.value?._id ?? store.currentCharacter);
 
 type Range = '30' | '60' | '90' | 'cycle';
 

@@ -6,7 +6,7 @@ import LabeledInput from '../Inputs/LabeledInput.vue';
 import LogoutModal from '../Modals/LogoutModal.vue';
 import DeleteAccountModal from '../Modals/DeleteAccountModal.vue';
 
-const store: any = useStore();
+const store = useStore();
 const showLogoutModal        = ref(false);
 const showDeleteAccountModal = ref(false);
 </script>
