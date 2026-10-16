@@ -32,9 +32,11 @@ const navItems = ['miembro', 'rol', 'asistió', 'total guerras', '%'];
 const activeView = ref<'chart' | 'list'>('chart');
 
 function roleLabel(r: string) { return r === 'leader' ? 'Líder' : r === 'officer' ? 'Oficial' : 'Miembro'; }
+// Las fechas de ciclo representan días (inicio 00:00 UTC, fin 23:59 UTC): se formatean
+// en UTC para no mostrar el día anterior en zonas horarias negativas.
 function formatDate(d: string | Date) {
   const date = new Date(d);
-  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
 }
 
 const chartHeight = computed(() => `${Math.max(240, (report.value?.members?.length ?? 0) * 34)}px`);
