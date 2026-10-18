@@ -3,7 +3,7 @@ import { API_URL } from "../misc/const"
 import { actorParams } from "./activeCharacter";
 import type {
   ClanDetail, ClanInvitation, ClanInvitationInput, ClanMemberUpdate, ClanMembersPage,
-  ClanMembersPageParams, FileImportResult, RosterType, SaveRosterPayload,
+  ClanMembersPageParams, FileImportResult, RosterType, SaveRosterPayload, ClanSyncPreview, ClanSyncResolution,
 } from "../../interfaces";
 
 // Gestión del clan (/clan-management/clan/:clanId/*) para líderes y oficiales.
@@ -53,10 +53,26 @@ export const cancelClanInvitation = async (clanId: string, invitationId: string)
   await axios.delete(`${clanUrl(clanId)}/invitations/${invitationId}`, actorOpts());
 };
 
-/** Reemplaza los miembros del clan con los del archivo (.csv / .xlsx). */
-export const syncClanMembers = async (clanId: string, file: File): Promise<FileImportResult> => {
+/** Vista previa de la sincronización: qué cambiaría y qué personajes son nuevos (no escribe). */
+export const previewClanSync = async (clanId: string, file: File): Promise<ClanSyncPreview> => {
   const formData = new FormData();
   formData.append('file', file);
+  return axios.post<ClanSyncPreview>(
+    `${clanUrl(clanId)}/sync/preview`,
+    formData,
+    { params: actorParams(), withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } }
+  ).then(r => r.data);
+};
+
+/**
+ * Reemplaza los miembros del clan con los del archivo (.csv / .xlsx). `resolutions`
+ * (nombre en minúsculas → decisión) indica, para cada personaje nuevo, si se crea o si
+ * reemplaza a uno existente (que conserva su historial).
+ */
+export const syncClanMembers = async (clanId: string, file: File, resolutions: Record<string, ClanSyncResolution> = {}): Promise<FileImportResult> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('resolutions', JSON.stringify(resolutions));
   return axios.post<FileImportResult>(
     `${clanUrl(clanId)}/sync`,
     formData,

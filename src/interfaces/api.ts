@@ -164,10 +164,35 @@ export interface ClanInvitationInput {
   proposedResonance?: number;
 }
 
-export interface FileImportResult {
-  results: { name: string; status: string; reason?: string }[];
-  removed?: number;
+/** Avisos de lectura de la planilla de plantilla. */
+export interface RosterImportWarnings {
+  unreadableDateColumns: string[];
+  invalidNames: { row: number; value: string; reason: string }[];
+  duplicateNames: string[];
+  /** Columnas de fecha sin Guerra Sombría registrada (su asistencia no se puede cargar). */
+  datesWithoutWar: string[];
 }
+
+export interface FileImportResult {
+  results: { name: string; status: string; reason?: string; previousName?: string }[];
+  removed?: number;
+  warnings?: RosterImportWarnings;
+}
+
+export interface SyncCandidate { _id: string; name: string; currentClass: string | null; role: 'leader' | 'officer' | 'member' }
+
+/** Vista previa de la sincronización de plantilla (no escribe nada). */
+export interface ClanSyncPreview {
+  summary: { rows: number; updated: number; rejoin: number; transfer: number; new: number; leaving: number };
+  newCharacters: { name: string; row: number; data: Record<string, unknown> }[];
+  transfers: { name: string; fromClan: string; blocked: boolean }[];
+  /** Personajes de la plantilla actual que no figuran en la planilla (candidatos a reemplazar). */
+  candidates: SyncCandidate[];
+  warnings: RosterImportWarnings;
+}
+
+/** Decisión para un personaje nuevo: crearlo o reemplazar a uno existente. */
+export type ClanSyncResolution = { action: 'create' } | { action: 'replace'; characterId: string };
 
 export interface SaveRosterPayload {
   type: RosterType;
