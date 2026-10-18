@@ -22,6 +22,9 @@ const TABS = [
 ];
 
 const shadowWarData = sw.active;
+// Guerra Sombría o Vigilia de Espadas, según el contenedor (provideSWKind).
+const titleUpper = sw.label.toUpperCase();
+const fileName = `${sw.kind === 'vigil_of_blades' ? 'vigilia-de-espadas' : 'guerra-sombria'}.png`;
 
 
 const formattedDate = computed(() => {
@@ -52,7 +55,7 @@ const formattedText = computed(() => {
   const data = shadowWarData.value;
   if (!data) return '';
   const lines: string[] = [
-    `🗡️ *GUERRA SOMBRÍA*`,
+    `🗡️ *${titleUpper}*`,
     `📅 ${formattedDate.value}  ⚔️ vs *${enemyName.value}*`,
     '',
   ];
@@ -88,7 +91,7 @@ onMounted(async () => {
 function downloadImage() {
   if (!imageUrl.value) return;
   const a = document.createElement('a');
-  a.download = 'guerra-sombria.png';
+  a.download = fileName;
   a.href = imageUrl.value;
   a.click();
 }
@@ -181,7 +184,7 @@ async function copyText() {
       <div class="img-tpl__header">
         <span class="img-tpl__icon">⚔️</span>
         <div class="img-tpl__header-text">
-          <div class="img-tpl__title">GUERRA SOMBRÍA</div>
+          <div class="img-tpl__title">{{ titleUpper }}</div>
           <div class="img-tpl__meta">{{ formattedDate }} · vs {{ enemyName }}</div>
         </div>
       </div>
