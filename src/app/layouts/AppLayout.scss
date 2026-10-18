@@ -154,6 +154,11 @@
             align-items: center;
             text-align: center;
             gap: 0.5rem;
+
+            img {
+              width: 40px;
+              height: 40px;
+            }
           }
 
           .scrollable-content {
@@ -162,7 +167,8 @@
             overflow-y: auto;
 
             > .header-section {
-              margin: -1rem 0 1rem;
+              margin: -1rem 0 0;
+              padding: .5rem 1rem;
             }
           }
         }

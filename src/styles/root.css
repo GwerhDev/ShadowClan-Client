@@ -194,26 +194,18 @@ h6 {
   filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.245));
 }
 
+/* Tamaños fluidos: iguales a los de siempre desde 1100px (desktop) y bajan linealmente hasta
+   el mínimo a 360px de ancho (clamp(mín, a + b·vw, máx)). */
 h1 {
-  font-size: 3.2em;
+  font-size: clamp(1.375em, .4875em + 3.946vw, 3.2em);
   line-height: 1.1;
   font-weight: 600;
 }
 
 h2 {
-  font-size: 1.4em;
+  font-size: clamp(1.1em, .954em + .6486vw, 1.4em);
   line-height: 1.1;
   font-weight: 600;
-}
-
-@media (max-width: 600px) {
-  h1 {
-    font-size: 2em;
-  }
-
-  h2 {
-    font-size: 1.2em;
-  }
 }
 
 button,

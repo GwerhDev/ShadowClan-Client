@@ -210,8 +210,9 @@
   justify-content: center;
   gap: .45rem;
   flex: 1;
-  padding: .6rem 1rem;
-  font-size: .78rem;
+  // Tamaños fluidos: iguales desde 1100px y menores en móvil (mínimo a 360px).
+  padding: .6rem clamp(.5rem, .257rem + 1.081vw, 1rem);
+  font-size: clamp(.66rem, .602rem + .2595vw, .78rem);
   font-weight: 600;
   letter-spacing: .04em;
   font-family: 'Cinzel', serif;
@@ -222,7 +223,7 @@
   color: rgb(227, 210, 168);
   transition: background .15s, color .15s;
 
-  i { font-size: .72rem; }
+  i { font-size: clamp(.62rem, .571rem + .2162vw, .72rem); }
 
   &:hover:not(:disabled) {
     background: rgba(227, 210, 168, .12);

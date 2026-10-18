@@ -108,6 +108,7 @@ watch(shadowWarData, (newVal) => {
 <style scoped lang="scss">
 
 .sw-info {
+  font-size: clamp(.9rem, .851rem + .2162vw, 1rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -116,7 +117,7 @@ watch(shadowWarData, (newVal) => {
 }
 
 .sw-clan-name {
-  font-size: 2rem;
+  font-size: clamp(1.4rem, 1.108rem + 1.297vw, 2rem);
 }
 
 /* styles moved to UnclaimedClanNotice.vue */
