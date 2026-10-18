@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import type { RaffleDrawResult } from '../../../../interfaces';
 
-// Animación del sorteo, premio por premio: un carrete de nombres gira y desacelera hasta
-// detenerse en el ganador de cada premio; quien gana sale del carrete para los siguientes.
-// Los ganadores los decide la API en una sola petición (el orden del carrete es solo visual).
+// Animación del sorteo, premio por premio. El modal abre en espera; al pulsar "Girar" el
+// carrete gira y desacelera hasta detenerse en el ganador. Quien gana sale del
+// carrete para los siguientes premios. Los ganadores los decide la API en una sola petición
+// que se hace al primer giro (cerrar antes de girar no crea ningún sorteo); el orden del
+// carrete es solo visual.
 
 type Person = { _id: string; name: string };
 
@@ -27,7 +29,7 @@ const result   = ref<RaffleDrawResult | null>(null);
 const error    = ref('');
 const round    = ref(0);                         // premio en curso
 const revealed = ref(0);                         // premios ya revelados
-const phase    = ref<'spinning' | 'revealed' | 'finished' | 'error'>('spinning');
+const phase    = ref<'ready' | 'spinning' | 'revealed' | 'finished' | 'error'>('ready');
 const reel     = ref<Person[]>(shuffle(props.participants));
 const offset   = ref(0);                         // posición del carrete en filas
 
@@ -43,6 +45,24 @@ function spin() {
   stop = null;
   phase.value = 'spinning';
   frame = requestAnimationFrame(tick);
+}
+
+/** Primer giro: pide los ganadores a la API mientras el carrete ya gira. */
+async function spinFirst() {
+  spin();
+  try {
+    result.value = await props.draw();
+    emit('drawn', result.value);
+  } catch (e: any) {
+    cancelAnimationFrame(frame);
+    error.value = e?.response?.data?.message ?? 'No se pudo realizar el sorteo.';
+    phase.value = 'error';
+  }
+}
+
+function onSpinClick() {
+  if (result.value) spin();
+  else spinFirst();
 }
 
 function tick(now: number) {
@@ -72,14 +92,17 @@ function reveal() {
   phase.value = revealed.value >= props.prizeNames.length ? 'finished' : 'revealed';
 }
 
-/** Siguiente premio: los ganadores anteriores salen del carrete. */
+/** Siguiente premio: los ganadores anteriores salen del carrete; queda listo para girar. */
 function nextPrize() {
   const won = new Set(result.value!.draws.slice(0, revealed.value).map(d => d.winner.character));
   round.value = revealed.value;
   reel.value = shuffle(props.participants.filter(p => !won.has(p._id)));
   offset.value = 0;
-  spin();
+  phase.value = 'ready';
 }
+
+/** Se puede cerrar antes del primer giro (no se creó nada) o al terminar. */
+const canClose = computed(() => (phase.value === 'ready' && !result.value) || phase.value === 'finished' || phase.value === 'error');
 
 /** Filas visibles alrededor de la central, desplazadas por la fracción. */
 const rows = computed(() => {
@@ -95,24 +118,12 @@ const rows = computed(() => {
 const current = computed(() => result.value?.draws[round.value] ?? null);
 const showWinner = computed(() => phase.value === 'revealed' || phase.value === 'finished');
 
-onMounted(async () => {
-  spin();
-  try {
-    result.value = await props.draw();
-    emit('drawn', result.value);
-  } catch (e: any) {
-    cancelAnimationFrame(frame);
-    error.value = e?.response?.data?.message ?? 'No se pudo realizar el sorteo.';
-    phase.value = 'error';
-  }
-});
-
 onBeforeUnmount(() => cancelAnimationFrame(frame));
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="draw-overlay" @click.self="phase === 'finished' || phase === 'error' ? emit('close') : null">
+    <div class="draw-overlay" @click.self="canClose ? emit('close') : null">
       <div class="draw-modal" :class="`is-${phase}`">
         <p class="draw-kicker">
           Sorteo<template v-if="prizeNames.length > 1"> · premio {{ round + 1 }} de {{ prizeNames.length }}</template>
@@ -130,7 +141,17 @@ onBeforeUnmount(() => cancelAnimationFrame(frame));
             >{{ r.name }}</div>
           </div>
 
-          <p v-if="phase === 'spinning'" class="draw-status">
+          <template v-if="phase === 'ready'">
+            <p class="draw-status draw-status--idle">
+              {{ reel.length }} participante{{ reel.length === 1 ? '' : 's' }} en la tómbola
+            </p>
+            <button class="draw-btn draw-btn--spin" @click="onSpinClick">
+              <i class="fas fa-dice"></i> Girar
+            </button>
+            <button v-if="!result" class="draw-link" @click="emit('close')">Cancelar</button>
+          </template>
+
+          <p v-else-if="phase === 'spinning'" class="draw-status">
             <i class="fas fa-dice"></i> Sorteando entre {{ reel.length }} participante{{ reel.length === 1 ? '' : 's' }}…
           </p>
 
@@ -361,6 +382,37 @@ $gold: rgb(227, 210, 168);
     font-weight: 600;
     color: $gold;
   }
+}
+
+.draw-status--idle {
+  font-size: .85rem;
+  color: rgba(255, 255, 255, .6);
+}
+
+.draw-btn--spin {
+  padding: .65rem 2rem;
+  font-family: 'Cinzel', serif;
+  font-size: .95rem;
+  box-shadow: 0 0 24px rgba(227, 210, 168, .15);
+  animation: pulse-glow 1.8s ease-in-out infinite;
+
+  i { animation: none; }
+}
+
+.draw-link {
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: .78rem;
+  color: rgba(255, 255, 255, .45);
+  cursor: pointer;
+
+  &:hover { color: rgba(255, 255, 255, .8); text-decoration: underline; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 16px rgba(227, 210, 168, .1); }
+  50%      { box-shadow: 0 0 28px rgba(227, 210, 168, .3); }
 }
 
 .draw-sparks {

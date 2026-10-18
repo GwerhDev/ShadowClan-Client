@@ -2,6 +2,7 @@ $gold: rgb(227, 210, 168);
 
 .raffle-page {
   width: 100%;
+  text-align: left;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -34,7 +35,13 @@ $gold: rgb(227, 210, 168);
   flex-direction: column;
   gap: .45rem;
 
-  > label {
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+  }
+
+  &__label {
     font-size: .72rem;
     letter-spacing: .06em;
     text-transform: uppercase;
@@ -547,5 +554,43 @@ $gold: rgb(227, 210, 168);
     display: flex;
     justify-content: flex-end;
     gap: .6rem;
+  }
+}
+
+// Cajas de aviso: información que debe verse siempre (bloqueos, errores, resúmenes).
+.notice {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  padding: .65rem .8rem;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: .8rem;
+  line-height: 1.5;
+  text-align: left;
+
+  i { margin-top: .2rem; flex-shrink: 0; }
+  b { font-weight: 600; }
+
+  &--info {
+    background: rgba(105, 169, 228, .08);
+    border-color: rgba(105, 169, 228, .3);
+    color: rgba(255, 255, 255, .75);
+    i { color: #93c5fd; }
+  }
+
+  &--warning {
+    background: rgba(251, 191, 36, .08);
+    border-color: rgba(251, 191, 36, .35);
+    color: rgba(255, 255, 255, .8);
+    i { color: #fbbf24; }
+  }
+
+  &--error {
+    background: rgba(239, 68, 68, .08);
+    border-color: rgba(239, 68, 68, .35);
+    color: rgba(255, 255, 255, .8);
+    i { color: #f87171; }
   }
 }

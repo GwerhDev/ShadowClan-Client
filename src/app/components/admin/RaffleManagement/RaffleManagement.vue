@@ -80,6 +80,11 @@ const showParticipants = ref(false);
 /** Los requisitos cambiaron desde el último cálculo: hay que recalcular antes de sortear. */
 const stale = computed(() => !!eligibility.value && computedKey.value !== criteriaKey.value);
 const eligibleCount = computed(() => eligibility.value?.members.filter(m => m.eligible).length ?? 0);
+/** Cálculo vigente (no pendiente de recalcular). */
+const fresh = computed(() => !!eligibility.value && !stale.value && !calculating.value);
+/** Hay requisitos activos pero el período no tiene instancias completadas: nadie puede cumplirlos. */
+const noInstances = computed(() => fresh.value && criteria.value.rules.length > 0
+  && !eligibility.value!.totals.shadow_war && !eligibility.value!.totals.vigil_of_blades);
 const visibleMembers = computed(() => {
   const q = search.value.trim().toLowerCase();
   return (eligibility.value?.members ?? []).filter(m => !q || m.name.toLowerCase().includes(q));
@@ -208,7 +213,13 @@ onMounted(async () => {
       <h3 class="raffle-card__title"><i class="fas fa-sliders"></i> Configuración</h3>
 
       <div class="field">
-        <label for="raffle-prize">Premios</label>
+        <div class="field__head">
+          <label for="raffle-prize" class="field__label">Premios</label>
+          <InfoPopover label="Cómo se sortean los premios">
+            Se sortean en el orden de la lista; quien gana un premio queda fuera de los siguientes.
+            Puedes agregar el mismo premio varias veces si hay más de una unidad.
+          </InfoPopover>
+        </div>
         <template v-if="prizes.length">
           <div class="prize-picker">
             <select id="raffle-prize" v-model="prizePick" class="input">
@@ -232,16 +243,21 @@ onMounted(async () => {
               </div>
             </li>
           </ol>
-          <p class="hint">
-            Se sortean en este orden; quien gana un premio queda fuera de los siguientes.
-            Puedes agregar el mismo premio varias veces si hay más de una unidad.
-          </p>
         </template>
-        <p v-else class="hint">No hay premios disponibles. Pide a un administrador que los agregue.</p>
+        <p v-else class="notice notice--warning">
+          <i class="fas fa-triangle-exclamation"></i>
+          <span>No hay premios disponibles. Pide a un administrador que los agregue.</span>
+        </p>
       </div>
 
       <div class="field">
-        <label>Período de asistencia</label>
+        <div class="field__head">
+          <span class="field__label">Período de asistencia</span>
+          <InfoPopover label="Qué cuenta en el período">
+            Se cuentan las Guerras Sombrías y Vigilias de Espadas completadas en el período. A cada miembro
+            solo se le consideran las instancias posteriores a su ingreso al clan.
+          </InfoPopover>
+        </div>
         <div class="chips">
           <button
             v-for="r in RANGES" :key="r.value" type="button"
@@ -257,7 +273,14 @@ onMounted(async () => {
       </div>
 
       <div class="field">
-        <label>Requisitos de asistencia</label>
+        <div class="field__head">
+          <span class="field__label">Requisitos de asistencia</span>
+          <InfoPopover label="Cómo funcionan los requisitos">
+            <b>Cantidad</b>: mínimo de asistencias en el período. <b>%</b>: mínimo porcentaje de las instancias
+            del período. Deben cumplirse todos los requisitos activos; sin requisitos activos, todos los
+            miembros actuales son elegibles.
+          </InfoPopover>
+        </div>
         <div v-for="a in ACTIVITIES" :key="a.value" :class="['rule', { off: !rules[a.value].enabled }]">
           <label class="rule__toggle">
             <input type="checkbox" v-model="rules[a.value].enabled" />
@@ -280,35 +303,55 @@ onMounted(async () => {
             </span>
           </div>
         </div>
-        <p class="hint">Sin requisitos activos, todos los miembros actuales son elegibles.</p>
       </div>
 
       <div class="field">
-        <label>Participantes</label>
+        <div class="field__head">
+          <span class="field__label">Participantes</span>
+          <InfoPopover label="Líder y oficiales">
+            Por defecto el líder y los oficiales quedan fuera del sorteo. Si no los incluyes, igual puedes
+            marcarlos a mano en la lista de participantes.
+          </InfoPopover>
+        </div>
         <label class="rule__toggle">
           <input type="checkbox" v-model="includeStaff" />
           <span>Incluir líder y oficiales</span>
         </label>
-        <p class="hint">Si no los incluyes, igual puedes marcarlos a mano en la lista.</p>
       </div>
 
+      <p v-if="calcError" class="notice notice--error">
+        <i class="fas fa-circle-xmark"></i><span>{{ calcError }}</span>
+      </p>
+      <p v-else-if="noInstances" class="notice notice--warning">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>No hay Guerras Sombrías ni Vigilias completadas en este período: los requisitos de asistencia no se pueden cumplir.</span>
+      </p>
+      <p v-else-if="fresh && !eligibleCount" class="notice notice--warning">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>Ningún miembro cumple los requisitos. Ajústalos o marca participantes a mano en la lista.</span>
+      </p>
+
       <div class="actions">
-        <p v-if="calcError" class="error">{{ calcError }}</p>
         <button class="btn btn--secondary" :disabled="calculating" @click="openParticipants">
           <i :class="calculating ? 'fas fa-spinner fa-spin' : 'fas fa-users-viewfinder'"></i>
           {{ calculating ? 'Calculando participantes…' : `Ver participantes (${selected.size})` }}
         </button>
       </div>
 
+      <p v-if="notEnough && fresh" class="notice notice--warning">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>
+          Hay {{ selected.size }} participante{{ selected.size === 1 ? '' : 's' }} para {{ prizeQueue.length }} premios y
+          cada persona puede ganar uno solo. Agrega participantes o quita premios.
+        </span>
+      </p>
+
       <div class="draw-bar">
         <span class="hint">
           <template v-if="!prizeQueue.length">Agrega al menos un premio.</template>
           <template v-else-if="!eligibility || stale">Calculando participantes…</template>
           <template v-else-if="!selected.size">Selecciona al menos un participante.</template>
-          <span v-else-if="notEnough" class="error">
-            Hay {{ selected.size }} participante{{ selected.size === 1 ? '' : 's' }} para {{ prizeQueue.length }} premios:
-            cada persona puede ganar uno solo.
-          </span>
+          <template v-else-if="notEnough">No hay suficientes participantes.</template>
           <template v-else>
             {{ prizeQueue.length }} premio{{ prizeQueue.length === 1 ? '' : 's' }} ·
             {{ selected.size }} participante{{ selected.size === 1 ? '' : 's' }}
@@ -324,10 +367,13 @@ onMounted(async () => {
     <!-- 2. Participantes (modal) -->
     <CustomModal v-if="showParticipants && eligibility" title="Participantes" @close="showParticipants = false">
       <div class="participants-modal">
-      <p class="hint">
-        {{ eligibleCount }} de {{ eligibility.members.length }} miembros cumplen los requisitos ·
-        {{ eligibility.totals.shadow_war }} Guerra(s) y {{ eligibility.totals.vigil_of_blades }} Vigilia(s) en el período
-        ({{ fmtDate(eligibility.period.since) }} – {{ fmtDate(eligibility.period.until) }}).
+      <p class="notice notice--info">
+        <i class="fas fa-circle-info"></i>
+        <span>
+          <b>{{ eligibleCount }} de {{ eligibility.members.length }}</b> miembros cumplen los requisitos ·
+          {{ eligibility.totals.shadow_war }} Guerra(s) y {{ eligibility.totals.vigil_of_blades }} Vigilia(s) en el período
+          ({{ fmtDate(eligibility.period.since) }} – {{ fmtDate(eligibility.period.until) }}).
+        </span>
       </p>
 
       <div class="participants-bar" v-sticky-bar>
@@ -419,8 +465,12 @@ onMounted(async () => {
             <span class="history__winner"><i class="fas fa-trophy"></i> {{ d.winner.name }}</span>
           </li>
         </ol>
-        <p class="hint">Esta acción no se puede deshacer.</p>
-        <p v-if="deleteError" class="error">{{ deleteError }}</p>
+        <p class="notice notice--error">
+          <i class="fas fa-triangle-exclamation"></i><span>Esta acción no se puede deshacer.</span>
+        </p>
+        <p v-if="deleteError" class="notice notice--error">
+          <i class="fas fa-circle-xmark"></i><span>{{ deleteError }}</span>
+        </p>
         <div class="confirm-modal__actions">
           <button class="btn btn--secondary" :disabled="deleting" @click="toDelete = null">Cancelar</button>
           <button class="btn btn--danger" :disabled="deleting" @click="confirmDelete">

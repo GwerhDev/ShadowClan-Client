@@ -1,19 +1,73 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 
 /**
  * Ícono de información con un popover. Se abre al pasar el mouse o al enfocarlo con
  * teclado, y un clic lo deja fijo (útil en móvil). Se cierra con Escape o clic fuera.
  * El contenido va por el slot por defecto (o `text`).
+ *
+ * El panel se renderiza en <body> con posición fija (ningún `overflow` de un contenedor lo
+ * recorta), por encima de los modales, ajustado al viewport (se corre a los lados y se abre
+ * hacia arriba si no cabe abajo) y se reposiciona al hacer scroll o redimensionar.
  */
 withDefaults(defineProps<{ text?: string; label?: string }>(), { label: 'Más información' });
 
-const root   = ref<HTMLElement | null>(null);
-const hover  = ref(false);
-const pinned = ref(false);
+const VIEWPORT_MARGIN = 8;  // distancia mínima a los bordes de la pantalla
+const GAP = 10;             // separación entre el ícono y el panel
+
+const root    = ref<HTMLElement | null>(null);
+const trigger = ref<HTMLElement | null>(null);
+const panel   = ref<HTMLElement | null>(null);
+const hover   = ref(false);
+const pinned  = ref(false);
+const visible = computed(() => hover.value || pinned.value);
+const pos = reactive({ top: 0, left: 0, arrow: 0, placement: 'bottom' as 'bottom' | 'top' });
+
+let closeTimer: ReturnType<typeof setTimeout> | null = null;
+
+function enter() {
+  if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+  hover.value = true;
+}
+/** Cierre con una pequeña demora para poder pasar el mouse del ícono al panel. */
+function leave() {
+  closeTimer = setTimeout(() => { hover.value = false; closeTimer = null; }, 120);
+}
+
+function place() {
+  if (!trigger.value || !panel.value) return;
+  const r = trigger.value.getBoundingClientRect();
+  const w = panel.value.offsetWidth;
+  const h = panel.value.offsetHeight;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const center = r.left + r.width / 2;
+
+  pos.left = Math.min(Math.max(center - w / 2, VIEWPORT_MARGIN), Math.max(VIEWPORT_MARGIN, vw - w - VIEWPORT_MARGIN));
+  const fitsBelow = r.bottom + GAP + h <= vh - VIEWPORT_MARGIN;
+  const fitsAbove = r.top - GAP - h >= VIEWPORT_MARGIN;
+  pos.placement = !fitsBelow && fitsAbove ? 'top' : 'bottom';
+  pos.top = pos.placement === 'top' ? r.top - GAP - h : r.bottom + GAP;
+  pos.arrow = Math.min(Math.max(center - pos.left, 12), w - 12);
+}
+
+function onReposition() { if (visible.value) place(); }
+
+watch(visible, async v => {
+  if (v) {
+    await nextTick();
+    place();
+    window.addEventListener('scroll', onReposition, { capture: true, passive: true });
+    window.addEventListener('resize', onReposition);
+  } else {
+    window.removeEventListener('scroll', onReposition, { capture: true });
+    window.removeEventListener('resize', onReposition);
+  }
+});
 
 function onDocumentClick(e: MouseEvent) {
-  if (pinned.value && root.value && !root.value.contains(e.target as Node)) pinned.value = false;
+  const t = e.target as Node;
+  if (pinned.value && !root.value?.contains(t) && !panel.value?.contains(t)) pinned.value = false;
 }
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') { pinned.value = false; hover.value = false; }
@@ -26,6 +80,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocumentClick);
   document.removeEventListener('keydown', onKeydown);
+  window.removeEventListener('scroll', onReposition, { capture: true });
+  window.removeEventListener('resize', onReposition);
+  if (closeTimer) clearTimeout(closeTimer);
 });
 </script>
 
@@ -33,25 +90,36 @@ onBeforeUnmount(() => {
   <span
     ref="root"
     class="info-popover"
-    @mouseenter="hover = true"
-    @mouseleave="hover = false"
+    @mouseenter="enter"
+    @mouseleave="leave"
   >
     <button
+      ref="trigger"
       type="button"
       class="info-popover-trigger"
       :aria-label="label"
-      :aria-expanded="hover || pinned"
+      :aria-expanded="visible"
       @click.stop="pinned = !pinned"
-      @focus="hover = true"
-      @blur="hover = false"
+      @focus="enter"
+      @blur="leave"
     >
       <i class="fas fa-circle-info"></i>
     </button>
-    <Transition name="info-popover-fade">
-      <span v-if="hover || pinned" class="info-popover-panel" role="tooltip">
-        <slot>{{ text }}</slot>
-      </span>
-    </Transition>
+    <Teleport to="body">
+      <Transition name="info-popover-fade">
+        <span
+          v-if="visible"
+          ref="panel"
+          :class="['info-popover-panel', `is-${pos.placement}`]"
+          :style="{ top: `${pos.top}px`, left: `${pos.left}px`, '--arrow-left': `${pos.arrow}px` }"
+          role="tooltip"
+          @mouseenter="enter"
+          @mouseleave="leave"
+        >
+          <slot>{{ text }}</slot>
+        </span>
+      </Transition>
+    </Teleport>
   </span>
 </template>
 
@@ -88,13 +156,12 @@ onBeforeUnmount(() => {
 }
 
 .info-popover-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
+  position: fixed;
+  // Por encima de los modales (z-index 9999).
+  z-index: 10000;
+  display: block;
   width: max-content;
-  max-width: min(360px, 80vw);
+  max-width: min(360px, calc(100vw - 16px));
   padding: .75rem .9rem;
   background: var(--color-primary-bg, #16181f);
   border: 1px solid rgba(227, 210, 168, .25);
@@ -110,23 +177,32 @@ onBeforeUnmount(() => {
   text-transform: none;
   white-space: normal;
 
-  // Flecha
+  // Flecha apuntando al ícono (se mueve si el panel se corre para caber en pantalla).
   &::before {
     content: '';
     position: absolute;
-    top: -6px;
-    left: 50%;
+    left: var(--arrow-left, 50%);
     width: 10px;
     height: 10px;
     background: inherit;
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  &.is-bottom::before {
+    top: -6px;
     border-left: 1px solid rgba(227, 210, 168, .25);
     border-top: 1px solid rgba(227, 210, 168, .25);
-    transform: translateX(-50%) rotate(45deg);
+  }
+
+  &.is-top::before {
+    bottom: -6px;
+    border-right: 1px solid rgba(227, 210, 168, .25);
+    border-bottom: 1px solid rgba(227, 210, 168, .25);
   }
 }
 
 .info-popover-fade-enter-active,
-.info-popover-fade-leave-active { transition: opacity .12s ease, transform .12s ease; }
+.info-popover-fade-leave-active { transition: opacity .12s ease; }
 .info-popover-fade-enter-from,
-.info-popover-fade-leave-to { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+.info-popover-fade-leave-to { opacity: 0; }
 </style>
