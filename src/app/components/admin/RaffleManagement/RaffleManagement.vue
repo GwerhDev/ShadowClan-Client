@@ -156,7 +156,9 @@ async function loadHistory(reset = false) {
   } finally { historyLoading.value = false; }
 }
 
-// Eliminar un sorteo (con confirmación).
+// Eliminar un sorteo (con confirmación). Solo en desarrollo: en producción el historial no se
+// borra (evita repetir un sorteo hasta obtener otro ganador); el API tampoco expone la ruta.
+const canDelete   = import.meta.env.DEV;
 const toDelete    = ref<RaffleHistoryItem | null>(null);
 const deleting    = ref(false);
 const deleteError = ref('');
@@ -379,7 +381,7 @@ onMounted(async () => {
       <h3 class="raffle-card__title"><i class="fas fa-clock-rotate-left"></i> Historial</h3>
       <ul v-if="history.length" class="history">
         <li v-for="h in history" :key="h._id" class="history__item">
-          <button class="icon-btn icon-btn--danger history__delete" title="Eliminar sorteo" @click="askDelete(h)">
+          <button v-if="canDelete" class="icon-btn icon-btn--danger history__delete" title="Eliminar sorteo" @click="askDelete(h)">
             <i class="fas fa-trash"></i>
           </button>
           <ol class="history__draws">
