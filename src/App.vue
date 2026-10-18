@@ -126,8 +126,13 @@ onMounted(async () => {
 </script>
 
 <template>
+  <!-- router-view con clave = registro raíz: remonta la página al cambiar de sección (p. ej.
+       /shadow-war → /vigil-of-blades, que comparten ShadowWarPage), pero no entre subrutas
+       de una misma sección. -->
   <SplashComponent v-if="loading" :done="authDone" />
-  <router-view v-else />
+  <router-view v-else v-slot="{ Component, route }">
+    <component :is="Component" :key="route.matched[0]?.path" />
+  </router-view>
   <ClanEventModal
     v-if="store.clanEventModal"
     :type="store.clanEventModal.type"

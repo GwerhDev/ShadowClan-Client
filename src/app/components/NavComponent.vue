@@ -17,7 +17,8 @@ const activeChar = computed(() => {
   return chars.find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
 });
 const isWalker = computed(() => !activeChar.value?.clan);
-const hasVigil = computed(() => !!store.currentUser.vigilData);
+// Regla en el store: Vigilia solo si no hay una Guerra activa anterior a ella.
+const showVigilTab = computed(() => store.showVigilTab);
 
 const isLeaderOrOfficer = computed(() => {
   if (!activeChar.value?.clan) return false;
@@ -49,8 +50,8 @@ function goToRequests() {
           </router-link>
 
           <template v-if="!isWalker">
-            <!-- Mientras el clan tenga una Vigilia de Espadas abierta, reemplaza a "Guerra" -->
-            <router-link v-if="hasVigil" title="Vigilia de Espadas" to="/vigil-of-blades" class="nav-item">
+            <!-- Vigilia reemplaza a "Guerra" si no hay una Guerra activa anterior (store.showVigilTab) -->
+            <router-link v-if="showVigilTab" title="Vigilia de Espadas" to="/vigil-of-blades" class="nav-item">
               <i class="fas fa-khanda"></i>
               <small>Vigilia</small>
             </router-link>

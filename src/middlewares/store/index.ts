@@ -67,6 +67,20 @@ export const useStore = defineStore('store', {
       return battleInfoFor(this.currentUser.shadowWarData?.battle as Record<string, any[]> | undefined, this.currentCharacter);
     },
 
+    /**
+     * Pestaña de miembros: mostrar "Vigilia" en lugar de "Guerra". Solo si hay una Vigilia
+     * abierta y NO hay una Guerra Sombría activa con fecha anterior (si la hay, primero se
+     * muestra la Guerra; la Vigilia aparece cuando esa Guerra se complete). Ambos datos son la
+     * instancia no completada más antigua de su tipo (GET /active).
+     */
+    showVigilTab(): boolean {
+      const vigil = this.currentUser.vigilData;
+      if (!vigil) return false;
+      const war = this.currentUser.shadowWarData;
+      if (!war) return true;
+      return !(new Date(war.date).getTime() < new Date(vigil.date).getTime());
+    },
+
     /** Asignaciones del personaje activo en la Vigilia de Espadas abierta. */
     userVigilBattleInfo(): { category: string; match: number; group: number }[] {
       return battleInfoFor(this.currentUser.vigilData?.battle as Record<string, any[]> | undefined, this.currentCharacter);
