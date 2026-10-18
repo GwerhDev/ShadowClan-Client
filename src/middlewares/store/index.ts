@@ -4,6 +4,25 @@ import type { storeState, AppNotification } from '../../interfaces/storeState';
 import type { AccursedTower, CharacterCreationInput, HistoryType, ShadowWar, TaskInput } from '../../interfaces';
 import { WEB_URL } from '../misc/const';
 import { getStoredCharacter, setStoredCharacter } from '../misc/characterStorage';
+import { shadowWarApi, vigilApi, type SWKind } from '../services/shadowWarService';
+
+type BattleInfo = { category: string; match: number; group: number };
+
+/** Partidas/grupos en que aparece el personaje dentro de una formación de Guerra Sombría. */
+function battleInfoFor(battle: Record<string, any[]> | undefined, charId: string | null): BattleInfo[] {
+  if (!battle || !charId) return [];
+  const result: BattleInfo[] = [];
+  const inGroup = (chars: any[]) => (chars ?? []).some((m: any) => m && (m._id === charId || m === charId));
+  for (const categoryName in battle) {
+    const category = battle[categoryName] ?? [];
+    for (let i = 0; i < category.length; i++) {
+      const match = category[i];
+      if (inGroup(match?.group1?.character)) result.push({ category: categoryName, match: i + 1, group: 1 });
+      if (inGroup(match?.group2?.character)) result.push({ category: categoryName, match: i + 1, group: 2 });
+    }
+  }
+  return result;
+}
 
 // Promesa compartida de la carga inicial de /auth: el guard del router y App.vue
 // esperan la misma petición en vez de lanzar dos.
@@ -20,6 +39,7 @@ export const useStore = defineStore('store', {
       taskloading: false,
       shadowWarData: null,
       shadowWarError: null,
+      vigilData: null,
       towerWarList: [],
       towerWarError: null,
     },
@@ -44,21 +64,14 @@ export const useStore = defineStore('store', {
 
   getters: {
     userBattleInfo(): { category: string; match: number; group: number }[] {
-      const battle = this.currentUser.shadowWarData?.battle as Record<string, any[]> | undefined;
-      const charId = this.currentCharacter;
-      if (!battle || !charId) return [];
-      const result: { category: string; match: number; group: number }[] = [];
-      for (const categoryName in battle) {
-        const category = battle[categoryName];
-        for (let i = 0; i < category.length; i++) {
-          const match = category[i];
-          const inGroup = (chars: any[]) => (chars ?? []).some((m: any) => m && (m._id === charId || m === charId));
-          if (inGroup(match.group1?.character)) result.push({ category: categoryName, match: i + 1, group: 1 });
-          if (inGroup(match.group2?.character)) result.push({ category: categoryName, match: i + 1, group: 2 });
-        }
-      }
-      return result;
+      return battleInfoFor(this.currentUser.shadowWarData?.battle as Record<string, any[]> | undefined, this.currentCharacter);
     },
+
+    /** Asignaciones del personaje activo en la Vigilia de Espadas abierta. */
+    userVigilBattleInfo(): { category: string; match: number; group: number }[] {
+      return battleInfoFor(this.currentUser.vigilData?.battle as Record<string, any[]> | undefined, this.currentCharacter);
+    },
+
   },
 
   actions: {
@@ -98,6 +111,42 @@ export const useStore = defineStore('store', {
 
     setCurrentShadowWarDetails(shadowWar: ShadowWar | null) {
       this.admin.currentShadowWar = shadowWar;
+    },
+
+    setVigilData(data: ShadowWar | null) {
+      this.currentUser.vigilData = data;
+    },
+
+    /** Vigilia de Espadas abierta del clan del personaje activo (si la hay). */
+    async handleGetActiveVigil() {
+      try {
+        this.currentUser.vigilData = await vigilApi.getActive(this.currentCharacter ?? undefined);
+      } catch {
+        this.currentUser.vigilData = null;
+      }
+    },
+
+    /** Recarga la instancia activa del tipo indicado (Guerra Sombría o Vigilia). */
+    async handleGetActiveSW(kind: SWKind) {
+      if (kind === 'vigil_of_blades') return this.handleGetActiveVigil();
+      return this.handleGetNextShadowWar();
+    },
+
+    /** Detalle (historial) de una instancia de Guerra Sombría o Vigilia. */
+    async handleGetSWInstance(kind: SWKind, id: string) {
+      const api = kind === 'vigil_of_blades' ? vigilApi : shadowWarApi;
+      const response = await api.getById(id, this.currentCharacter ?? undefined);
+      this.admin.currentShadowWar = response;
+      return response;
+    },
+
+    /** Elimina desde el historial una instancia de Guerra Sombría o Vigilia. */
+    async handleDeleteSWHistory(kind: SWKind, id: string) {
+      const api = kind === 'vigil_of_blades' ? vigilApi : shadowWarApi;
+      await api.remove(id, this.currentCharacter ?? undefined);
+      this.admin.history = (this.admin.history ?? []).filter((w: any) => w._id !== id);
+      if (kind === 'vigil_of_blades' && this.currentUser.vigilData?._id === id) this.currentUser.vigilData = null;
+      if (kind === 'shadow_war' && this.currentUser.shadowWarData?._id === id) this.currentUser.shadowWarData = null;
     },
 
     async handleGetNextShadowWar() {
@@ -298,11 +347,13 @@ export const useStore = defineStore('store', {
       }
       // Reset clan-scoped state so it refetches for the new character
       this.currentUser.shadowWarData = null;
+      this.currentUser.vigilData     = null;
       this.currentUser.towerWarList  = [];
       this.pendingRequestsCount      = 0; // reset before refetch
       this.handleFetchPendingInbox();
       this.handleFetchPendingRequests(); // recalculate for the new active character
       this.handleGetNextShadowWar();
+      this.handleGetActiveVigil();
       this.handleGetActiveTowerWar();
     },
 

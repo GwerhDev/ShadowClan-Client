@@ -181,7 +181,8 @@
 .attendance-row {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(150px, 1.2fr) repeat(2, minmax(170px, 1fr));
+  // Columnas según la actividad (las fija el componente en --att-grid).
+  grid-template-columns: var(--att-grid, minmax(150px, 1.2fr) repeat(2, minmax(170px, 1fr)));
   padding: .5rem;
   border-radius: 8px;
   background: rgba(255, 255, 255, .02);
@@ -296,7 +297,8 @@
 .attendance-row-skeleton {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(150px, 1.2fr) repeat(2, minmax(170px, 1fr));
+  // Columnas según la actividad (las fija el componente en --att-grid).
+  grid-template-columns: var(--att-grid, minmax(150px, 1.2fr) repeat(2, minmax(170px, 1fr)));
   align-items: center;
   gap: .75rem;
   padding: .6rem 1rem;

@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { classes } from '../../../middlewares/misc/const';
 import shadowWarBanner     from '../../../assets/png/shadow-war-banner.png';
+
+const SOURCE_ICON: Record<string, string> = {
+  shadow_war:      'fas fa-khanda',
+  vigil_of_blades: 'fas fa-shield-halved',
+  accursed_tower:  'fas fa-chess-rook',
+};
+const SOURCE_LABEL: Record<string, string> = {
+  shadow_war:      'Guerra Sombría',
+  vigil_of_blades: 'Vigilia de Espadas',
+  accursed_tower:  'Torre Maldita',
+};
 import accursedTowerBanner from '../../../assets/png/accursed-tower-banner.png';
 
 /** Publicación del feed del clan (convocatoria automática o publicación normal). */
@@ -49,11 +60,11 @@ function formatDate(iso: string) {
   <template v-if="post.auto">
     <div class="feed-cta-header">
       <div class="feed-cta-icon">
-        <i :class="post.source === 'shadow_war' ? 'fas fa-khanda' : 'fas fa-chess-rook'"></i>
+        <i :class="SOURCE_ICON[post.source] ?? 'fas fa-chess-rook'"></i>
       </div>
       <div class="feed-cta-info">
         <span class="feed-cta-title">
-          {{ post.source === 'shadow_war' ? 'Guerra Sombría' : 'Torre Maldita' }}
+          {{ SOURCE_LABEL[post.source] ?? 'Torre Maldita' }}
           <span v-if="post.instanceEnemyClan" class="feed-cta-vs">vs {{ post.instanceEnemyClan }}</span>
         </span>
         <span class="feed-cta-meta">
@@ -73,7 +84,7 @@ function formatDate(iso: string) {
     <div class="feed-cta-body">
       <p>
         Tu clan ha convocado una instancia de
-        <strong>{{ post.source === 'shadow_war' ? 'Guerra Sombría' : 'Torre Maldita' }}</strong>
+        <strong>{{ SOURCE_LABEL[post.source] ?? 'Torre Maldita' }}</strong>
         <template v-if="post.instanceEnemyClan"> contra <strong>{{ post.instanceEnemyClan }}</strong></template>.
         ¿Acudirás al llamado?
       </p>
@@ -141,8 +152,8 @@ function formatDate(iso: string) {
   </div>
 
   <!-- ── shadow war banner + actions ── -->
-  <div v-if="post.source === 'shadow_war'" class="feed-sw-wrap">
-    <img v-if="!post.auto" :src="shadowWarBanner" class="feed-sw-banner" alt="Shadow War" />
+  <div v-if="post.source === 'shadow_war' || post.source === 'vigil_of_blades'" class="feed-sw-wrap">
+    <img v-if="!post.auto && post.source === 'shadow_war'" :src="shadowWarBanner" class="feed-sw-banner" alt="Shadow War" />
     <div class="feed-sw-actions">
       <button
         v-if="post.auto"
@@ -154,8 +165,8 @@ function formatDate(iso: string) {
         <i :class="responding ? 'fas fa-spinner fa-spin' : confirmed ? 'fas fa-check' : 'fas fa-hand-fist'"></i>
         {{ confirmed ? 'Confirmado' : 'Responder al llamado' }}
       </button>
-      <button class="feed-sw-cta" @click="$router.push('/shadow-war')">
-        <i class="fas fa-khanda"></i>
+      <button class="feed-sw-cta" @click="$router.push(post.source === 'vigil_of_blades' ? '/vigil-of-blades' : '/shadow-war')">
+        <i :class="SOURCE_ICON[post.source]"></i>
         Ver nómina
       </button>
     </div>

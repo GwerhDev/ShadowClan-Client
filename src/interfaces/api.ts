@@ -180,7 +180,7 @@ export interface SaveRosterPayload {
 
 // ── Publicaciones del clan ───────────────────────────────────────────────────
 
-export type ClanPostSource = 'general' | 'shadow_war' | 'accursed_tower';
+export type ClanPostSource = 'general' | 'shadow_war' | 'accursed_tower' | 'vigil_of_blades';
 
 export interface ClanPost {
   _id: string;
@@ -234,7 +234,7 @@ export type RespondAction = 'confirm' | 'pending' | 'decline';
 
 // ── Historial ────────────────────────────────────────────────────────────────
 
-export type HistoryType = 'all' | 'shadow_war' | 'accursed_tower';
+export type HistoryType = 'all' | 'shadow_war' | 'accursed_tower' | 'vigil_of_blades';
 
 export interface HistoryPage<T = any> {
   data: T[];

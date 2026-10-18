@@ -4,6 +4,7 @@ import ClanManagementPage from '../pages/admin/ClanManagementPage.vue';
 import HistoryDetails from '../components/admin/HistoryManagement/HistoryDetails.vue';
 import AccursedTowerHistoryDetails from '../components/admin/HistoryManagement/AccursedTowerHistoryDetails.vue';
 import ShadowWarManagement from '../components/admin/ShadowWarManagement/ShadowWar.vue';
+import VigilOfBladesManagement from '../components/admin/ShadowWarManagement/VigilOfBlades.vue';
 import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
 import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
 import ClanMembersManagement from '../components/admin/ClanMembersManagement/ClanMembersManagement.vue';
@@ -63,6 +64,39 @@ const routes: RouteRecordRaw[] = [
         name: 'ShadowWarProud',
         component: ProudShadowWar,
         meta: { title: 'Guerra Sombría' },
+      },
+    ],
+  },
+  {
+    path: '/vigil-of-blades',
+    name: 'VigilOfBlades',
+    props: { kind: 'vigil_of_blades' },
+    component: ShadowWarPage,
+    meta: { title: 'Vigilia de Espadas' },
+    children: [
+      {
+        path: 'exalted',
+        name: 'VigilExalted',
+        component: ExaltedShadowWar,
+        meta: { title: 'Vigilia de Espadas' },
+      },
+      {
+        path: 'eminent',
+        name: 'VigilEminent',
+        component: EminentShadowWar,
+        meta: { title: 'Vigilia de Espadas' },
+      },
+      {
+        path: 'famed',
+        name: 'VigilFamed',
+        component: FamedShadowWar,
+        meta: { title: 'Vigilia de Espadas' },
+      },
+      {
+        path: 'proud',
+        name: 'VigilProud',
+        component: ProudShadowWar,
+        meta: { title: 'Vigilia de Espadas' },
       },
     ],
   },
@@ -131,6 +165,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Guerra Sombría', requiresClanManagement: true },
       },
       {
+        path: 'vigil-of-blades',
+        name: 'ManagementVigilOfBlades',
+        component: VigilOfBladesManagement,
+        meta: { title: 'Vigilia de Espadas', requiresClanManagement: true },
+      },
+      {
         path: 'accursed-tower',
         name: 'ManagementAccursedTower',
         component: AccursedTowerManagement,
@@ -152,6 +192,13 @@ const routes: RouteRecordRaw[] = [
             path: 'shadow-war/:shadowwar_id',
             name: 'ManagementHistoryDetails',
             component: HistoryDetails,
+            meta: { title: 'Historial', requiresClanManagement: true },
+          },
+          {
+            path: 'vigil-of-blades/:shadowwar_id',
+            name: 'ManagementHistoryVigilDetails',
+            component: HistoryDetails,
+            props: { kind: 'vigil_of_blades' },
             meta: { title: 'Historial', requiresClanManagement: true },
           },
         ],

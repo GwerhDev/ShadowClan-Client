@@ -1,6 +1,7 @@
 import { ref, Ref, ComputedRef } from 'vue';
 import { useStore } from '../../middlewares/store';
-import { getClanMembers, updateShadowWarClan } from '../../middlewares/services';
+import { getClanMembers } from '../../middlewares/services';
+import { useSWKind, type SWKindContext } from './useSWKind';
 import { useSWFormationEdit, SWSlotRef } from './useFormationEdit';
 import type { ShadowWar } from '../../interfaces';
 
@@ -16,7 +17,7 @@ function cleanMatch(m: any) {
  * Edición de formación por categoría en el detalle histórico de una Guerra Sombría.
  * Al expandir una categoría se crea un buffer editable; cada cambio se guarda al instante.
  */
-export function useHistorySWFormation(currentShadowWar: ComputedRef<ShadowWar | null>, saving: Ref<boolean>) {
+export function useHistorySWFormation(currentShadowWar: ComputedRef<ShadowWar | null>, saving: Ref<boolean>, sw: SWKindContext = useSWKind()) {
   const store = useStore();
 
   const expandedCategories  = ref<string[]>([]);
@@ -83,11 +84,11 @@ export function useHistorySWFormation(currentShadowWar: ComputedRef<ShadowWar | 
           ? (formationEditBuffer.value[cat] ?? []).map(cleanMatch)
           : (raw[c] ?? []).map(cleanMatch);
       }
-      await updateShadowWarClan(currentShadowWar.value._id, {
+      await sw.api.update(currentShadowWar.value._id, {
         battle:      fullBattle,
         characterId: store.currentCharacter,
       });
-      await store.handleGetShadowWar(currentShadowWar.value._id);
+      await store.handleGetSWInstance(sw.kind, currentShadowWar.value._id);
       const freshBattle = (currentShadowWar.value?.battle as any);
       if (freshBattle?.[cat]) formationEditBuffer.value[cat] = JSON.parse(JSON.stringify(freshBattle[cat]));
     } finally {

@@ -21,6 +21,8 @@ export interface storeState {
     taskloading: boolean;
     shadowWarData: ShadowWar | null;
     shadowWarError: string | null;
+    /** Vigilia de Espadas abierta del clan (null = no hay; la tab no se muestra). */
+    vigilData: ShadowWar | null;
     towerWarList: AccursedTower[];
     towerWarError: string | null;
   };

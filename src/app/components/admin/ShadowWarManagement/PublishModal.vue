@@ -3,15 +3,17 @@ import { ref, computed } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import { createClanPost } from '../../../../middlewares/services';
 import CustomModal from '../../Modals/CustomModal.vue';
+import { useSWKind } from '../../../composables/useSWKind';
 
 const store = useStore();
+const sw = useSWKind();
 const emit = defineEmits(['close']);
 
 const content = ref('');
 const posting = ref(false);
 const error = ref('');
 
-const shadowWarData = computed(() => store.currentUser.shadowWarData);
+const shadowWarData = sw.active;
 const currentCharacter = computed(() => store.currentCharacter);
 
 async function publish() {
@@ -19,7 +21,7 @@ async function publish() {
   posting.value = true;
   error.value = '';
   try {
-    await createClanPost(currentCharacter.value, content.value.trim(), 'shadow_war', shadowWarData.value?._id ?? null);
+    await createClanPost(currentCharacter.value, content.value.trim(), sw.source, shadowWarData.value?._id ?? null);
     content.value = '';
     emit('close');
   } catch (e: any) {

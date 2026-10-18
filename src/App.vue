@@ -18,6 +18,7 @@ onMounted(async () => {
       store.handleFetchPendingInbox();
       store.handleFetchPendingRequests();
       store.handleGetNextShadowWar();
+      store.handleGetActiveVigil();
       const socket = connectSocket();
       socket.on('clan-request:new', (data: any) => {
         // Only count if the notification targets the currently active character
@@ -88,6 +89,19 @@ onMounted(async () => {
       socket.on('shadowwar:updated', () => {
         store.handleGetNextShadowWar();
         store.handleGetShadowWars?.();
+      });
+      // Vigilia de Espadas: la tab de miembros aparece/desaparece según haya una abierta.
+      socket.on('vigil:assigned', (data: any) => {
+        store.addNotification({
+          id: data.id,
+          type: 'vigil-assignment',
+          targetType: 'character',
+          targetId: data.characterId ? String(data.characterId) : null,
+          data,
+        });
+      });
+      socket.on('vigil:updated', () => {
+        store.handleGetActiveVigil();
       });
       socket.on('tower:assigned', (data: any) => {
         store.addNotification({

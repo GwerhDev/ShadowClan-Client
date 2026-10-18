@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useStore } from '../../../../middlewares/store';
-import {
-  searchClans, createShadowWarManagement, closeShadowWarManagement, updateShadowWarClan,
-} from '../../../../middlewares/services';
+import { searchClans } from '../../../../middlewares/services';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
 import CreateEnemyClanModal from '../../Modals/CreateEnemyClanModal.vue';
 import type { EnemyClanRef, ShadowWar } from '../../../../interfaces';
+import { useSWKind } from '../../../composables/useSWKind';
 
 /**
  * Panel superior del formulario de Guerra Sombría: crear instancia, o ver/editar/
@@ -32,6 +31,9 @@ const emit = defineEmits<{
 }>();
 
 const store = useStore();
+const sw = useSWKind();
+// En la Vigilia el rival es un clan de los Inmortales.
+const rivalLabel = sw.kind === 'vigil_of_blades' ? 'Clan Inmortal' : 'Clan Enemigo';
 
 const saving          = ref(false);
 const newDate         = ref('');
@@ -71,8 +73,8 @@ async function createInstance() {
   if (!newDate.value) return;
   saving.value = true;
   try {
-    const created = await createShadowWarManagement(newDate.value, newEnemyClan.value || null, store.currentCharacter);
-    store.setShadowWarData(created);
+    const created = await sw.api.create(newDate.value, newEnemyClan.value || null, store.currentCharacter);
+    sw.setActive(created);
     newDate.value      = '';
     newEnemyClan.value = '';
     emit('created', created);
@@ -86,8 +88,8 @@ async function deleteInstance() {
   if (!props.shadowWarId) return;
   saving.value = true;
   try {
-    await closeShadowWarManagement(props.shadowWarId, store.currentCharacter ?? undefined);
-    store.setShadowWarData(null);
+    await sw.api.remove(props.shadowWarId, store.currentCharacter ?? undefined);
+    sw.setActive(null);
     emit('ended');
   } finally {
     saving.value = false;
@@ -115,8 +117,8 @@ async function saveEdit() {
   try {
     const formData: any = { enemyClan: enemyClan.value || null };
     if (editDate.value) formData.date = editDate.value;
-    const updated = await updateShadowWarClan(props.shadowWarId, formData, store.currentCharacter ?? undefined);
-    if (updated) store.setShadowWarData(updated);
+    const updated = await sw.api.update(props.shadowWarId, formData, store.currentCharacter ?? undefined);
+    if (updated) sw.setActive(updated);
     editing.value = false;
   } finally {
     saving.value = false;
@@ -159,13 +161,13 @@ async function saveEdit() {
         <input type="date" v-model="newDate" />
       </div>
       <div class="field-col field-col--grow">
-        <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
+        <label>{{ rivalLabel }} <span class="optional-tag">opcional</span></label>
         <SearchSelector
           v-model="newEnemyClan"
           :fetch-fn="searchClans"
           :selected-label="lastCreated?._id === newEnemyClan ? lastCreated?.name : undefined"
           placeholder="Buscar clan..."
-          create-label="Crear clan enemigo"
+          :create-label="`Crear ${rivalLabel.toLowerCase()}`"
           @create="(q) => handleOpenConfirm(q, 'new')"
         />
       </div>
@@ -187,14 +189,14 @@ async function saveEdit() {
           />
         </div>
         <div class="field-col field-col--grow">
-          <label>Clan Enemigo <span class="optional-tag">opcional</span></label>
+          <label>{{ rivalLabel }} <span class="optional-tag">opcional</span></label>
           <SearchSelector
             v-if="editing"
             v-model="enemyClan"
             :fetch-fn="searchClans"
             :selected-label="lastCreated?._id === enemyClan ? lastCreated?.name : shadowWarData?.enemyClan?.name"
             placeholder="Buscar clan..."
-            create-label="Crear clan enemigo"
+            :create-label="`Crear ${rivalLabel.toLowerCase()}`"
             @create="(q) => handleOpenConfirm(q, 'edit')"
           />
           <span v-else class="enemy-clan-display">

@@ -10,7 +10,7 @@ import { createHistoryEntry } from '../../../../middlewares/services/historyServ
 import { searchEnemyClans } from '../../../../middlewares/services/towerWarService';
 import SearchSelector from '../../Selectors/SearchSelector.vue';
 
-type HistoryFilter = 'all' | 'shadow_war' | 'accursed_tower';
+type HistoryFilter = 'all' | 'shadow_war' | 'accursed_tower' | 'vigil_of_blades';
 
 const currentPage   = ref(1);
 const hasMore       = ref(true);
@@ -200,6 +200,7 @@ async function handleAddHistory() {
               <option value="all">Todas</option>
               <option value="shadow_war">Guerras Sombrías</option>
               <option value="accursed_tower">Torres Malditas</option>
+              <option value="vigil_of_blades">Vigilias de Espadas</option>
             </select>
           </li>
           <li class="th-cell">fecha</li>

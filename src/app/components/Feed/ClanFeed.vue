@@ -2,6 +2,7 @@
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '../../../middlewares/store';
 import { getClanPosts, deleteClanPost, updateClanPost, respondToPublicShadowWar, respondToPublicTowerWar } from '../../../middlewares/services';
+import { vigilApi } from '../../../middlewares/services/shadowWarService';
 import FeedPostItem from './FeedPostItem.vue';
 
 const store = useStore();
@@ -94,6 +95,11 @@ function isConfirmed(post: any): boolean {
     if (sw && String(sw._id) === String(post.referenceId))
       return (sw.confirmed ?? []).some((c: any) => String(c?._id ?? c) === charId);
   }
+  if (post.source === 'vigil_of_blades') {
+    const v = store.currentUser.vigilData;
+    if (v && String(v._id) === String(post.referenceId))
+      return (v.confirmed ?? []).some((c: any) => String(c?._id ?? c) === charId);
+  }
   if (post.source === 'accursed_tower') {
     const tower = (store.currentUser.towerWarList as any[])
       .find((t: any) => String(t._id) === String(post.referenceId));
@@ -109,6 +115,9 @@ async function respondToCall(post: any) {
     if (post.source === 'shadow_war') {
       await respondToPublicShadowWar(String(post.referenceId), store.currentCharacter!, 'confirm');
       store.handleGetNextShadowWar?.();
+    } else if (post.source === 'vigil_of_blades') {
+      await vigilApi.respondPublic(String(post.referenceId), store.currentCharacter!, 'confirm');
+      store.handleGetActiveVigil();
     } else {
       await respondToPublicTowerWar(String(post.referenceId), store.currentCharacter!, 'confirm');
       store.handleGetActiveTowerWar?.();

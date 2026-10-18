@@ -4,7 +4,8 @@ import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
 import ClassImage from '../../common/ClassImage.vue';
 import CharacterProfileModal from './CharacterProfileModal.vue';
-import { getAttendanceWeek, setMemberAttendance, createShadowWarManagement } from '../../../../middlewares/services';
+import { getAttendanceWeek, setMemberAttendance } from '../../../../middlewares/services';
+import { shadowWarApi, vigilApi } from '../../../../middlewares/services/shadowWarService';
 
 const store = useStore();
 
@@ -12,9 +13,12 @@ const chars       = computed(() => store.currentUser.userData?.character ?? []);
 const active      = computed(() => (chars.value as any[]).find((c: any) => c._id === store.currentCharacter) ?? chars.value[0] ?? null);
 const characterId = computed(() => active.value?._id ?? store.currentCharacter);
 
-const navItems = ['miembro', 'jueves', 'sábado'];
+// Columnas según la actividad: Guerra Sombría (jueves + sábado) o Vigilia (domingo).
+const dayCount     = computed(() => (activityType.value === 'vigil_of_blades' ? 1 : 2));
+const navItems     = computed(() => (activityType.value === 'vigil_of_blades' ? ['miembro', 'domingo'] : ['miembro', 'jueves', 'sábado']));
 // Miembro fijo (sticky) + columnas de día lo bastante anchas para fecha + botón "Crear" sin wrap.
-const gridTemplate = 'minmax(150px, 1.2fr) repeat(2, minmax(170px, 1fr))';
+const gridTemplate = computed(() => `minmax(150px, 1.2fr) repeat(${dayCount.value}, minmax(170px, 1fr))`);
+const activityLabel = computed(() => (activityType.value === 'vigil_of_blades' ? 'Vigilia de Espadas' : 'Shadow War'));
 
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 function shiftDate(dateStr: string, days: number) {
@@ -33,7 +37,7 @@ const week        = ref<any>(null);  // { weekStart, days }
 const savingKeys  = ref<Set<string>>(new Set());
 const creatingDay = ref<string | null>(null);
 const searchQuery = ref('');
-const activityType = ref<'shadow_war' | 'accursed_tower'>('shadow_war');
+const activityType = ref<'shadow_war' | 'vigil_of_blades' | 'accursed_tower'>('shadow_war');
 
 const selectedMember = ref<any>(null);
 
@@ -67,7 +71,7 @@ async function loadWeek(reset: boolean) {
       page:  membersPage.value,
       limit: 20,
       q:     searchQuery.value || undefined,
-    });
+    }, activityType.value === 'vigil_of_blades' ? 'vigil_of_blades' : 'shadow_war');
     week.value = { weekStart: res.weekStart, days: res.days };
     members.value       = reset ? res.members : [...members.value, ...res.members];
     membersTotal.value  = res.total;
@@ -100,7 +104,7 @@ async function toggle(member: any, day: any) {
   savingKeys.value.add(key);
   const next = !(member.attendance[day.key] === true);
   try {
-    await setMemberAttendance(day.shadowWar._id, member._id, next, characterId.value);
+    await setMemberAttendance(day.shadowWar._id, member._id, next, characterId.value, activityType.value === 'vigil_of_blades' ? 'vigil_of_blades' : 'shadow_war');
     member.attendance[day.key] = next;
   } finally {
     savingKeys.value.delete(key);
@@ -110,7 +114,8 @@ async function toggle(member: any, day: any) {
 async function createWar(day: any) {
   creatingDay.value = day.key;
   try {
-    await createShadowWarManagement(day.date, null, characterId.value);
+    const api = activityType.value === 'vigil_of_blades' ? vigilApi : shadowWarApi;
+    await api.create(day.date, null, characterId.value);
     await fetchWeek();
   } finally {
     creatingDay.value = null;
@@ -136,6 +141,9 @@ onUnmounted(() => scrollObserver?.disconnect());
 
 watch(sentinel, (el) => { if (el) setupObserver(); });
 
+// Cambiar de actividad recarga la semana con sus propias columnas.
+watch(activityType, () => fetchWeek());
+
 watch(searchQuery, () => {
   if (searchDebounce) clearTimeout(searchDebounce);
   searchDebounce = setTimeout(() => loadWeek(true), 500);
@@ -143,7 +151,7 @@ watch(searchQuery, () => {
 </script>
 
 <template>
-  <div class="attendance-register">
+  <div class="attendance-register" :style="{ '--att-grid': gridTemplate }">
     <div class="attendance-toolbar">
       <div class="search-wrap">
         <i class="fas fa-magnifying-glass search-icon"></i>
@@ -166,6 +174,7 @@ watch(searchQuery, () => {
       <div class="activity-select-wrap">
         <select v-model="activityType" class="activity-select">
           <option value="shadow_war">Guerra Sombría</option>
+          <option value="vigil_of_blades">Vigilia de Espadas</option>
           <option value="accursed_tower" disabled>Torre Maldita</option>
         </select>
       </div>
@@ -182,7 +191,7 @@ watch(searchQuery, () => {
               class="btn-create-day"
               :disabled="creatingDay === day.key"
               @click="createWar(day)"
-              title="Crear Shadow War para este día"
+              :title="`Crear ${activityLabel} para este día`"
             >
               <i class="fas fa-plus"></i> Crear
             </button>
@@ -211,7 +220,7 @@ watch(searchQuery, () => {
         </div>
 
         <div v-if="membersLoading" v-for="n in 4" :key="'sk' + n" class="attendance-row-skeleton">
-          <span v-for="c in 3" :key="c" class="skeleton-box skeleton-cell"></span>
+          <span v-for="c in dayCount + 1" :key="c" class="skeleton-box skeleton-cell"></span>
         </div>
 
         <div v-if="!members.length && !membersLoading" class="table-empty-row">

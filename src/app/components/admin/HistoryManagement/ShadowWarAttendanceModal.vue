@@ -11,7 +11,7 @@ import CharacterProfileModal from '../AttendanceManagement/CharacterProfileModal
  * buscador y filtro por estado (filtrados en el backend) y permite marcar/desmarcar
  * la asistencia de esa instancia, igual que en /management/attendance.
  */
-const props = defineProps<{ shadowWarId: string }>();
+const props = withDefaults(defineProps<{ shadowWarId: string; kind?: 'shadow_war' | 'vigil_of_blades' }>(), { kind: 'shadow_war' });
 const emit  = defineEmits<{ (e: 'close'): void; (e: 'updated'): void }>();
 
 const store = useStore();
@@ -43,7 +43,7 @@ async function load() {
     const res = await getShadowWarAttendance(props.shadowWarId, store.currentCharacter ?? undefined, {
       q: searchQuery.value.trim() || undefined,
       status: statusFilter.value,
-    });
+    }, props.kind);
     members.value = res.members;
     summary.value = res.summary;
   } catch (e: any) {
@@ -65,7 +65,7 @@ async function toggle(member: AttendanceMember) {
   const next = !(prev === true);
   savingIds.value.add(member._id);
   try {
-    await setMemberAttendance(props.shadowWarId, member._id, next, store.currentCharacter ?? undefined);
+    await setMemberAttendance(props.shadowWarId, member._id, next, store.currentCharacter ?? undefined, props.kind);
     member.attended = next;
     if ((prev === true) !== next) bumpSummary(next);
     // Con un filtro de estado activo, el miembro deja de corresponder a la vista.

@@ -24,7 +24,7 @@
 
     <div v-else-if="!currentShadowWar" class="detail-empty">
       <i class="fas fa-scroll"></i>
-      <p>No se encontraron detalles para esta Guerra Sombría.</p>
+      <p>No se encontraron detalles para esta {{ sw.label }}.</p>
     </div>
 
     <template v-else>
@@ -81,7 +81,7 @@
               </button>
             </template>
 
-            <button v-if="!confirmDelete" class="btn-attendance" @click="showInstanceAttendance = true" title="Asistencia de esta Guerra Sombría">
+            <button v-if="!confirmDelete" class="btn-attendance" @click="showInstanceAttendance = true" :title="`Asistencia de esta ${sw.label}`">
               <i class="fas fa-clipboard-check"></i> Asistencia
             </button>
 
@@ -186,6 +186,7 @@
     <ShadowWarAttendanceModal
       v-if="showInstanceAttendance && currentShadowWar?._id"
       :shadow-war-id="currentShadowWar._id"
+      :kind="sw.kind"
       @close="showInstanceAttendance = false"
     />
 
@@ -221,12 +222,18 @@ import SearchSelector from '../../Selectors/SearchSelector.vue';
 import CreateEnemyClanModal from '../../Modals/CreateEnemyClanModal.vue';
 import type { EnemyClanRef } from '../../../../interfaces';
 import { useStore } from '../../../../middlewares/store';
-import { searchClans, closeShadowWarManagement, updateShadowWarClan } from '../../../../middlewares/services';
+import { searchClans } from '../../../../middlewares/services';
+import { provideSWKind } from '../../../composables/useSWKind';
+import type { SWKind } from '../../../../middlewares/services/shadowWarService';
 import { useHistorySWFormation } from '../../../composables/useHistorySWFormation';
 
 const route  = useRoute();
 const router = useRouter();
 const store  = useStore();
+
+/** Detalle de una Guerra Sombría o Vigilia de Espadas (misma formación). */
+const props = withDefaults(defineProps<{ kind?: SWKind }>(), { kind: 'shadow_war' });
+const sw = provideSWKind(props.kind);
 
 const currentShadowWar      = computed(() => store.admin.currentShadowWar);
 const loading               = ref(true);
@@ -258,7 +265,7 @@ const {
   assignedMemberIds, assignedMemberDetails,
   openSlotSelection, handleMemberSelected, handleMemberUnassigned, unassignSlot,
   dragSource, dragOverKey, slotKey, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd,
-} = useHistorySWFormation(currentShadowWar, saving);
+} = useHistorySWFormation(currentShadowWar, saving, sw);
 
 const shadowWarResults = [
   { value: 'victory', text: 'Victoria' },
@@ -315,11 +322,11 @@ async function saveResult() {
   if (!currentShadowWar.value?._id) return;
   saving.value = true;
   try {
-    await updateShadowWarClan(currentShadowWar.value._id, {
+    await sw.api.update(currentShadowWar.value._id, {
       result:      editResultValue.value,
       characterId: store.currentCharacter,
     });
-    await store.handleGetShadowWar(currentShadowWar.value._id);
+    await store.handleGetSWInstance(sw.kind, currentShadowWar.value._id);
     editingResult.value = false;
   } finally {
     saving.value = false;
@@ -340,8 +347,8 @@ async function saveEdit() {
       enemyClan:   editEnemyClan.value || null,
       characterId: store.currentCharacter,
     };
-    await updateShadowWarClan(currentShadowWar.value._id, payload);
-    await store.handleGetShadowWar(currentShadowWar.value._id);
+    await sw.api.update(currentShadowWar.value._id, payload);
+    await store.handleGetSWInstance(sw.kind, currentShadowWar.value._id);
     editing.value = false;
   } finally {
     saving.value = false;
@@ -353,11 +360,7 @@ async function handleDelete() {
   if (!currentShadowWar.value?._id) return;
   saving.value = true;
   try {
-    await closeShadowWarManagement(currentShadowWar.value._id, store.currentCharacter ?? undefined);
-    store.admin.history = (store.admin.history ?? []).filter((w: any) => w._id !== currentShadowWar.value!._id);
-    if (store.currentUser.shadowWarData?._id === currentShadowWar.value._id) {
-      store.currentUser.shadowWarData = null;
-    }
+    await store.handleDeleteSWHistory(sw.kind, currentShadowWar.value._id);
     router.push('/management/history');
   } finally {
     saving.value = false;
@@ -377,7 +380,7 @@ onMounted(async () => {
   const id = route.params.shadowwar_id as string;
   if (!id) { loading.value = false; return; }
   try {
-    await store.handleGetShadowWar(id);
+    await store.handleGetSWInstance(sw.kind, id);
   } catch {
     error.value = true;
   } finally {

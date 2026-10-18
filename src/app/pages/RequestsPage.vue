@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useStore } from '../../middlewares/store';
 import type { InboxItem } from '../../interfaces';
 import { getClanInvitations, reviewClanInvitation, respondToPublicShadowWar, respondToPublicTowerWar } from '../../middlewares/services';
+import { vigilApi } from '../../middlewares/services/shadowWarService';
 import AppLayout from '../layouts/AppLayout.vue';
 import RequestDetailContent from '../components/Requests/RequestDetailContent.vue';
 
@@ -35,6 +36,12 @@ const shadowWarAssignments = computed(() =>
     .map((n: any) => ({ type: 'shadowwar-assignment', raw: { ...n.data, _notifId: n.id } }))
 );
 
+const vigilAssignments = computed(() =>
+  (store.notifications as any[])
+    .filter((n: any) => n.type === 'vigil-assignment' && String(n.targetId) === String(store.currentCharacter))
+    .map((n: any) => ({ type: 'vigil-assignment', raw: { ...n.data, _notifId: n.id } }))
+);
+
 const towerAssignments = computed(() =>
   (store.notifications as any[])
     .filter((n: any) => n.type === 'tower-assignment' && String(n.targetId) === String(store.currentCharacter))
@@ -46,6 +53,7 @@ const allItems = computed(() => [
   ...reviewedRequests.value,
   ...reviewedCharacterRequests.value,
   ...shadowWarAssignments.value,
+  ...vigilAssignments.value,
   ...towerAssignments.value,
 ]);
 
@@ -105,7 +113,7 @@ function itemTitle(item: { type: string; raw: any }): string {
   if (item.type === 'clan-invitation') return item.raw.clan?.name ?? '—';
   if (item.type === 'clan-request-reviewed') return item.raw.clan?.name ?? '—';
   if (item.type === 'character-request-reviewed') return item.raw.character?.name ?? '—';
-  if (item.type === 'shadowwar-assignment') return item.raw.characterName ?? '—';
+  if (item.type === 'shadowwar-assignment' || item.type === 'vigil-assignment') return item.raw.characterName ?? '—';
   if (item.type === 'tower-assignment') return item.raw.characterName ?? '—';
   return '—';
 }
@@ -119,6 +127,7 @@ function itemSubtitle(item: { type: string; raw: any }): string {
     return item.raw.action === 'accept' ? `${label} aprobada` : `${label} rechazada`;
   }
   if (item.type === 'shadowwar-assignment') return 'Asignación — Guerra Sombría';
+  if (item.type === 'vigil-assignment') return 'Asignación — Vigilia de Espadas';
   if (item.type === 'tower-assignment') return 'Asignación — Torre Maldita';
   return '—';
 }
@@ -127,8 +136,13 @@ async function confirmWarAssignment(item: { type: string; raw: any }) {
   processingId.value = item.raw._notifId;
   actionError.value = '';
   try {
-    await respondToPublicShadowWar(item.raw.shadowWarId, item.raw.characterId, 'confirm');
-    await store.handleGetNextShadowWar();
+    if (item.type === 'vigil-assignment') {
+      await vigilApi.respondPublic(item.raw.vigilId, item.raw.characterId, 'confirm');
+      await store.handleGetActiveVigil();
+    } else {
+      await respondToPublicShadowWar(item.raw.shadowWarId, item.raw.characterId, 'confirm');
+      await store.handleGetNextShadowWar();
+    }
     const notif = (store.notifications as any[]).find((n: any) => n.id === item.raw._notifId);
     if (notif) { notif.read = true; }
     store.decrementPendingInboxCount();
@@ -202,6 +216,7 @@ function dismissReviewedRequest(notifId: string) {
                     item.type === 'clan-invitation'           ? 'fas fa-envelope'
                     : item.type === 'clan-request-reviewed'  ? (item.raw.action === 'accept' ? 'fas fa-check' : 'fas fa-times')
                     : item.type === 'shadowwar-assignment'   ? 'fas fa-sword'
+                    : item.type === 'vigil-assignment'       ? 'fas fa-shield-halved'
                     : item.type === 'tower-assignment'       ? 'fas fa-chess-rook'
                     : item.raw.action === 'accept'           ? 'fas fa-user-check' : 'fas fa-user-times'
                   "></i>

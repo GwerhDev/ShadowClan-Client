@@ -23,6 +23,7 @@ const tabs = [
   { id: 'clan',           name: 'Clan',     icon: 'fas fa-users',      path: '/management/clan' },
   { id: 'shadow-war',     name: 'Guerra',   icon: 'fas fa-khanda',     path: '/management/shadow-war' },
   { id: 'accursed-tower', name: 'Torre',    icon: 'fas fa-chess-rook', path: '/management/accursed-tower' },
+  { id: 'vigil-of-blades', name: 'Vigilia', icon: 'fas fa-shield-halved', path: '/management/vigil-of-blades' },
   { id: 'history',        name: 'Historial', icon: 'fas fa-history',    path: '/management/history' },
   { id: 'attendance',     name: 'Asistencia', icon: 'fas fa-clipboard-check', path: '/management/attendance' },
 ];

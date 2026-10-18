@@ -6,6 +6,14 @@ import EmptyState from '../components/common/EmptyState.vue';
 import { useRoute, useRouter } from 'vue-router';
 import UnclaimedClanNotice from '../components/common/UnclaimedClanNotice.vue';
 import { SW_CATEGORY_LABELS } from '../../middlewares/misc/shadowWar';
+import { provideSWKind } from '../composables/useSWKind';
+import type { SWKind } from '../../middlewares/services/shadowWarService';
+
+/** Página de miembros para Guerra Sombría o Vigilia de Espadas (misma formación). */
+const props = withDefaults(defineProps<{ kind?: SWKind }>(), { kind: 'shadow_war' });
+const sw = provideSWKind(props.kind);
+const isVigil = props.kind === 'vigil_of_blades';
+const base = `/${sw.routeSegment}`;
 
 const store = useStore();
 const nextWarDate    = ref('');
@@ -14,7 +22,7 @@ const loading        = ref(true);
 const route          = useRoute();
 const router         = useRouter();
 
-const shadowWarData = computed(() => store.currentUser.shadowWarData);
+const shadowWarData = sw.active;
 
 const activeCharacter = computed(() => {
   const chars = store.currentUser.userData?.character ?? [];
@@ -27,21 +35,21 @@ const clanUnclaimed = computed(() => activeClan.value?.status === 'unclaimed');
 const tabs = computed(() => {
   if (!shadowWarData.value) return [];
   return [
-    { id: 'exalted', name: SW_CATEGORY_LABELS.exalted, icon: 'fas fa-crown',       path: '/shadow-war/exalted' },
-    { id: 'eminent', name: SW_CATEGORY_LABELS.eminent, icon: 'fas fa-trophy',      path: '/shadow-war/eminent' },
-    { id: 'famed',   name: SW_CATEGORY_LABELS.famed,   icon: 'fas fa-medal',       path: '/shadow-war/famed'   },
-    { id: 'proud',   name: SW_CATEGORY_LABELS.proud,   icon: 'fas fa-fist-raised', path: '/shadow-war/proud'   },
+    { id: 'exalted', name: SW_CATEGORY_LABELS.exalted, icon: 'fas fa-crown',       path: `${base}/exalted` },
+    { id: 'eminent', name: SW_CATEGORY_LABELS.eminent, icon: 'fas fa-trophy',      path: `${base}/eminent` },
+    { id: 'famed',   name: SW_CATEGORY_LABELS.famed,   icon: 'fas fa-medal',       path: `${base}/famed`   },
+    { id: 'proud',   name: SW_CATEGORY_LABELS.proud,   icon: 'fas fa-fist-raised', path: `${base}/proud`   },
   ];
 });
 
 onMounted(async () => {
   loading.value = true;
   try {
-    await store.handleGetNextShadowWar();
+    await sw.refreshActive();
     // Redirigir a la primera pestaña solo si hay una instancia activa y
-    // el usuario llegó a la raíz /shadow-war (sin subruta)
-    if (store.currentUser.shadowWarData && route.path === '/shadow-war') {
-      router.replace('/shadow-war/exalted');
+    // el usuario llegó a la raíz (sin subruta)
+    if (shadowWarData.value && route.path === base) {
+      router.replace(`${base}/exalted`);
     }
   } finally {
     loading.value = false;
@@ -52,7 +60,7 @@ watch(shadowWarData, (newVal) => {
   if (newVal?.date) {
     const warDate = new Date(newVal.date);
     nextWarDate.value   = warDate.toLocaleString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    enemyClanName.value = newVal.enemyClan?.name ?? 'aún no está definido';
+    enemyClanName.value = newVal.enemyClan?.name ?? (isVigil ? 'Los Inmortales' : 'aún no está definido');
   } else {
     nextWarDate.value   = '';
     enemyClanName.value = '';
@@ -81,12 +89,13 @@ watch(shadowWarData, (newVal) => {
       <EmptyState
         v-else-if="!shadowWarData"
         icon="fas fa-shield-alt"
-        message="No hay una Guerra Sombría programada esta semana."
+        :message="isVigil ? 'No hay una Vigilia de Espadas abierta.' : 'No hay una Guerra Sombría programada esta semana.'"
       />
 
       <template v-else>
         <div class="sw-info">
-          <p>La próxima <b>Guerra Sombría</b> es el <i>{{ nextWarDate }} a las 19:30h (hora del servidor)</i>. Enfrentaremos al Clan:</p>
+          <p v-if="isVigil">La próxima <b>Vigilia de Espadas</b> es el <i>{{ nextWarDate }} a las 20:00h (hora del servidor)</i>. Enfrentaremos a:</p>
+          <p v-else>La próxima <b>Guerra Sombría</b> es el <i>{{ nextWarDate }} a las 19:30h (hora del servidor)</i>. Enfrentaremos al Clan:</p>
           <h4 class="sw-clan-name">{{ enemyClanName }}</h4>
         </div>
         <router-view :loading="loading" />

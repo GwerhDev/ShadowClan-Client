@@ -79,6 +79,12 @@ span {
     border: 1px solid rgba(220, 100, 60, .28);
     color: #e8845a;
   }
+
+  &--vigil_of_blades {
+    background: rgba(227, 210, 168, .12);
+    border: 1px solid rgba(227, 210, 168, .3);
+    color: rgb(227, 210, 168);
+  }
 }
 
 .list-container {

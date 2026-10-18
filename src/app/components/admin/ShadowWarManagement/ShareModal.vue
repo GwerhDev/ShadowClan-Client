@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, nextTick } from 'vue';
-import { useStore } from '../../../../middlewares/store';
 import TabModal from '../../Modals/TabModal.vue';
 import { toPng } from 'html-to-image';
 import { SW_CATEGORIES, SW_CATEGORY_LABELS, SW_CATEGORY_POINTS_LABEL, swCategoryLabel } from '../../../../middlewares/misc/shadowWar';
+import { useSWKind } from '../../../composables/useSWKind';
 
-const store = useStore();
+const sw = useSWKind();
 defineEmits(['close']);
 
 const imageUrl      = ref<string | null>(null);
@@ -21,7 +21,7 @@ const TABS = [
   { key: 'whatsapp', label: 'WhatsApp', icon: 'fab fa-whatsapp' },
 ];
 
-const shadowWarData = computed(() => store.currentUser.shadowWarData);
+const shadowWarData = sw.active;
 
 
 const formattedDate = computed(() => {

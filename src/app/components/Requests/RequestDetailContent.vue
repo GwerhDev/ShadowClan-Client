@@ -113,12 +113,12 @@ function formatDate(iso: string) {
     </div>
   </template>
 
-  <template v-else-if="selected.type === 'shadowwar-assignment'">
+  <template v-else-if="selected.type === 'shadowwar-assignment' || selected.type === 'vigil-assignment'">
     <div class="req-detail-content">
       <div class="req-detail-header">
         <div class="req-detail-type request">
-          <i class="fas fa-sword"></i>
-          <span>Asignación — Guerra Sombría</span>
+          <i :class="selected.type === 'vigil-assignment' ? 'fas fa-shield-halved' : 'fas fa-sword'"></i>
+          <span>Asignación — {{ selected.type === 'vigil-assignment' ? 'Vigilia de Espadas' : 'Guerra Sombría' }}</span>
         </div>
       </div>
 
@@ -126,7 +126,7 @@ function formatDate(iso: string) {
         <i class="fas fa-khanda req-clan-icon"></i>
         <div>
           <h2 class="req-clan-name">{{ selected.raw.characterName ?? '—' }}</h2>
-          <p class="req-clan-sub">ha sido asignado a la próxima Guerra Sombría</p>
+          <p class="req-clan-sub">ha sido asignado a la próxima {{ selected.type === 'vigil-assignment' ? 'Vigilia de Espadas' : 'Guerra Sombría' }}</p>
         </div>
       </div>
 

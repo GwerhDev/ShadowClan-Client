@@ -1,6 +1,7 @@
 import { ref, Ref } from 'vue';
 import { useStore } from '../../middlewares/store';
-import { autoAssignRoster, updateShadowWarClan } from '../../middlewares/services';
+import { autoAssignRoster } from '../../middlewares/services';
+import { useSWKind } from './useSWKind';
 import { SW_CATEGORIES, SWBattle, createEmptyBattle } from '../../middlewares/misc/shadowWar';
 import { useSWFormationEdit, SWSlotRef } from './useFormationEdit';
 import type { Character } from '../../interfaces';
@@ -23,6 +24,7 @@ export function useShadowWarRoster(opts: {
   clanId:      Ref<string | null>;
 }) {
   const store = useStore();
+  const sw = useSWKind();
   const { shadowWarId, enemyClan, clanMembers, clanId } = opts;
 
   const battleCategories = ref<SWBattle>(createEmptyBattle());
@@ -70,8 +72,8 @@ export function useShadowWarRoster(opts: {
       enemyClan: enemyClan.value || null,
       battle: battleData,
     };
-    const updated = await updateShadowWarClan(shadowWarId.value, formData, store.currentCharacter ?? undefined);
-    if (updated) store.setShadowWarData(updated);
+    const updated = await sw.api.update(shadowWarId.value, formData, store.currentCharacter ?? undefined);
+    if (updated) sw.setActive(updated);
   }
 
   // ── Selección de miembros ──────────────────────────────────────────────────

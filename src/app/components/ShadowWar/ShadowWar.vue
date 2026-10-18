@@ -3,9 +3,10 @@ import { computed, ref } from 'vue';
 import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';
-import { respondToPublicShadowWar } from '../../../middlewares/services';
+import { useSWKind } from '../../composables/useSWKind';
 
 const store = useStore();
+const sw = useSWKind();
 
 const props = defineProps({
   activeTab: {
@@ -19,7 +20,7 @@ const props = defineProps({
 });
 
 const activeCategory = computed(() => props.activeTab.value);
-const shadowWarData = computed(() => store.currentUser.shadowWarData);
+const shadowWarData = sw.active;
 const error = computed(() => store.currentUser.shadowWarError);
 
 const confirmedIds = computed<string[]>(() => {
@@ -51,8 +52,8 @@ async function handleRespond(action: 'confirm' | 'decline' | 'pending', charId: 
   if (!shadowWarData.value?._id || !charId || respondingCharId.value) return;
   respondingCharId.value = charId;
   try {
-    await respondToPublicShadowWar(shadowWarData.value._id, charId, action);
-    await store.handleGetNextShadowWar();
+    await sw.api.respondPublic(shadowWarData.value._id, charId, action);
+    await sw.refreshActive();
   } catch { /* silently ignore */ }
   finally { respondingCharId.value = null; }
 }

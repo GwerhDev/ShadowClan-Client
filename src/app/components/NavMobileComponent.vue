@@ -12,6 +12,7 @@ const activeChar = computed(() => {
   return chars.find((c: any) => c._id === store.currentCharacter) ?? chars[0] ?? null;
 });
 const isWalker = computed(() => !activeChar.value?.clan);
+const hasVigil = computed(() => !!store.currentUser.vigilData);
 
 const isLeaderOrOfficer = computed(() => {
   if (!activeChar.value?.clan) return false;
@@ -35,7 +36,12 @@ const requestsCount = computed(() => store.pendingRequestsCount);
         </router-link>
 
         <template v-if="!isWalker">
-          <router-link title="Guerra Sombría" to="/shadow-war" class="nav-item">
+          <!-- Mientras el clan tenga una Vigilia de Espadas abierta, reemplaza a "Guerra" -->
+          <router-link v-if="hasVigil" title="Vigilia de Espadas" to="/vigil-of-blades" class="nav-item">
+            <i class="fas fa-khanda"></i>
+            <small>Vigilia</small>
+          </router-link>
+          <router-link v-else title="Guerra Sombría" to="/shadow-war" class="nav-item">
             <i class="fas fa-khanda"></i>
             <small>Guerra</small>
           </router-link>

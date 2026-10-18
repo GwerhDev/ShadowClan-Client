@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, Ref, computed, watch } from 'vue';
-import { getClanMembers, respondToShadowWar } from '../../../../middlewares/services';
+import { getClanMembers } from '../../../../middlewares/services';
 import { Character, ShadowWar } from '../../../../interfaces';
 import MemberSelectionModal from './MemberSelectionModal.vue';
 import ShareModal from './ShareModal.vue';
@@ -12,15 +12,17 @@ import { useStore } from '../../../../middlewares/store';
 import { useActiveCharacter } from '../../../composables/useActiveCharacter';
 import { useShadowWarRoster } from '../../../composables/useShadowWarRoster';
 import { useSavedAlignments } from '../../../composables/useSavedAlignments';
+import { useSWKind } from '../../../composables/useSWKind';
 
 const emit = defineEmits(['publish']);
 const store = useStore();
+const sw = useSWKind();
 
 const showShareModal       = ref(false);
 const showFormacionesModal = ref(false);
 
 const clanMembers: Ref<Character[]> = ref([]);
-const shadowWarData = computed(() => store.currentUser.shadowWarData);
+const shadowWarData = sw.active;
 const { active, clanId } = useActiveCharacter();
 
 const shadowWarId = ref<string | null>(null);
@@ -68,8 +70,8 @@ async function handleRespond(action: 'confirm' | 'decline' | 'pending', characte
   if (!shadowWarId.value || !characterId) return;
   respondingCharId.value = characterId;
   try {
-    await respondToShadowWar(shadowWarId.value, characterId, action);
-    await store.handleGetNextShadowWar();
+    await sw.api.respond(shadowWarId.value, characterId, action);
+    await sw.refreshActive();
   } finally {
     respondingCharId.value = null;
   }
@@ -91,7 +93,7 @@ onMounted(async () => {
   loading.value = true;
   try {
     if (!shadowWarData.value) {
-      await store.handleGetNextShadowWar();
+      await sw.refreshActive();
     }
 
     const clanData = await (clanId.value ? getClanMembers(clanId.value) : Promise.resolve(null));
