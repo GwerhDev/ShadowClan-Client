@@ -5,6 +5,8 @@ import type { AccursedTower, CharacterCreationInput, HistoryType, ShadowWar, Tas
 import { WEB_URL } from '../misc/const';
 import { getStoredCharacter, setStoredCharacter } from '../misc/characterStorage';
 import { shadowWarApi, vigilApi, type SWKind } from '../services/shadowWarService';
+import { getMyRaffleWins, ackRaffleWin } from '../services/raffleService';
+import type { RaffleWin } from '../../interfaces';
 
 type BattleInfo = { category: string; match: number; group: number };
 
@@ -60,6 +62,7 @@ export const useStore = defineStore('store', {
     pendingInboxCount: 0,
     pendingRequestsCount: 0,
     clanEventModal: null,
+    raffleWins: [],
   }),
 
   getters: {
@@ -89,6 +92,22 @@ export const useStore = defineStore('store', {
   },
 
   actions: {
+    /** Encola un premio ganado (sin duplicar: puede llegar por socket y por /my-wins). */
+    addRaffleWin(win: RaffleWin) {
+      if (!this.raffleWins.some(w => w.raffleId === win.raffleId && w.drawIndex === win.drawIndex)) this.raffleWins.push(win);
+    },
+
+    async handleFetchRaffleWins() {
+      try { (await getMyRaffleWins()).forEach(w => this.addRaffleWin(w)); }
+      catch { /* no bloquea el inicio */ }
+    },
+
+    /** Cierra el aviso actual y lo marca como visto para que no vuelva a aparecer. */
+    async dismissRaffleWin() {
+      const win = this.raffleWins.shift();
+      if (win) await ackRaffleWin(win.raffleId, win.drawIndex).catch(() => {});
+    },
+
     async handleLogout() {
       await logout();
       window.location.href = WEB_URL + '/login';

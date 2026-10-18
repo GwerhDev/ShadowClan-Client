@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import SplashComponent from './app/components/SplashComponent.vue';
 import ClanEventModal from './app/components/Walker/ClanEventModal.vue';
+import RaffleWonModal from './app/components/Raffle/RaffleWonModal.vue';
 import { useStore } from './middlewares/store/index';
 import { connectSocket } from './middlewares/socket';
 import { Ref, ref, onMounted } from 'vue';
@@ -19,6 +20,7 @@ onMounted(async () => {
       store.handleFetchPendingRequests();
       store.handleGetNextShadowWar();
       store.handleGetActiveVigil();
+      store.handleFetchRaffleWins();
       const socket = connectSocket();
       socket.on('clan-request:new', (data: any) => {
         // Only count if the notification targets the currently active character
@@ -112,6 +114,10 @@ onMounted(async () => {
           data,
         });
       });
+      // Sorteo ganado por uno de mis personajes → modal (RaffleWonModal).
+      socket.on('raffle:won', (data: any) => {
+        store.addRaffleWin(data);
+      });
       socket.on('tower:updated', ({ towerId }: any) => {
         store.handleGetAccursedTowers?.(towerId);
         store.handleGetActiveTowerWar();
@@ -138,5 +144,11 @@ onMounted(async () => {
     :type="store.clanEventModal.type"
     :clan-name="store.clanEventModal.clanName"
     @close="store.clanEventModal = null"
+  />
+  <RaffleWonModal
+    v-if="store.raffleWins.length"
+    :key="`${store.raffleWins[0].raffleId}:${store.raffleWins[0].drawIndex}`"
+    :win="store.raffleWins[0]"
+    @close="store.dismissRaffleWin()"
   />
 </template>

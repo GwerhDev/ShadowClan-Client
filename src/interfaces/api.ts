@@ -318,3 +318,80 @@ export type CharacterSearchResult =
   | { found: false };
 
 export type StatisticsType = 'shadow_war' | 'accursed_tower';
+
+// ── Sorteos ───────────────────────────────────────────────────────────────────
+
+export type RaffleActivity = 'shadow_war' | 'vigil_of_blades';
+export type RaffleRange = '30' | '60' | '90' | 'cycle';
+
+export interface RafflePrize { _id: string; name: string; description?: string }
+
+export interface RaffleRule {
+  activity: RaffleActivity;
+  /** count = mínimo de asistencias; percent = mínimo % de las instancias del período. */
+  mode: 'count' | 'percent';
+  min: number;
+}
+
+export interface RaffleCriteria {
+  range: RaffleRange;
+  cycleId?: string;
+  rules: RaffleRule[];
+  /** Líder y oficiales cuentan como elegibles (por defecto quedan fuera). */
+  includeStaff: boolean;
+}
+
+export interface RaffleActivityStats { attended: number; total: number; percentage: number }
+
+export interface RaffleMember {
+  _id: string;
+  name: string;
+  currentClass: string | null;
+  role: 'leader' | 'officer' | 'member';
+  stats: Record<RaffleActivity, RaffleActivityStats>;
+  /** Cumple los requisitos de asistencia. */
+  meetsAttendance: boolean;
+  /** Líder/oficial excluido por la configuración (se puede marcar a mano igual). */
+  excludedStaff: boolean;
+  eligible: boolean;
+}
+
+export interface RaffleEligibility {
+  period: { range: RaffleRange; since: string; until: string; cycle: { _id: string; startDate: string; endDate?: string } | null };
+  totals: Record<RaffleActivity, number>;
+  members: RaffleMember[];
+}
+
+export interface RaffleHistoryItem {
+  _id: string;
+  criteria: { range: RaffleRange; since: string; until: string; rules: RaffleRule[]; includeStaff?: boolean };
+  /** Premios en orden de sorteo con su ganador. */
+  draws: Array<{ prizeName: string; winner: { character: string; name: string } }>;
+  participantsCount: number;
+  drawnByCharacter?: { _id: string; name: string } | null;
+  createdAt: string;
+}
+
+export interface RaffleDrawResult {
+  raffleId: string;
+  /** En orden de sorteo; quien gana un premio sale del bombo para los siguientes. */
+  draws: Array<{
+    prizeName: string;
+    winner: { character: string; name: string };
+    /** El ganador tiene cuenta: se le avisó por socket (o lo verá al entrar). */
+    winnerHasUser: boolean;
+  }>;
+}
+
+/** Aviso al ganador (socket 'raffle:won' y GET /raffle/my-wins). */
+export interface RaffleWin {
+  raffleId: string;
+  /** Posición del premio dentro del sorteo. */
+  drawIndex: number;
+  characterId: string;
+  characterName: string;
+  clanName: string;
+  prizeName: string;
+  prizeDescription?: string;
+  createdAt: string;
+}

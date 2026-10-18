@@ -26,6 +26,7 @@ const tabs = [
   { id: 'vigil-of-blades', name: 'Vigilia', icon: 'fas fa-shield-halved', path: '/management/vigil-of-blades' },
   { id: 'history',        name: 'Historial', icon: 'fas fa-history',    path: '/management/history' },
   { id: 'attendance',     name: 'Asistencia', icon: 'fas fa-clipboard-check', path: '/management/attendance' },
+  { id: 'raffles',        name: 'Sorteos',  icon: 'fas fa-gift',       path: '/management/raffles' },
 ];
 </script>
 

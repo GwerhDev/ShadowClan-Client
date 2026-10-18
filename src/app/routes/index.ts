@@ -8,6 +8,7 @@ import VigilOfBladesManagement from '../components/admin/ShadowWarManagement/Vig
 import HistoryManagement from '../components/admin/HistoryManagement/HistoryManagement.vue';
 import AccursedTowerManagement from '../components/admin/AccursedTowerManagement/AccursedTower.vue';
 import ClanMembersManagement from '../components/admin/ClanMembersManagement/ClanMembersManagement.vue';
+import RaffleManagement from '../components/admin/RaffleManagement/RaffleManagement.vue';
 import AttendanceRegister from '../components/admin/AttendanceManagement/AttendanceRegister.vue';
 import StatisticsOverview from '../components/admin/StatisticsManagement/StatisticsOverview.vue';
 import StatisticsManagement from '../components/admin/StatisticsManagement/StatisticsManagement.vue';
@@ -208,6 +209,12 @@ const routes: RouteRecordRaw[] = [
         name: 'ManagementAttendance',
         component: AttendanceRegister,
         meta: { title: 'Asistencia', requiresClanManagement: true },
+      },
+      {
+        path: 'raffles',
+        name: 'ManagementRaffles',
+        component: RaffleManagement,
+        meta: { title: 'Sorteos', requiresClanManagement: true },
       },
     ],
   },

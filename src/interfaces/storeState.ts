@@ -1,4 +1,4 @@
-import type { AccursedTower, ShadowWar, Task, UserData } from ".";
+import type { AccursedTower, RaffleWin, ShadowWar, Task, UserData } from ".";
 
 /** Notificación en tiempo real recibida por socket. */
 export interface AppNotification {
@@ -42,4 +42,6 @@ export interface storeState {
   pendingInboxCount: number;
   pendingRequestsCount: number;
   clanEventModal: { type: 'accepted' | 'removed'; clanName: string } | null;
+  /** Premios de sorteo ganados por mis personajes, pendientes de mostrar (modal en App.vue). */
+  raffleWins: RaffleWin[];
 }
