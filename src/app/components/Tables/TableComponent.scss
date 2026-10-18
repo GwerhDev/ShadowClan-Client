@@ -11,6 +11,9 @@
   // Debajo de las barras v-sticky-bar del contenedor, si las hay.
   top: var(--table-sticky-top, 0px);
   z-index: 3;
+}
+
+.table-head-inner {
   overflow: hidden;
 }
 

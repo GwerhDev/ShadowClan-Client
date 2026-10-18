@@ -49,20 +49,20 @@
   }
 }
 
-// Alto del encabezado "Partida N"; los "Grupo 1/2" se pegan justo debajo.
-$match-head-h: calc(1.2rem * 1.5 + .5rem + 1px);
-
 .match {
   display: flex;
   flex-direction: column;
 
+  // Sticky vía v-sticky-bar, que mide su alto real y lo publica en --table-sticky-top.
   h4 {
-    position: sticky;
-    top: 0;
-    z-index: 3;
     font-size: 1.2rem;
     border-bottom: 1px solid #444;
     padding-bottom: 0.5rem;
+
+    // Pegado tiene fondo redondeado: el borde inferior se curvaría en las esquinas.
+    &.is-stuck {
+      border-bottom-color: transparent;
+    }
   }
 }
 
@@ -85,7 +85,8 @@ $match-head-h: calc(1.2rem * 1.5 + .5rem + 1px);
 
   h5 {
     position: sticky;
-    top: $match-head-h;
+    // Justo debajo de "Partida N" (alto medido por v-sticky-bar en .match).
+    top: var(--table-sticky-top, 0px);
     z-index: 2;
   }
 }

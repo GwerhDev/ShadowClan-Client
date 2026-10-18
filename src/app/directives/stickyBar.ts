@@ -6,6 +6,9 @@ import { trackStuck } from './stuck';
 // publica en --table-sticky-top sobre ese contenedor, y el encabezado de TableComponent la usa
 // como `top` para quedar justo debajo.
 
+/** Separación entre barras apiladas (y entre la última y el encabezado de la tabla). */
+const GAP = 8;
+
 const groups = new WeakMap<HTMLElement, Set<HTMLElement>>();
 const parents = new WeakMap<HTMLElement, HTMLElement>();
 const observers = new WeakMap<HTMLElement, ResizeObserver>();
@@ -17,9 +20,9 @@ function layout(parent: HTMLElement) {
   let top = 0;
   for (const el of bars) {
     el.style.top = `${top}px`;
-    top += el.offsetHeight;
+    top += el.offsetHeight + GAP;
   }
-  parent.style.setProperty('--table-sticky-top', `${top}px`);
+  parent.style.setProperty('--table-sticky-top', `${bars.length ? top : 0}px`);
 }
 
 export const vStickyBar: Directive<HTMLElement> = {

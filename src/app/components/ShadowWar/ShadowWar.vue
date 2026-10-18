@@ -5,6 +5,7 @@ import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';
 import { useSWKind } from '../../composables/useSWKind';
 import { vStuck } from '../../directives/stuck';
+import { vStickyBar } from '../../directives/stickyBar';
 
 const store = useStore();
 const sw = useSWKind();
@@ -78,7 +79,7 @@ async function handleRespond(action: 'confirm' | 'decline' | 'pending', charId: 
             <div v-else>
               <div class="matches-row-container">
                 <div v-for="(match, matchIndex) in category" :key="matchIndex" class="match">
-                  <h4 v-stuck>Partida {{ Number(matchIndex) + 1 }}</h4>
+                  <h4 v-sticky-bar>Partida {{ Number(matchIndex) + 1 }}</h4>
                   <div class="match-groups">
                     <div class="group">
                       <h5 v-stuck>Grupo 1</h5>

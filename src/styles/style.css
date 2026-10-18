@@ -312,3 +312,27 @@
     display: flex;
   }
 }
+
+/* Encabezados sticky mientras están pegados (directivas v-stuck / v-sticky-bar).
+   El fondo es un ::before que desborda .5rem (padding visual sin cambiar el tamaño del elemento,
+   sin saltos de layout) y lleva el blur. En un grupo de elementos pegados contiguos solo el de
+   más arriba lo dibuja, extendido hasta cubrir al resto (--stuck-extend); los demás quedan
+   `is-stuck--covered`. Los elementos sticky ya tienen z-index (contexto de apilamiento), así
+   z-index:-1 queda detrás de su contenido pero sobre lo que pasa por debajo. */
+.is-stuck:not(.is-stuck--covered)::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: calc(-.5rem - var(--stuck-lift, 0px)) -.5rem calc(-.5rem - var(--stuck-extend, 0px));
+  border-radius: 12px;
+  background: var(--nav-color-primary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+/* Los cubiertos van por encima del que dibuja el fondo del grupo (su ::before vive en la capa
+   de ese elemento); !important porque v-sticky-bar fija el z-index en línea. */
+.is-stuck--covered {
+  z-index: 5 !important;
+}
