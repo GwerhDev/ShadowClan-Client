@@ -58,23 +58,22 @@ const dynamicTitle = computed(() => {
         </section>
 
         <section class="content-section">
-          <div class="header-section" v-if="!hideTitle">
-            <span class="title-section">
-              <img :src="diabloIcon" alt="icon" />
-              <h1>{{ dynamicTitle }}</h1>
-            </span>
-          </div>
           <section class="menu-section mobile" v-if="tabs && tabs.length">
             <TabBar :logged="store.currentUser.logged" :tabs="tabs" />
           </section>
           <div class="scrollable-content">
+            <div class="header-section" v-if="!hideTitle">
+              <span class="title-section">
+                <img :src="diabloIcon" alt="icon" />
+                <h1>{{ dynamicTitle }}</h1>
+              </span>
+            </div>
             <slot></slot>
           </div>
         </section>
       </div>
-      <section>
-        <NavMobileComponent :loading="loading" />
-      </section>
     </div>
+    <!-- Fuera de .lo-container: su backdrop-filter convertiría el position:fixed en relativo a él. -->
+    <NavMobileComponent :loading="loading" />
   </div>
 </template>

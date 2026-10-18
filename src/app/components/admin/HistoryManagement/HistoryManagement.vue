@@ -1,5 +1,6 @@
 <style scoped lang="scss" src="./HistoryManagement.scss" />
 <script setup lang="ts">
+import { vStickyBar } from '../../../directives/stickyBar';
 import { useStore } from '../../../../middlewares/store';
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -180,7 +181,7 @@ async function handleAddHistory() {
     <template v-else>
 
       <!-- Toolbar + table: always visible once mounted -->
-      <div class="history-toolbar">
+      <div class="history-toolbar" v-sticky-bar>
         <div class="search-wrap">
           <i class="fas fa-magnifying-glass search-icon"></i>
           <input v-model="searchQuery" class="search-input" placeholder="Buscar por clan enemigo..." />

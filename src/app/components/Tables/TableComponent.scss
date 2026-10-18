@@ -1,8 +1,23 @@
+// El encabezado vive fuera del contenedor con scroll horizontal: así es sticky respecto del
+// scroll de la página (.scrollable-content). Su scroll horizontal se sincroniza con el cuerpo.
+.table-component {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.table-head-scroll {
+  position: sticky;
+  // Debajo de las barras v-sticky-bar del contenedor, si las hay.
+  top: var(--table-sticky-top, 0px);
+  z-index: 3;
+  overflow: hidden;
+}
+
 .table-scroll-wrapper {
-  flex: 1;
-  min-height: 0;
+  flex: none;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: hidden;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -36,9 +51,6 @@
     letter-spacing: .06em;
     text-transform: uppercase;
     color: rgba(255, 255, 255, .4);
-    position: sticky;
-    top: 0;
-    z-index: 2;
     flex-shrink: 0;
 
     li {

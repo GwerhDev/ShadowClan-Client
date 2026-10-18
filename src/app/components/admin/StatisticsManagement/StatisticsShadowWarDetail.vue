@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vStickyBar } from '../../../directives/stickyBar';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Doughnut } from 'vue-chartjs';
@@ -90,7 +91,7 @@ onMounted(fetchData);
 
     <h3 class="detail-title"><i class="fas fa-khanda"></i> Guerra Sombría</h3>
 
-    <div class="range-filters">
+    <div class="range-filters" v-sticky-bar>
       <button
         v-for="r in RANGES"
         :key="r.value"

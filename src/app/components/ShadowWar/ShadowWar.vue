@@ -4,6 +4,7 @@ import ShadowWarMemberCard from './ShadowWarMemberCard.vue';
 import { useStore } from '../../../middlewares/store';
 import MemberCardSkeleton from '../common/MemberCardSkeleton.vue';
 import { useSWKind } from '../../composables/useSWKind';
+import { vStuck } from '../../directives/stuck';
 
 const store = useStore();
 const sw = useSWKind();
@@ -77,10 +78,10 @@ async function handleRespond(action: 'confirm' | 'decline' | 'pending', charId: 
             <div v-else>
               <div class="matches-row-container">
                 <div v-for="(match, matchIndex) in category" :key="matchIndex" class="match">
-                  <h4>Partida {{ Number(matchIndex) + 1 }}</h4>
+                  <h4 v-stuck>Partida {{ Number(matchIndex) + 1 }}</h4>
                   <div class="match-groups">
                     <div class="group">
-                      <h5>Grupo 1</h5>
+                      <h5 v-stuck>Grupo 1</h5>
                       <div class="character-cards-grid">
                         <template v-if="props.loading">
                           <MemberCardSkeleton />
@@ -97,7 +98,7 @@ async function handleRespond(action: 'confirm' | 'decline' | 'pending', charId: 
                       </div>
                     </div>
                     <div class="group">
-                      <h5>Grupo 2</h5>
+                      <h5 v-stuck>Grupo 2</h5>
                       <div class="character-cards-grid">
                         <template v-if="props.loading">
                           <MemberCardSkeleton />

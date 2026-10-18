@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vStickyBar } from '../../../directives/stickyBar';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Bar } from 'vue-chartjs';
@@ -114,7 +115,7 @@ onMounted(fetchReport);
       />
 
       <template v-else>
-        <div class="view-tabs">
+        <div class="view-tabs" v-sticky-bar>
           <button class="view-tab" :class="{ active: activeView === 'chart' }" @click="activeView = 'chart'">
             <i class="fas fa-chart-bar"></i> Gráfico
           </button>

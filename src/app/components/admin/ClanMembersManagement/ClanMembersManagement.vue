@@ -1,5 +1,6 @@
 <style scoped lang="scss" src="./ClanMembersManagement.scss" />
 <script setup lang="ts">
+import { vStickyBar } from '../../../directives/stickyBar';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
@@ -129,7 +130,7 @@ const showSyncModal     = ref(false);
 <template>
   <div class="ul-container">
 
-    <div class="mgmt-toolbar">
+    <div class="mgmt-toolbar" v-sticky-bar>
       <div class="search-bar">
         <div class="search-wrap">
           <i class="fas fa-magnifying-glass search-icon"></i>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vStickyBar } from '../../../directives/stickyBar';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useStore } from '../../../../middlewares/store';
 import TableComponent from '../../Tables/TableComponent.vue';
@@ -152,7 +153,7 @@ watch(searchQuery, () => {
 
 <template>
   <div class="attendance-register" :style="{ '--att-grid': gridTemplate }">
-    <div class="attendance-toolbar">
+    <div class="attendance-toolbar" v-sticky-bar>
       <div class="search-wrap">
         <i class="fas fa-magnifying-glass search-icon"></i>
         <input v-model="searchQuery" class="search-input" placeholder="Buscar miembro..." :disabled="loading" />

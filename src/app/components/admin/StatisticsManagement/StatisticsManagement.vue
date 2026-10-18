@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vStickyBar } from '../../../directives/stickyBar';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from '../../../../middlewares/store';
@@ -210,7 +211,7 @@ onMounted(fetchCycles);
         <i class="fas fa-arrow-left"></i> Volver a estadísticas
       </button>
 
-      <div class="cycles-toolbar">
+      <div class="cycles-toolbar" v-sticky-bar>
         <button class="btn-add-cycle" @click="showForm = !showForm">
           <i class="fas fa-plus"></i> Nuevo ciclo
         </button>
