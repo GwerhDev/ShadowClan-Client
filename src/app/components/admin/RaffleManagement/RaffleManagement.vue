@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { vStickyBar } from '../../../directives/stickyBar';
 import RaffleDrawModal from './RaffleDrawModal.vue';
 import CustomModal from '../../Modals/CustomModal.vue';
+import InfoPopover from '../../common/InfoPopover.vue';
 import { getRafflePrizes, getRaffleEligibility, drawRaffle, getRaffles, deleteRaffle } from '../../../../middlewares/services/raffleService';
 import { getAttendanceCycles } from '../../../../middlewares/services';
 import { activeCharacterId } from '../../../../middlewares/services/activeCharacter';
@@ -51,6 +52,7 @@ const criteriaKey = computed(() => JSON.stringify(criteria.value));
 const prizeById   = computed(() => new Map(prizes.value.map(p => [p._id, p])));
 const prizePicked = computed(() => prizeById.value.get(prizePick.value) ?? null);
 const queueNames  = computed(() => prizeQueue.value.map(id => prizeById.value.get(id)?.name ?? '—'));
+const queuePrizes = computed(() => prizeQueue.value.map(id => prizeById.value.get(id) ?? null));
 
 function addPrize() {
   if (prizePick.value) prizeQueue.value = [...prizeQueue.value, prizePick.value];
@@ -213,14 +215,15 @@ onMounted(async () => {
             <button type="button" class="btn btn--secondary" :disabled="!prizePick" @click="addPrize">
               <i class="fas fa-plus"></i> Agregar
             </button>
+            <InfoPopover v-if="prizePicked?.description" :text="prizePicked.description" :label="`Descripción de ${prizePicked.name}`" />
           </div>
-          <p v-if="prizePicked?.description" class="hint">{{ prizePicked.description }}</p>
 
           <ol v-if="prizeQueue.length" class="prize-queue">
             <li v-for="(name, i) in queueNames" :key="i">
               <span class="prize-queue__pos">{{ i + 1 }}</span>
               <span class="prize-queue__name">{{ name }}</span>
               <div class="prize-queue__actions">
+                <InfoPopover v-if="queuePrizes[i]?.description" :text="queuePrizes[i]!.description!" :label="`Descripción de ${name}`" />
                 <button type="button" class="icon-btn" :disabled="i === 0" title="Subir" @click="movePrize(i, -1)"><i class="fas fa-chevron-up"></i></button>
                 <button type="button" class="icon-btn" :disabled="i === prizeQueue.length - 1" title="Bajar" @click="movePrize(i, 1)"><i class="fas fa-chevron-down"></i></button>
                 <button type="button" class="icon-btn icon-btn--danger" title="Quitar" @click="removePrize(i)"><i class="fas fa-xmark"></i></button>
